@@ -329,9 +329,10 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
   root.append(head, body, btn);
   container.append(style, root);
 
-  function getElapsedSec(now) {
-    if (startTime === null) return 0;
-    return (now - startTime) / 1000;
+  let activeElapsedSec = 0;
+
+  function getElapsedSec() {
+    return activeElapsedSec;
   }
 
   function render(now) {
@@ -395,8 +396,22 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
       startTime = now;
       lastFrameTime = now;
     }
-    const dt = Math.min(0.05, Math.max(0, (now - lastFrameTime) / 1000));
+    const paused = typeof window !== 'undefined' && Boolean(window.__OVERRIDLE_PAUSED__);
+    const dt = paused ? 0 : Math.min(0.05, Math.max(0, (now - lastFrameTime) / 1000));
     lastFrameTime = now;
+    activeElapsedSec += dt;
+
+    if (paused) {
+      if (holding) {
+        holding = false;
+        activePointerId = null;
+        pressure = 0;
+        btn.textContent = '[ TIENI PREMUTO: PURGE ]';
+        render(now);
+      }
+      rafId = requestAnimationFrame(frame);
+      return;
+    }
 
     if (holding) {
       pressure = Math.min(100, pressure + fillRate * dt);
@@ -407,7 +422,7 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
   }
 
   function handlePointerDown(e) {
-    if (destroyed || solved) return;
+    if (destroyed || solved || (typeof window !== 'undefined' && window.__OVERRIDLE_PAUSED__)) return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     e.preventDefault();
     if (holding) return;

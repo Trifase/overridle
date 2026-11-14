@@ -359,15 +359,23 @@ export function mount(container, rng, { onWin, onMistake: _onMistake } = {}) {
     ctx.restore();
   }
 
+  let activeTimeSec = 0;
+
   function frame(now) {
     if (destroyed || solved) return;
     if (startTime === null) {
       startTime = now;
       lastFrameTime = now;
     }
-    const dt = Math.min(0.05, Math.max(0, (now - lastFrameTime) / 1000));
+    const paused = typeof window !== 'undefined' && Boolean(window.__OVERRIDLE_PAUSED__);
+    const dt = paused ? 0 : Math.min(0.05, Math.max(0, (now - lastFrameTime) / 1000));
     lastFrameTime = now;
-    const tSec = (now - startTime) / 1000;
+    activeTimeSec += dt;
+
+    if (paused) {
+      rafId = requestAnimationFrame(frame);
+      return;
+    }
 
     currentNorm = Math.max(0, Math.min(1, Number(slider.value) / 1000));
     updateReadout();
@@ -387,7 +395,7 @@ export function mount(container, rng, { onWin, onMistake: _onMistake } = {}) {
     barFill.style.width = `${pct}%`;
     lockPctEl.textContent = `LOCK: ${pct}%`;
 
-    drawScope(tSec, inTol);
+    drawScope(activeTimeSec, inTol);
 
     if (lockSeconds >= LOCK_DURATION_SEC) {
       solved = true;

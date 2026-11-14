@@ -3,6 +3,7 @@ import {
   getTodaySeed,
   getLocalDateSeed,
   getUrlSeed,
+  getTestModeFlags,
   getSubSeed,
   shuffle,
 } from './prng.js';
@@ -46,16 +47,79 @@ export const MODULE_POOL = [
 ];
 
 const MODULE_META = {
-  wires: { id: 'wires', title: 'TAGLIA I CAVI', mod: wires },
-  binary_switches: { id: 'binary_switches', title: 'SWITCH BINARI', mod: binary_switches },
-  math_order: { id: 'math_order', title: 'ORDINE DI SCARICA', mod: math_order },
-  fallout_hack: { id: 'fallout_hack', title: 'TERMINALE FALLOUT', mod: fallout_hack },
-  memory_flash: { id: 'memory_flash', title: 'KEYCARD FLASH', mod: memory_flash },
-  glyph_rules: { id: 'glyph_rules', title: 'GRIGLIA GEROGLIFICI', mod: glyph_rules },
-  freq_align: { id: 'freq_align', title: 'ALLINEA FREQUENZA', mod: freq_align },
-  pressure_purge: { id: 'pressure_purge', title: 'SPURGO PRESSIONE', mod: pressure_purge },
-  rotor_lock: { id: 'rotor_lock', title: 'AGGANCIO ROTORE', mod: rotor_lock },
-  valve_sequence: { id: 'valve_sequence', title: 'BYPASS VALVOLE', mod: valve_sequence },
+  wires: {
+    id: 'wires',
+    title: 'TAGLIA I CAVI',
+    mod: wires,
+    instructions:
+      'Leggi la regola logica dei cavi (colori, quantità e posizioni) e recidi solo il cavo richiesto.',
+    ruleSelector: '.ovr-wires-rule-text',
+  },
+  binary_switches: {
+    id: 'binary_switches',
+    title: 'SWITCH BINARI',
+    mod: binary_switches,
+    instructions:
+      'Attiva gli switch binari per sommare esattamente il valore decimale target e premi EXEC.',
+  },
+  math_order: {
+    id: 'math_order',
+    title: 'ORDINE DI SCARICA',
+    mod: math_order,
+    instructions:
+      'Calcola il valore di ciascun nodo matematico e toccali tutti nella sequenza indicata.',
+    ruleSelector: '.ovr-math-dir',
+  },
+  fallout_hack: {
+    id: 'fallout_hack',
+    title: 'TERMINALE FALLOUT',
+    mod: fallout_hack,
+    instructions:
+      'Individua la password corretta: LIKENESS indica quante lettere combaciano nella stessa posizione.',
+  },
+  memory_flash: {
+    id: 'memory_flash',
+    title: 'KEYCARD FLASH',
+    mod: memory_flash,
+    instructions:
+      'Memorizza i 4 nodi illuminati durante il flash iniziale e toccali nello stesso identico ordine.',
+  },
+  glyph_rules: {
+    id: 'glyph_rules',
+    title: 'GRIGLIA GEROGLIFICI',
+    mod: glyph_rules,
+    instructions:
+      'Verifica quali simboli compaiono nella griglia 3×3 rispetto alla regola attiva e premi il glifo corretto.',
+    ruleSelector: '.ovr-glyph-text',
+  },
+  freq_align: {
+    id: 'freq_align',
+    title: 'ALLINEA FREQUENZA',
+    mod: freq_align,
+    instructions:
+      'Regola lo slider della frequenza finché la tua onda si sovrappone al target e mantieni l’aggancio.',
+  },
+  pressure_purge: {
+    id: 'pressure_purge',
+    title: 'SPURGO PRESSIONE',
+    mod: pressure_purge,
+    instructions:
+      'Tieni premuto PURGE per far salire la pressione e rilascia esattamente dentro la fascia verde mobile.',
+  },
+  rotor_lock: {
+    id: 'rotor_lock',
+    title: 'AGGANCIO ROTORE',
+    mod: rotor_lock,
+    instructions:
+      'Premi LOCK due volte quando la lancetta rotante passa dentro la zona verde per agganciare entrambi i perni.',
+  },
+  valve_sequence: {
+    id: 'valve_sequence',
+    title: 'BYPASS VALVOLE',
+    mod: valve_sequence,
+    instructions:
+      'Tocca le 3 valvole critiche nell’ordine esatto in cui superano la soglia della zona rossa (≥ 75%).',
+  },
 };
 
 const STORAGE_PREFIX = 'override30_';
@@ -63,11 +127,16 @@ const SHARE_URL = 'https://overridle.trifase.online';
 const COPY_DEFAULT_LABEL = '[ COPIA RISULTATO ]';
 const COPY_SUCCESS_LABEL = 'COPIATO NEGLI APPUNTI!';
 
+const testFlags = getTestModeFlags();
+const isTestMode = testFlags.bypassStorage;
+
 // Game state
 let state = 'STANDBY'; // 'STANDBY' | 'PLAYING' | 'WIN' | 'LOSE'
 let localTodaySeed = getLocalDateSeed();
 let seed = getTodaySeed();
 let isPractice = false;
+let isPaused = false;
+let pausedAt = null;
 let selectedModules = shuffle(mulberry32(seed), MODULE_POOL).slice(0, ROUNDS_COUNT);
 let roundIndex = 0;
 let lives = MAX_LIVES;
@@ -81,6 +150,10 @@ let roundActive = false;
 let currentShareText = '';
 let standbyShareText = '';
 
+if (typeof window !== 'undefined') {
+  window.__OVERRIDLE_PAUSED__ = false;
+}
+
 const copyResetTimers = new WeakMap();
 
 // DOM references (populated on init)
@@ -92,6 +165,7 @@ function queryDom() {
   dom.livesDisplay = document.getElementById('lives-display');
   dom.muteBtn = document.getElementById('mute-btn');
   dom.roundLeds = Array.from(document.querySelectorAll('#round-indicators .round-led'));
+  dom.pauseBtn = document.getElementById('pause-btn');
   dom.timerDisplay = document.getElementById('timer-display');
 
   dom.screenStandby = document.getElementById('screen-standby');
@@ -107,6 +181,11 @@ function queryDom() {
   dom.screenPlaying = document.getElementById('screen-playing');
   dom.moduleMeta = document.getElementById('module-meta');
   dom.moduleContainer = document.getElementById('module-container');
+  dom.pauseOverlay = document.getElementById('pause-overlay');
+  dom.pauseModDesc = document.getElementById('pause-mod-desc');
+  dom.pauseModRuleWrap = document.getElementById('pause-mod-rule-wrap');
+  dom.pauseModRule = document.getElementById('pause-mod-rule');
+  dom.resumeBtn = document.getElementById('resume-btn');
 
   dom.screenEnd = document.getElementById('screen-end');
   dom.endModeBadge = document.getElementById('end-mode-badge');
@@ -146,6 +225,14 @@ function saveDailyRecord(targetSeed, record) {
   }
 }
 
+function clearDailyRecord(targetSeed) {
+  try {
+    window.localStorage.removeItem(getDailyStorageKey(targetSeed));
+  } catch {
+    // Ignore storage restriction errors
+  }
+}
+
 function formatHearts(remainingLives) {
   const safeLives = Math.max(0, Math.min(MAX_LIVES, remainingLives));
   return '❤️'.repeat(safeLives) + '🖤'.repeat(MAX_LIVES - safeLives);
@@ -177,6 +264,9 @@ function setActiveScreen(screenName) {
     el.classList.toggle('is-active', active);
     el.hidden = !active;
   }
+  if (dom.pauseBtn) {
+    dom.pauseBtn.hidden = screenName !== 'PLAYING';
+  }
 }
 
 function updateMuteButton() {
@@ -190,13 +280,13 @@ function updateMuteButton() {
 function updateSeedBadge() {
   if (!dom.seedBadge) return;
   if (isPractice) {
-    dom.seedBadge.textContent = 'PRATICA';
+    dom.seedBadge.textContent = isTestMode ? 'TEST // PRATICA' : 'PRATICA';
     dom.seedBadge.title = `Seed Pratica #${seed}`;
     dom.seedBadge.classList.add('is-practice');
   } else {
-    dom.seedBadge.textContent = `#${seed}`;
-    dom.seedBadge.title = `Seed #${seed}`;
-    dom.seedBadge.classList.remove('is-practice');
+    dom.seedBadge.textContent = isTestMode ? `TEST #${seed}` : `#${seed}`;
+    dom.seedBadge.title = isTestMode ? `Modalità Test — Seed #${seed}` : `Seed #${seed}`;
+    dom.seedBadge.classList.toggle('is-practice', isTestMode);
   }
 }
 
@@ -271,6 +361,79 @@ function stopTimerLoop() {
   }
 }
 
+function setPausedState(activePaused) {
+  isPaused = activePaused;
+  if (typeof window !== 'undefined') {
+    window.__OVERRIDLE_PAUSED__ = activePaused;
+  }
+  if (dom.moduleContainer) {
+    dom.moduleContainer.classList.toggle('is-paused', activePaused);
+  }
+  if (dom.pauseOverlay) {
+    dom.pauseOverlay.hidden = !activePaused;
+  }
+  if (dom.pauseBtn) {
+    dom.pauseBtn.classList.toggle('is-paused', activePaused);
+    dom.pauseBtn.setAttribute('aria-pressed', activePaused ? 'true' : 'false');
+    dom.pauseBtn.textContent = activePaused ? '[▶ RIPRENDI]' : '[⏸ PAUSA]';
+  }
+}
+
+function populatePauseInstructions() {
+  const modId = selectedModules[roundIndex];
+  const entry = MODULE_META[modId];
+  if (dom.pauseModDesc) {
+    dom.pauseModDesc.textContent = entry ? entry.instructions : '';
+  }
+
+  let ruleText = '';
+  if (entry && entry.ruleSelector && dom.moduleContainer) {
+    const ruleEl = dom.moduleContainer.querySelector(entry.ruleSelector);
+    if (ruleEl) {
+      ruleText = (ruleEl.dataset.ruleText || ruleEl.textContent || '').trim();
+    }
+  }
+
+  if (dom.pauseModRuleWrap && dom.pauseModRule) {
+    if (ruleText) {
+      dom.pauseModRule.textContent = ruleText;
+      dom.pauseModRuleWrap.hidden = false;
+    } else {
+      dom.pauseModRule.textContent = '';
+      dom.pauseModRuleWrap.hidden = true;
+    }
+  }
+}
+
+function pauseGame() {
+  if (state !== 'PLAYING' || isPaused) return;
+  pausedAt = performance.now();
+  stopTimerLoop();
+  populatePauseInstructions();
+  setPausedState(true);
+}
+
+function resumeGame() {
+  if (state !== 'PLAYING' || !isPaused) return;
+  const pauseDuration = pausedAt !== null ? Math.max(0, performance.now() - pausedAt) : 0;
+  startTime += pauseDuration;
+  if (lastTickAt !== null) {
+    lastTickAt += pauseDuration;
+  }
+  pausedAt = null;
+  setPausedState(false);
+  rafId = requestAnimationFrame(tickLoop);
+}
+
+function togglePause() {
+  if (state !== 'PLAYING') return;
+  if (isPaused) {
+    resumeGame();
+  } else {
+    pauseGame();
+  }
+}
+
 function mountCurrentRound() {
   runCleanup();
   dom.moduleContainer.innerHTML = '';
@@ -289,12 +452,12 @@ function mountCurrentRound() {
 
   const cleanupFn = entry.mod.mount(dom.moduleContainer, roundRng, {
     onWin: () => {
-      if (!roundActive || state !== 'PLAYING') return;
+      if (!roundActive || state !== 'PLAYING' || isPaused) return;
       roundActive = false;
       handleRoundWin();
     },
     onMistake: () => {
-      if (!roundActive || state !== 'PLAYING') return;
+      if (!roundActive || state !== 'PLAYING' || isPaused) return;
       handleMistake();
     },
   });
@@ -338,11 +501,14 @@ function handleRoundWin() {
 
 function endGame(won) {
   stopTimerLoop();
+  const effectiveNow = isPaused && pausedAt !== null ? pausedAt : performance.now();
+  setPausedState(false);
+  pausedAt = null;
   roundActive = false;
   runCleanup();
   dom.moduleContainer.innerHTML = '';
 
-  const rawElapsed = (performance.now() - startTime) / 1000;
+  const rawElapsed = (effectiveNow - startTime) / 1000;
   elapsed = Math.max(0, Math.min(TOTAL_TIME, rawElapsed));
   state = won ? 'WIN' : 'LOSE';
 
@@ -370,8 +536,8 @@ function endGame(won) {
     practice: isPractice,
   });
 
-  // Persist daily result only on today's official daily run
-  if (!isPractice && seed === localTodaySeed) {
+  // Persist daily result only on today's official daily run (bypass in test mode)
+  if (!isPractice && !isTestMode && seed === localTodaySeed) {
     saveDailyRecord(localTodaySeed, {
       seed,
       timeLimit: TOTAL_TIME,
@@ -390,9 +556,13 @@ function endGame(won) {
 
 function renderEndScreen(won) {
   if (dom.endModeBadge) {
-    dom.endModeBadge.textContent = isPractice
-      ? `MODALITÀ PRATICA // #${seed}`
-      : `PROTOCOLLO DAILY // #${seed}`;
+    if (isPractice) {
+      dom.endModeBadge.textContent = `MODALITÀ PRATICA // #${seed}`;
+    } else if (isTestMode) {
+      dom.endModeBadge.textContent = `MODALITÀ TEST // #${seed}`;
+    } else {
+      dom.endModeBadge.textContent = `PROTOCOLLO DAILY // #${seed}`;
+    }
   }
 
   dom.endTitle.textContent = won ? 'OVERRIDE COMPLETATO' : 'INCENERITO';
@@ -403,13 +573,14 @@ function renderEndScreen(won) {
   dom.sharePreview.textContent = currentShareText;
   dom.copyShareBtn.textContent = COPY_DEFAULT_LABEL;
 
-  const practiceUnlocked = isPractice || loadDailyRecord(localTodaySeed) !== null;
+  const practiceUnlocked =
+    isPractice || isTestMode || loadDailyRecord(localTodaySeed) !== null;
   dom.practiceBtn.disabled = !practiceUnlocked;
   dom.practiceBtn.hidden = !practiceUnlocked;
 }
 
 function tickLoop(now) {
-  if (state !== 'PLAYING') {
+  if (state !== 'PLAYING' || isPaused) {
     return;
   }
 
@@ -441,6 +612,8 @@ function generatePracticeSeed() {
 function startGame({ practice = false } = {}) {
   initAudio();
   stopTimerLoop();
+  setPausedState(false);
+  pausedAt = null;
   roundActive = false;
   runCleanup();
 
@@ -460,6 +633,7 @@ function startGame({ practice = false } = {}) {
   updateTimerDisplay(TOTAL_TIME);
   updateRoundIndicators();
   setActiveScreen('PLAYING');
+  setPausedState(false);
 
   mountCurrentRound();
   rafId = requestAnimationFrame(tickLoop);
@@ -510,9 +684,15 @@ async function copyToClipboard(text, buttonEl) {
 
 function renderInitialStandby() {
   localTodaySeed = getLocalDateSeed();
+  if (testFlags.resetStorage) {
+    clearDailyRecord(localTodaySeed);
+  }
   const urlSeed = getUrlSeed();
   const hasForeignSeed = urlSeed !== null && urlSeed !== localTodaySeed;
-  const savedDaily = !hasForeignSeed ? loadDailyRecord(localTodaySeed) : null;
+  const savedDaily = !hasForeignSeed && !isTestMode ? loadDailyRecord(localTodaySeed) : null;
+
+  setPausedState(false);
+  pausedAt = null;
 
   isPractice = false;
   seed = urlSeed !== null ? urlSeed : localTodaySeed;
@@ -589,6 +769,24 @@ function bindEvents() {
     startGame({ practice: true });
   });
 
+  if (dom.pauseBtn) {
+    dom.pauseBtn.addEventListener('click', togglePause);
+  }
+
+  if (dom.resumeBtn) {
+    dom.resumeBtn.addEventListener('click', resumeGame);
+  }
+
+  document.addEventListener('keydown', (event) => {
+    if (state !== 'PLAYING' || event.ctrlKey || event.metaKey || event.altKey) {
+      return;
+    }
+    if (event.key === 'p' || event.key === 'P' || event.key === 'Escape') {
+      event.preventDefault();
+      togglePause();
+    }
+  });
+
   dom.flashOverlay.addEventListener('animationend', () => {
     dom.flashOverlay.classList.remove('active');
   });
@@ -606,6 +804,12 @@ function exposeReadOnlyDebug() {
     get isPractice() {
       return isPractice;
     },
+    get isTestMode() {
+      return isTestMode;
+    },
+    get isPaused() {
+      return isPaused;
+    },
     get selectedModules() {
       return selectedModules.slice();
     },
@@ -620,7 +824,8 @@ function exposeReadOnlyDebug() {
     },
     get elapsed() {
       if (state === 'PLAYING') {
-        return Number(Math.min(TOTAL_TIME, (performance.now() - startTime) / 1000).toFixed(1));
+        const now = isPaused && pausedAt !== null ? pausedAt : performance.now();
+        return Number(Math.min(TOTAL_TIME, (now - startTime) / 1000).toFixed(1));
       }
       return Number(elapsed.toFixed(1));
     },

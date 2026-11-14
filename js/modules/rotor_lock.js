@@ -325,13 +325,17 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
       lastFrameTime = now;
       return;
     }
+    if (typeof window !== 'undefined' && window.__OVERRIDLE_PAUSED__) {
+      lastFrameTime = now;
+      return;
+    }
     const dt = Math.min(0.05, Math.max(0, (now - lastFrameTime) / 1000));
     lastFrameTime = now;
     needleAngle = normAngle(needleAngle + dir * speed * dt);
   }
 
   function handleLock() {
-    if (destroyed || solved) return;
+    if (destroyed || solved || (typeof window !== 'undefined' && window.__OVERRIDLE_PAUSED__)) return;
     const now = performance.now();
     advanceAngle(now);
 

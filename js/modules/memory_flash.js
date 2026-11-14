@@ -274,18 +274,21 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
     }
   }
 
-  trackTimeout(enterInputPhase, FLASH_DURATION_MS);
-
-  const flashStart = performance.now();
+  let flashElapsedMs = 0;
+  let lastFlashFrame = performance.now();
   function animateBar(now) {
     if (destroyed || solved || phase !== 'flash') return;
-    const elapsed = now - flashStart;
-    const rem = Math.max(0, 1 - elapsed / FLASH_DURATION_MS);
+    const paused = typeof window !== 'undefined' && Boolean(window.__OVERRIDLE_PAUSED__);
+    const dtMs = paused ? 0 : Math.min(50, Math.max(0, now - lastFlashFrame));
+    lastFlashFrame = now;
+    flashElapsedMs += dtMs;
+    const rem = Math.max(0, 1 - flashElapsedMs / FLASH_DURATION_MS);
     barFill.style.width = `${(rem * 100).toFixed(1)}%`;
-    if (elapsed < FLASH_DURATION_MS) {
+    if (flashElapsedMs < FLASH_DURATION_MS) {
       rafId = requestAnimationFrame(animateBar);
     } else {
       rafId = null;
+      enterInputPhase();
     }
   }
   rafId = requestAnimationFrame(animateBar);

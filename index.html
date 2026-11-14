@@ -27,6 +27,7 @@
           <span class="round-led" data-round="3">[4]</span>
           <span class="round-led" data-round="4">[5]</span>
         </div>
+        <button id="pause-btn" class="crt-btn crt-btn--sm hud-pause-btn" type="button" aria-pressed="false" aria-label="Metti in pausa (P)" hidden>[⏸ PAUSA]</button>
         <div id="timer-display" class="timer-display" aria-live="off">60.0s</div>
       </div>
     </header>
@@ -65,7 +66,24 @@
       <!-- PLAYING -->
       <section id="screen-playing" class="screen" aria-label="Modulo attivo" hidden>
         <div id="module-meta" class="module-meta">MODULO 1/5</div>
-        <div id="module-container" class="module-container"></div>
+        <div class="playing-stage">
+          <div id="module-container" class="module-container"></div>
+          <div id="pause-overlay" class="pause-overlay crt-panel" role="dialog" aria-modal="true" aria-labelledby="pause-title" hidden>
+            <div class="pause-header">
+              <div id="pause-title" class="pause-title">SISTEMA IN PAUSA</div>
+              <div class="pause-sub">TIMER E MODULO BLOCCATI — CONSULTA LE ISTRUZIONI</div>
+            </div>
+            <div class="pause-instructions">
+              <div class="pause-section-label">ISTRUZIONI MODULO</div>
+              <p id="pause-mod-desc" class="pause-mod-desc"></p>
+              <div id="pause-mod-rule-wrap" class="pause-mod-rule-wrap" hidden>
+                <div class="pause-section-label">REGOLA ATTIVA</div>
+                <p id="pause-mod-rule" class="pause-mod-rule"></p>
+              </div>
+            </div>
+            <button id="resume-btn" class="crt-btn crt-btn--primary pause-resume-btn" type="button">[ ▶ RIPRENDI OVERRIDE ]</button>
+          </div>
+        </div>
       </section>
 
       <!-- END -->

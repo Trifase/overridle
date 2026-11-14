@@ -37,6 +37,33 @@ export function getUrlSeed() {
 }
 
 /**
+ * Check URL query parameters for testing bypass flags
+ * (`?test`, `?debug`, `?reset`, `?fresh`).
+ * Present flags are enabled unless explicitly set to `'0'` or `'false'`.
+ * @returns {{ bypassStorage: boolean, resetStorage: boolean }}
+ */
+export function getTestModeFlags() {
+  if (typeof window === 'undefined' || !window.location) {
+    return { bypassStorage: false, resetStorage: false };
+  }
+  const params = new URLSearchParams(window.location.search);
+  const isTruthyFlag = (name) => {
+    if (!params.has(name)) {
+      return false;
+    }
+    const val = (params.get(name) || '').trim().toLowerCase();
+    return val !== '0' && val !== 'false';
+  };
+  const resetStorage = isTruthyFlag('reset');
+  const bypassStorage =
+    resetStorage ||
+    isTruthyFlag('test') ||
+    isTruthyFlag('debug') ||
+    isTruthyFlag('fresh');
+  return { bypassStorage, resetStorage };
+}
+
+/**
  * Return the active seed: `?seed=YYYYMMDD` if valid (> 0), otherwise today's local YYYYMMDD.
  * @returns {number}
  */

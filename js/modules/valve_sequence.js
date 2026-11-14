@@ -363,6 +363,11 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
     if (lastFrameTime === null) {
       lastFrameTime = now;
     }
+    if (typeof window !== 'undefined' && window.__OVERRIDLE_PAUSED__) {
+      lastFrameTime = now;
+      rafId = requestAnimationFrame(frame);
+      return;
+    }
     const dt = Math.min(0.05, Math.max(0, (now - lastFrameTime) / 1000));
     lastFrameTime = now;
 
