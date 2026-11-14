@@ -197,13 +197,27 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
   container.append(style, root);
 
   const ctx = canvas.getContext('2d');
-  const SIZE = 206;
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  canvas.width = Math.round(SIZE * dpr);
-  canvas.height = Math.round(SIZE * dpr);
-  if (ctx) {
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  let dialSize = dialWrap.clientWidth || 206;
+  let appliedDpr = 0;
+
+  function syncCanvasSize() {
+    const nextSize = dialWrap.clientWidth || 206;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    if (
+      nextSize !== dialSize ||
+      dpr !== appliedDpr ||
+      canvas.width !== Math.round(nextSize * dpr)
+    ) {
+      dialSize = nextSize;
+      appliedDpr = dpr;
+      canvas.width = Math.round(dialSize * dpr);
+      canvas.height = Math.round(dialSize * dpr);
+      if (ctx) {
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+    }
   }
+  syncCanvasSize();
 
   function degToRad(deg) {
     return ((deg - 90) * Math.PI) / 180;
@@ -211,9 +225,11 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
 
   function drawDial(now) {
     if (!ctx) return;
+    syncCanvasSize();
+    const SIZE = dialSize;
     const cx = SIZE / 2;
     const cy = SIZE / 2;
-    const radius = 82;
+    const radius = Math.round(SIZE * 0.4);
     const isErr = now < errorFlashUntil;
     const isOk = now < successFlashUntil;
     const inZone = isNeedleInZone();
