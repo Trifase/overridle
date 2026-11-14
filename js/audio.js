@@ -1,5 +1,5 @@
 /**
- * Pure Web Audio API synthesizer for OVERRIDE-30.
+ * Pure Web Audio API synthesizer for OVERRIDLE.
  * Zero external audio assets; mute preference persisted under 'override30_mute'.
  */
 

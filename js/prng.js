@@ -1,5 +1,5 @@
 /**
- * Deterministic PRNG (Mulberry32) and daily seed helpers for OVERRIDE-30.
+ * Deterministic PRNG (Mulberry32) and daily seed helpers for OVERRIDLE.
  */
 
 /**

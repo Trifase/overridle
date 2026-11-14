@@ -1,4 +1,4 @@
-# OVERRIDE-30 (OVERRIDLE)
+# OVERRIDLE
 
 Daily procedural security terminal web game: **5 modules, 60.0 seconds, 3 shared lives**.
 

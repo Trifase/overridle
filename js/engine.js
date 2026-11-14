@@ -161,7 +161,7 @@ export function buildShareText({
 }) {
   const heartsStr = formatHearts(remainingLives);
   const outcomePart = won ? `${timeSec.toFixed(1)}s` : '💥';
-  const prefix = practice ? `OVERRIDE-30 [PRATICA] #${gameSeed}` : `OVERRIDE-30 #${gameSeed}`;
+  const prefix = practice ? `OVERRIDLE [PRATICA] #${gameSeed}` : `OVERRIDLE #${gameSeed}`;
   return `${prefix} — ${outcomePart} | ${heartsStr}\n${roundSquares.join(' ')}\n${SHARE_URL}`;
 }
 
