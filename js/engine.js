@@ -28,6 +28,11 @@ import * as freq_align from './modules/freq_align.js';
 import * as pressure_purge from './modules/pressure_purge.js';
 import * as rotor_lock from './modules/rotor_lock.js';
 import * as valve_sequence from './modules/valve_sequence.js';
+import * as tactical_map from './modules/tactical_map.js';
+import * as magnetic_scale from './modules/magnetic_scale.js';
+import * as stroop_override from './modules/stroop_override.js';
+import * as signal_tuner from './modules/signal_tuner.js';
+import * as reactor_balance from './modules/reactor_balance.js';
 
 export const TOTAL_TIME = 60.0;
 export const MAX_LIVES = 3;
@@ -44,6 +49,11 @@ export const MODULE_POOL = [
   'pressure_purge',
   'rotor_lock',
   'valve_sequence',
+  'tactical_map',
+  'magnetic_scale',
+  'stroop_override',
+  'signal_tuner',
+  'reactor_balance',
 ];
 
 const MODULE_META = {
@@ -119,6 +129,45 @@ const MODULE_META = {
     mod: valve_sequence,
     instructions:
       'Tocca le 3 valvole critiche nell’ordine esatto in cui superano la soglia della zona rossa (≥ 75%).',
+  },
+  tactical_map: {
+    id: 'tactical_map',
+    title: 'MAPPA TATTICA',
+    mod: tactical_map,
+    instructions:
+      'Individua sulla griglia 5×5 le 3 coordinate indicate incrociando colonna e riga sugli assi della mappa.',
+    ruleSelector: '.ovr-tm-rule',
+  },
+  magnetic_scale: {
+    id: 'magnetic_scale',
+    title: 'BILANCIA MAGNETICA',
+    mod: magnetic_scale,
+    instructions:
+      'Tocca esattamente 2 pesi tra i 5 disponibili per aggiungere o rimuovere il carico necessario al target.',
+    ruleSelector: '.ovr-ms-rule',
+  },
+  stroop_override: {
+    id: 'stroop_override',
+    title: 'PARADOSSO CROMATICO',
+    mod: stroop_override,
+    instructions:
+      'Completa 3 step seguendo la regola attiva: scegli il pulsante della parola scritta oppure del colore visivo.',
+    ruleSelector: '.ovr-so-rule',
+  },
+  signal_tuner: {
+    id: 'signal_tuner',
+    title: 'DECODIFICA IMPULSI',
+    mod: signal_tuner,
+    instructions:
+      'Confronta il segnale (• e ━━) con la tabella canali; se invertito, scambia ogni punto con una linea.',
+    ruleSelector: '.ovr-st-rule',
+  },
+  reactor_balance: {
+    id: 'reactor_balance',
+    title: 'BILANC. NOCCIOLO',
+    mod: reactor_balance,
+    instructions:
+      'Imposta i megawatt (1–5) di SCUDI, MOTORI e CRIO rispettando il totale e le relazioni date, poi premi STABILIZZA.',
   },
 };
 

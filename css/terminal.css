@@ -410,8 +410,8 @@ input {
 
 .practice-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
 }
 
 .practice-mod-btn {
@@ -420,8 +420,8 @@ input {
   align-items: center;
   justify-content: center;
   gap: 2px;
-  min-height: 46px;
-  padding: 6px;
+  min-height: 44px;
+  padding: 5px 4px;
   border-color: rgba(255, 176, 0, 0.38);
   background: rgba(255, 176, 0, 0.05);
 }
@@ -432,18 +432,19 @@ input {
 }
 
 .practice-mod-num {
-  font-size: 0.64rem;
+  font-size: 0.6rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   color: var(--crt-cyan);
 }
 
 .practice-mod-name {
-  font-size: 0.72rem;
+  font-size: 0.64rem;
   font-weight: 700;
-  letter-spacing: 0.03em;
-  line-height: 1.2;
+  letter-spacing: 0.02em;
+  line-height: 1.15;
   color: var(--crt-text);
+  word-break: break-word;
 }
 
 .practice-back-btn {
@@ -1179,7 +1180,12 @@ input {
   .crt-shell .ovr-fa,
   .crt-shell .ovr-pp,
   .crt-shell .ovr-rl,
-  .crt-shell .ovr-vs {
+  .crt-shell .ovr-vs,
+  .crt-shell .ovr-tm,
+  .crt-shell .ovr-ms,
+  .crt-shell .ovr-so,
+  .crt-shell .ovr-st,
+  .crt-shell .ovr-rb {
     max-width: 560px !important;
   }
 
@@ -1496,6 +1502,157 @@ input {
   .crt-shell .ovr-vs-track {
     height: 20px;
   }
+
+  /* 11. Tactical Map */
+  .crt-shell .ovr-tm {
+    padding: 12px;
+    gap: 10px;
+  }
+  .crt-shell .ovr-tm-rule {
+    font-size: 14px;
+    padding: 9px 12px;
+  }
+  .crt-shell .ovr-tm-target {
+    font-size: 19px;
+    padding: 8px;
+  }
+  .crt-shell .ovr-tm-board {
+    grid-template-columns: 38px repeat(5, minmax(0, 1fr));
+    gap: 6px;
+    padding: 10px;
+  }
+  .crt-shell .ovr-tm-axis {
+    min-height: 36px;
+    font-size: 17px;
+  }
+  .crt-shell .ovr-tm-cell {
+    min-height: 48px;
+    font-size: 16px;
+  }
+  .crt-shell .ovr-tm-status {
+    font-size: 13px;
+  }
+
+  /* 12. Magnetic Scale */
+  .crt-shell .ovr-ms {
+    padding: 14px;
+    gap: 14px;
+  }
+  .crt-shell .ovr-ms-rule {
+    font-size: 14.5px;
+    padding: 10px 14px;
+  }
+  .crt-shell .ovr-ms-lbl {
+    font-size: 11.5px;
+  }
+  .crt-shell .ovr-ms-val {
+    font-size: 26px;
+  }
+  .crt-shell .ovr-ms-weight {
+    min-height: 86px;
+  }
+  .crt-shell .ovr-ms-wval {
+    font-size: 26px;
+  }
+  .crt-shell .ovr-ms-wunit {
+    font-size: 12px;
+  }
+  .crt-shell .ovr-ms-status {
+    font-size: 13px;
+  }
+
+  /* 13. Stroop Override */
+  .crt-shell .ovr-so {
+    padding: 14px;
+    gap: 14px;
+  }
+  .crt-shell .ovr-so-rule {
+    font-size: 15px;
+    padding: 11px 14px;
+  }
+  .crt-shell .ovr-so-step {
+    padding: 7px;
+    font-size: 13px;
+  }
+  .crt-shell .ovr-so-display {
+    min-height: 108px;
+  }
+  .crt-shell .ovr-so-word {
+    font-size: 48px;
+  }
+  .crt-shell .ovr-so-btn {
+    min-height: 74px;
+    font-size: 20px;
+  }
+  .crt-shell .ovr-so-status {
+    font-size: 13px;
+  }
+
+  /* 14. Signal Tuner */
+  .crt-shell .ovr-st {
+    padding: 14px;
+    gap: 12px;
+  }
+  .crt-shell .ovr-st-rule {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+  .crt-shell .ovr-st-tx-lbl {
+    font-size: 12px;
+  }
+  .crt-shell .ovr-st-dot {
+    width: 22px;
+    height: 22px;
+  }
+  .crt-shell .ovr-st-dash {
+    width: 58px;
+    height: 18px;
+  }
+  .crt-shell .ovr-st-tx-text {
+    font-size: 21px;
+  }
+  .crt-shell .ovr-st-ch {
+    min-height: 72px;
+  }
+  .crt-shell .ovr-st-ch-id {
+    font-size: 12.5px;
+  }
+  .crt-shell .ovr-st-ch-pat {
+    font-size: 19px;
+  }
+  .crt-shell .ovr-st-status {
+    font-size: 13px;
+  }
+
+  /* 15. Reactor Balance */
+  .crt-shell .ovr-rb {
+    padding: 14px;
+    gap: 12px;
+  }
+  .crt-shell .ovr-rb-rule {
+    font-size: 14.5px;
+    padding: 10px 12px;
+  }
+  .crt-shell .ovr-rb-total {
+    font-size: 15px;
+    padding: 9px 14px;
+  }
+  .crt-shell .ovr-rb-name {
+    font-size: 13.5px;
+  }
+  .crt-shell .ovr-rb-seg {
+    height: 24px;
+  }
+  .crt-shell .ovr-rb-val {
+    font-size: 16px;
+  }
+  .crt-shell .ovr-rb-exec {
+    min-height: 54px;
+    font-size: 17px;
+  }
+  .crt-shell .ovr-rb-status {
+    font-size: 13px;
+  }
 }
 
 /* Laptop / short desktop safeguard (e.g. 1366x768) */
@@ -1560,7 +1717,22 @@ input {
     gap: 10px;
   }
   .practice-mod-btn {
-    min-height: 54px;
-    padding: 8px 10px;
+    min-height: 48px;
+    padding: 6px 8px;
+  }
+  .crt-shell .ovr-tm-cell {
+    min-height: 40px;
+  }
+  .crt-shell .ovr-ms-weight {
+    min-height: 72px;
+  }
+  .crt-shell .ovr-so-btn {
+    min-height: 60px;
+  }
+  .crt-shell .ovr-st-ch {
+    min-height: 60px;
+  }
+  .crt-shell .ovr-rb-seg {
+    height: 20px;
   }
 }
