@@ -131,10 +131,14 @@ const testFlags = getTestModeFlags();
 const isTestMode = testFlags.bypassStorage;
 
 // Game state
-let state = 'STANDBY'; // 'STANDBY' | 'PLAYING' | 'WIN' | 'LOSE'
+let state = 'STANDBY'; // 'STANDBY' | 'PRACTICE_SELECT' | 'PLAYING' | 'WIN' | 'LOSE'
 let localTodaySeed = getLocalDateSeed();
 let seed = getTodaySeed();
 let isPractice = false;
+let practiceModuleId = null;
+let practiceRepeatCount = 1;
+let practiceReturnScreen = 'STANDBY';
+let practiceReturnState = 'STANDBY';
 let isPaused = false;
 let pausedAt = null;
 let selectedModules = shuffle(mulberry32(seed), MODULE_POOL).slice(0, ROUNDS_COUNT);
@@ -175,8 +179,16 @@ function queryDom() {
   dom.standbyResultStats = document.getElementById('standby-result-stats');
   dom.standbySharePreview = document.getElementById('standby-share-preview');
   dom.startBtn = document.getElementById('start-btn');
+  dom.practiceFreshBtn = document.getElementById('practice-fresh-btn');
   dom.copyStandbyBtn = document.getElementById('copy-standby-btn');
   dom.practiceStandbyBtn = document.getElementById('practice-standby-btn');
+
+  dom.screenPractice = document.getElementById('screen-practice');
+  dom.practiceMode1Btn = document.getElementById('practice-mode-1');
+  dom.practiceMode5Btn = document.getElementById('practice-mode-5');
+  dom.practiceRandomBtn = document.getElementById('practice-random-btn');
+  dom.practiceModuleGrid = document.getElementById('practice-module-grid');
+  dom.practiceBackBtn = document.getElementById('practice-back-btn');
 
   dom.screenPlaying = document.getElementById('screen-playing');
   dom.moduleMeta = document.getElementById('module-meta');
@@ -193,6 +205,7 @@ function queryDom() {
   dom.endStats = document.getElementById('end-stats');
   dom.sharePreview = document.getElementById('share-preview');
   dom.copyShareBtn = document.getElementById('copy-share-btn');
+  dom.retryPracticeBtn = document.getElementById('retry-practice-btn');
   dom.practiceBtn = document.getElementById('practice-btn');
 }
 
@@ -255,6 +268,7 @@ export function buildShareText({
 function setActiveScreen(screenName) {
   const mapping = {
     STANDBY: dom.screenStandby,
+    PRACTICE: dom.screenPractice,
     PLAYING: dom.screenPlaying,
     END: dom.screenEnd,
   };
@@ -296,9 +310,13 @@ function updateLivesDisplay() {
 }
 
 function updateRoundIndicators() {
+  const totalRounds = selectedModules.length || ROUNDS_COUNT;
   for (let i = 0; i < dom.roundLeds.length; i++) {
     const led = dom.roundLeds[i];
+    const activeSlot = i < totalRounds;
+    led.hidden = !activeSlot;
     led.classList.remove('is-active', 'is-won', 'is-lost');
+    if (!activeSlot) continue;
     if (squares[i] === '🟩') {
       led.classList.add('is-won');
     } else if (squares[i] === '🟥') {
@@ -444,7 +462,7 @@ function mountCurrentRound() {
     throw new Error(`Modulo non valido: ${modId}`);
   }
 
-  dom.moduleMeta.textContent = `MODULO ${roundIndex + 1}/${ROUNDS_COUNT} • ${entry.title}`;
+  dom.moduleMeta.textContent = `MODULO ${roundIndex + 1}/${selectedModules.length} • ${entry.title}`;
   updateRoundIndicators();
 
   const roundRng = mulberry32(getSubSeed(seed, roundIndex));
@@ -489,7 +507,7 @@ function handleMistake() {
 function handleRoundWin() {
   squares[roundIndex] = '🟩';
 
-  if (roundIndex < ROUNDS_COUNT - 1) {
+  if (roundIndex < selectedModules.length - 1) {
     playSuccess();
     runCleanup();
     roundIndex += 1;
@@ -513,11 +531,11 @@ function endGame(won) {
   state = won ? 'WIN' : 'LOSE';
 
   if (won) {
-    squares = Array(ROUNDS_COUNT).fill('🟩');
+    squares = Array(selectedModules.length).fill('🟩');
     playWin();
   } else {
     squares[roundIndex] = '🟥';
-    for (let i = roundIndex + 1; i < ROUNDS_COUNT; i++) {
+    for (let i = roundIndex + 1; i < selectedModules.length; i++) {
       squares[i] = '⬛';
     }
     updateTimerDisplay(Math.max(0, TOTAL_TIME - elapsed));
@@ -556,7 +574,9 @@ function endGame(won) {
 
 function renderEndScreen(won) {
   if (dom.endModeBadge) {
-    if (isPractice) {
+    if (isPractice && practiceModuleId && MODULE_META[practiceModuleId]) {
+      dom.endModeBadge.textContent = `PRATICA • ${MODULE_META[practiceModuleId].title} // #${seed}`;
+    } else if (isPractice) {
       dom.endModeBadge.textContent = `MODALITÀ PRATICA // #${seed}`;
     } else if (isTestMode) {
       dom.endModeBadge.textContent = `MODALITÀ TEST // #${seed}`;
@@ -573,10 +593,19 @@ function renderEndScreen(won) {
   dom.sharePreview.textContent = currentShareText;
   dom.copyShareBtn.textContent = COPY_DEFAULT_LABEL;
 
-  const practiceUnlocked =
-    isPractice || isTestMode || loadDailyRecord(localTodaySeed) !== null;
-  dom.practiceBtn.disabled = !practiceUnlocked;
-  dom.practiceBtn.hidden = !practiceUnlocked;
+  if (dom.retryPracticeBtn) {
+    const canRetrySingle = isPractice && Boolean(practiceModuleId && MODULE_META[practiceModuleId]);
+    dom.retryPracticeBtn.hidden = !canRetrySingle;
+    dom.retryPracticeBtn.disabled = !canRetrySingle;
+    if (canRetrySingle) {
+      const roundLabel = practiceRepeatCount === 1 ? '1 ROUND' : `${practiceRepeatCount} ROUND`;
+      dom.retryPracticeBtn.textContent = `[ ↻ RIPROVA: ${MODULE_META[practiceModuleId].title} (${roundLabel}) ]`;
+    }
+  }
+
+  dom.practiceBtn.disabled = false;
+  dom.practiceBtn.hidden = false;
+  dom.practiceBtn.textContent = '[ SCEGLI MINIGIOCO / PRATICA ]';
 }
 
 function tickLoop(now) {
@@ -609,7 +638,64 @@ function generatePracticeSeed() {
   return Math.floor(100000 + Math.random() * 900000);
 }
 
-function startGame({ practice = false } = {}) {
+function setPracticeRepeatCount(count) {
+  practiceRepeatCount = count === 5 ? 5 : 1;
+  if (dom.practiceMode1Btn) {
+    const isOne = practiceRepeatCount === 1;
+    dom.practiceMode1Btn.classList.toggle('is-active', isOne);
+    dom.practiceMode1Btn.setAttribute('aria-pressed', isOne ? 'true' : 'false');
+  }
+  if (dom.practiceMode5Btn) {
+    const isFive = practiceRepeatCount === 5;
+    dom.practiceMode5Btn.classList.toggle('is-active', isFive);
+    dom.practiceMode5Btn.setAttribute('aria-pressed', isFive ? 'true' : 'false');
+  }
+}
+
+function renderPracticeModuleGrid() {
+  if (!dom.practiceModuleGrid) return;
+  dom.practiceModuleGrid.innerHTML = '';
+  MODULE_POOL.forEach((modId, index) => {
+    const entry = MODULE_META[modId];
+    if (!entry) return;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'crt-btn practice-mod-btn';
+    btn.dataset.moduleId = modId;
+
+    const numSpan = document.createElement('span');
+    numSpan.className = 'practice-mod-num';
+    numSpan.textContent = String(index + 1).padStart(2, '0');
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'practice-mod-name';
+    nameSpan.textContent = entry.title;
+
+    btn.append(numSpan, nameSpan);
+    btn.addEventListener('click', () => {
+      startGame({
+        practice: true,
+        moduleId: modId,
+        roundsCount: practiceRepeatCount,
+      });
+    });
+
+    dom.practiceModuleGrid.appendChild(btn);
+  });
+}
+
+function openPracticeSelector(fromScreen = 'STANDBY') {
+  practiceReturnScreen = fromScreen === 'END' ? 'END' : 'STANDBY';
+  if (state !== 'PRACTICE_SELECT') {
+    practiceReturnState = state;
+  }
+  state = 'PRACTICE_SELECT';
+  setPausedState(false);
+  pausedAt = null;
+  setActiveScreen('PRACTICE');
+}
+
+function startGame({ practice = false, moduleId = null, roundsCount = ROUNDS_COUNT } = {}) {
   initAudio();
   stopTimerLoop();
   setPausedState(false);
@@ -617,12 +703,21 @@ function startGame({ practice = false } = {}) {
   roundActive = false;
   runCleanup();
 
-  isPractice = practice;
-  seed = practice ? generatePracticeSeed() : getTodaySeed();
-  selectedModules = shuffle(mulberry32(seed), MODULE_POOL).slice(0, ROUNDS_COUNT);
+  isPractice = Boolean(practice);
+  const hasSpecificModule =
+    isPractice && typeof moduleId === 'string' && Boolean(MODULE_META[moduleId]);
+  practiceModuleId = hasSpecificModule ? moduleId : null;
+  const totalRounds = hasSpecificModule
+    ? Math.max(1, Math.min(ROUNDS_COUNT, Number(roundsCount) || 1))
+    : ROUNDS_COUNT;
+
+  seed = isPractice ? generatePracticeSeed() : getTodaySeed();
+  selectedModules = hasSpecificModule
+    ? Array(totalRounds).fill(practiceModuleId)
+    : shuffle(mulberry32(seed), MODULE_POOL).slice(0, ROUNDS_COUNT);
   roundIndex = 0;
   lives = MAX_LIVES;
-  squares = Array(ROUNDS_COUNT).fill('⬛');
+  squares = Array(totalRounds).fill('⬛');
   elapsed = 0;
   lastTickAt = null;
   state = 'PLAYING';
@@ -695,6 +790,7 @@ function renderInitialStandby() {
   pausedAt = null;
 
   isPractice = false;
+  practiceModuleId = null;
   seed = urlSeed !== null ? urlSeed : localTodaySeed;
   selectedModules =
     savedDaily && Array.isArray(savedDaily.selectedModuleIds) && savedDaily.selectedModuleIds.length === ROUNDS_COUNT
@@ -753,20 +849,61 @@ function bindEvents() {
     startGame({ practice: false });
   });
 
+  if (dom.practiceFreshBtn) {
+    dom.practiceFreshBtn.addEventListener('click', () => {
+      openPracticeSelector('STANDBY');
+    });
+  }
+
   dom.copyStandbyBtn.addEventListener('click', () => {
     copyToClipboard(standbyShareText, dom.copyStandbyBtn);
   });
 
   dom.practiceStandbyBtn.addEventListener('click', () => {
-    startGame({ practice: true });
+    openPracticeSelector('STANDBY');
   });
+
+  if (dom.practiceMode1Btn) {
+    dom.practiceMode1Btn.addEventListener('click', () => {
+      setPracticeRepeatCount(1);
+    });
+  }
+
+  if (dom.practiceMode5Btn) {
+    dom.practiceMode5Btn.addEventListener('click', () => {
+      setPracticeRepeatCount(5);
+    });
+  }
+
+  if (dom.practiceRandomBtn) {
+    dom.practiceRandomBtn.addEventListener('click', () => {
+      startGame({ practice: true, moduleId: null, roundsCount: ROUNDS_COUNT });
+    });
+  }
+
+  if (dom.practiceBackBtn) {
+    dom.practiceBackBtn.addEventListener('click', () => {
+      state = practiceReturnState;
+      setActiveScreen(practiceReturnScreen);
+    });
+  }
 
   dom.copyShareBtn.addEventListener('click', () => {
     copyToClipboard(currentShareText, dom.copyShareBtn);
   });
 
+  if (dom.retryPracticeBtn) {
+    dom.retryPracticeBtn.addEventListener('click', () => {
+      startGame({
+        practice: true,
+        moduleId: practiceModuleId,
+        roundsCount: practiceRepeatCount,
+      });
+    });
+  }
+
   dom.practiceBtn.addEventListener('click', () => {
-    startGame({ practice: true });
+    openPracticeSelector('END');
   });
 
   if (dom.pauseBtn) {
@@ -804,6 +941,12 @@ function exposeReadOnlyDebug() {
     get isPractice() {
       return isPractice;
     },
+    get practiceModuleId() {
+      return practiceModuleId;
+    },
+    get practiceRepeatCount() {
+      return practiceRepeatCount;
+    },
     get isTestMode() {
       return isTestMode;
     },
@@ -837,6 +980,8 @@ function exposeReadOnlyDebug() {
 
 function init() {
   queryDom();
+  renderPracticeModuleGrid();
+  setPracticeRepeatCount(1);
   bindEvents();
   renderInitialStandby();
   exposeReadOnlyDebug();
