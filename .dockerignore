@@ -1,0 +1,7 @@
+.git
+.gitignore
+README.md
+OVERRIDLE-specs.pdf
+docker-compose.yml
+Dockerfile
+nginx.conf

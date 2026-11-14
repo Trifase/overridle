@@ -1,0 +1,7 @@
+services:
+  override:
+    build: .
+    container_name: override
+    restart: unless-stopped
+    ports:
+      - "8060:80"

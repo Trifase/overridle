@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#050a07">
+  <title>OVERRIDE-30 // OVERRIDLE</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%23050a07' stroke='%2300ff66' stroke-width='2'/%3E%3Ctext x='16' y='21' text-anchor='middle' font-family='monospace' font-weight='bold' font-size='14' fill='%2300ff66'%3E30%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./css/terminal.css">
+</head>
+<body>
+  <div id="flash-overlay" aria-hidden="true"></div>
+  <div class="crt-scanlines" aria-hidden="true"></div>
+
+  <div id="app" class="crt-shell">
+    <header id="hud" class="hud">
+      <div class="hud-top">
+        <span id="seed-badge" class="seed-badge">#--------</span>
+        <div id="lives-display" class="lives-display" aria-label="Vite rimanenti">❤️❤️❤️</div>
+        <button id="mute-btn" class="crt-btn crt-btn--sm hud-mute-btn" type="button" aria-pressed="false">[AUDIO ON]</button>
+      </div>
+      <div class="hud-bottom">
+        <div id="round-indicators" class="round-indicators" aria-label="Stato dei 5 moduli">
+          <span class="round-led" data-round="0">[1]</span>
+          <span class="round-led" data-round="1">[2]</span>
+          <span class="round-led" data-round="2">[3]</span>
+          <span class="round-led" data-round="3">[4]</span>
+          <span class="round-led" data-round="4">[5]</span>
+        </div>
+        <div id="timer-display" class="timer-display" aria-live="off">30.0s</div>
+      </div>
+    </header>
+
+    <main id="stage" class="stage">
+      <!-- STANDBY -->
+      <section id="screen-standby" class="screen is-active" aria-label="Schermata iniziale">
+        <div class="standby-hero">
+          <div class="terminal-tag">SECURITY TERMINAL // OVERRIDLE</div>
+          <h1 class="terminal-title">OVERRIDE-30</h1>
+        </div>
+
+        <div id="standby-fresh" class="standby-card crt-panel">
+          <p class="briefing-text">
+            REAZIONE A CATENA IN CORSO.<br>
+            <strong>5 MODULI. 30.0 SECONDI. 3 VITE.</strong>
+          </p>
+          <p class="briefing-sub">
+            Completa ogni sequenza procedurale prima dell'incenerimento del terminale.
+          </p>
+          <button id="start-btn" class="crt-btn crt-btn--primary crt-btn--lg" type="button">[ AVVIA OVERRIDE ]</button>
+        </div>
+
+        <div id="standby-completed" class="standby-card crt-panel" hidden>
+          <div class="standby-done-label">DAILY COMPLETATO</div>
+          <h2 id="standby-result-title" class="end-title">OVERRIDE COMPLETATO</h2>
+          <div id="standby-result-stats" class="end-stats"></div>
+          <pre id="standby-share-preview" class="share-preview"></pre>
+          <div class="end-actions">
+            <button id="copy-standby-btn" class="crt-btn crt-btn--primary" type="button">[ COPIA RISULTATO ]</button>
+            <button id="practice-standby-btn" class="crt-btn crt-btn--amber" type="button">[ MODALITÀ PRATICA ]</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- PLAYING -->
+      <section id="screen-playing" class="screen" aria-label="Modulo attivo" hidden>
+        <div id="module-meta" class="module-meta">MODULO 1/5</div>
+        <div id="module-container" class="module-container"></div>
+      </section>
+
+      <!-- END -->
+      <section id="screen-end" class="screen" aria-label="Esito partita" hidden>
+        <div class="end-card crt-panel">
+          <div id="end-mode-badge" class="end-mode-badge">PROTOCOLLO DAILY</div>
+          <h2 id="end-title" class="end-title">OVERRIDE COMPLETATO</h2>
+          <div id="end-stats" class="end-stats"></div>
+          <pre id="share-preview" class="share-preview"></pre>
+          <div class="end-actions">
+            <button id="copy-share-btn" class="crt-btn crt-btn--primary crt-btn--lg" type="button">[ COPIA RISULTATO ]</button>
+            <button id="practice-btn" class="crt-btn crt-btn--amber" type="button">[ MODALITÀ PRATICA ]</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="./js/engine.js"></script>
+</body>
+</html>
