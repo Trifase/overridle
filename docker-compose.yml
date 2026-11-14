@@ -1,7 +1,7 @@
 services:
-  override:
+  overridle:
     build: .
-    container_name: override
+    container_name: overridle
     restart: unless-stopped
     ports:
       - "8060:80"

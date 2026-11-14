@@ -59,6 +59,7 @@ const MODULE_META = {
 };
 
 const STORAGE_PREFIX = 'override30_';
+const SHARE_URL = 'https://overridle.trifase.online';
 const COPY_DEFAULT_LABEL = '[ COPIA RISULTATO ]';
 const COPY_SUCCESS_LABEL = 'COPIATO NEGLI APPUNTI!';
 
@@ -158,7 +159,7 @@ export function buildShareText({
   const heartsStr = formatHearts(remainingLives);
   const outcomePart = won ? `${timeSec.toFixed(1)}s` : '💥';
   const prefix = practice ? `OVERRIDE-30 [PRATICA] #${gameSeed}` : `OVERRIDE-30 #${gameSeed}`;
-  return `${prefix} — ${outcomePart} | ${heartsStr}\n${roundSquares.join(' ')}`;
+  return `${prefix} — ${outcomePart} | ${heartsStr}\n${roundSquares.join(' ')}\n${SHARE_URL}`;
 }
 
 function setActiveScreen(screenName) {
@@ -522,16 +523,14 @@ function renderInitialStandby() {
   if (savedDaily) {
     lives = typeof savedDaily.lives === 'number' ? savedDaily.lives : MAX_LIVES;
     squares = savedDaily.squares.slice(0, ROUNDS_COUNT);
-    standbyShareText =
-      savedDaily.shareText ||
-      buildShareText({
-        seed: savedDaily.seed || localTodaySeed,
-        won: Boolean(savedDaily.won),
-        elapsed: Number(savedDaily.elapsed || 0),
-        lives,
-        squares,
-        practice: false,
-      });
+    standbyShareText = buildShareText({
+      seed: savedDaily.seed || localTodaySeed,
+      won: Boolean(savedDaily.won),
+      elapsed: Number(savedDaily.elapsed || 0),
+      lives,
+      squares,
+      practice: false,
+    });
 
     updateLivesDisplay();
     updateRoundIndicators();

@@ -2,7 +2,7 @@
 
 Daily procedural security terminal web game: **5 modules, 30.0 seconds, 3 shared lives**.
 
-Live: https://override.trifase.online
+Live: https://overridle.trifase.online
 
 ## Mechanics
 
