@@ -28,7 +28,7 @@ import * as pressure_purge from './modules/pressure_purge.js';
 import * as rotor_lock from './modules/rotor_lock.js';
 import * as valve_sequence from './modules/valve_sequence.js';
 
-export const TOTAL_TIME = 30.0;
+export const TOTAL_TIME = 60.0;
 export const MAX_LIVES = 3;
 export const ROUNDS_COUNT = 5;
 
@@ -127,6 +127,9 @@ function loadDailyRecord(targetSeed) {
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.squares)) {
+      return null;
+    }
+    if (parsed.timeLimit !== TOTAL_TIME) {
       return null;
     }
     return parsed;
@@ -371,6 +374,7 @@ function endGame(won) {
   if (!isPractice && seed === localTodaySeed) {
     saveDailyRecord(localTodaySeed, {
       seed,
+      timeLimit: TOTAL_TIME,
       won,
       elapsed: Number(elapsed.toFixed(1)),
       lives,

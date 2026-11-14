@@ -1,10 +1,10 @@
 import { shuffle } from '../prng.js';
 
-const FLASH_DURATION_MS = 1200;
+const FLASH_DURATION_MS = 1500;
 
 /**
  * Keycard Flash (memory_flash)
- * Osserva le 4 celle illuminate per 1.2s, poi selezionale sulla griglia 3x3.
+ * Osserva le 4 celle illuminate per 1.5s, poi selezionale sulla griglia 3x3.
  */
 export function mount(container, rng, { onWin, onMistake } = {}) {
   let destroyed = false;

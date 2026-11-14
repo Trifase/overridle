@@ -18,10 +18,10 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
     return id;
   }
 
-  const zoneWidth = 44 + rng() * 6;
+  const zoneWidth = 54 + rng() * 8;
   let zoneCenter = rng() * 360;
   let dir = rng() < 0.5 ? 1 : -1;
-  let speed = 185 + rng() * 40;
+  let speed = 150 + rng() * 30;
   let needleAngle = (zoneCenter + dir * (130 + rng() * 100) + 360) % 360;
 
   let pinsLocked = 0;
