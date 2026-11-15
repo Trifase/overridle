@@ -1742,6 +1742,10 @@ input {
   .crt-shell .ovr-rb-val {
     font-size: 16px;
   }
+  .crt-shell .ovr-rb-step-btn {
+    min-height: 44px;
+    font-size: 22px;
+  }
   .crt-shell .ovr-rb-exec {
     min-height: 54px;
     font-size: 17px;
@@ -1833,5 +1837,8 @@ input {
   }
   .crt-shell .ovr-rb-seg {
     height: 20px;
+  }
+  .crt-shell .ovr-rb-step-btn {
+    min-height: 36px;
   }
 }

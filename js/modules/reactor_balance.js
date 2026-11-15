@@ -132,7 +132,7 @@ export function mount(container, rng, callbacks = {}) {
       appearance: none;
       touch-action: manipulation;
       width: 100%;
-      height: 18px;
+      height: 15px;
       border: 1px solid rgba(0, 255, 102, 0.25);
       border-radius: 2px;
       background: rgba(0, 255, 102, 0.06);
@@ -149,6 +149,42 @@ export function mount(container, rng, callbacks = {}) {
       font-size: 13px;
       font-weight: 800;
       color: var(--crt-amber, #ffb000);
+    }
+    .ovr-rb-stepper {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+    }
+    .ovr-rb-step-btn {
+      appearance: none;
+      touch-action: manipulation;
+      min-height: 36px;
+      border: 1px solid rgba(0, 255, 102, 0.45);
+      border-radius: 3px;
+      background: rgba(0, 255, 102, 0.1);
+      color: var(--crt-green, #00ff66);
+      font-family: inherit;
+      font-size: 18px;
+      font-weight: 900;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      transition: background-color 80ms ease, border-color 80ms ease, transform 60ms ease;
+    }
+    .ovr-rb-step-btn:hover:not(:disabled) {
+      background: rgba(0, 255, 102, 0.2);
+      border-color: var(--crt-green, #00ff66);
+    }
+    .ovr-rb-step-btn:active:not(:disabled) {
+      transform: scale(0.95);
+    }
+    .ovr-rb-step-btn:disabled {
+      opacity: 0.35;
+      cursor: default;
     }
     .ovr-rb-exec {
       appearance: none;
@@ -225,13 +261,15 @@ export function mount(container, rng, callbacks = {}) {
     totalBar.classList.toggle('is-match', sum === total);
     totalBar.classList.toggle('is-over', sum !== total && sum > total);
 
-    colViews.forEach(({ segBtns, valEl }, sysIdx) => {
+    colViews.forEach(({ segBtns, valEl, minusBtn, plusBtn }, sysIdx) => {
       const lv = levels[sysIdx];
       valEl.textContent = `${lv} MW`;
       segBtns.forEach((btn, segLevelIdx) => {
         const segLevel = MAX_LEVEL - segLevelIdx; // top is 5, bottom is 1
         btn.classList.toggle('is-lit', segLevel <= lv);
       });
+      minusBtn.disabled = solved || lv <= 1;
+      plusBtn.disabled = solved || lv >= MAX_LEVEL;
     });
   };
 
@@ -273,9 +311,49 @@ export function mount(container, rng, callbacks = {}) {
     const valEl = document.createElement('div');
     valEl.className = 'ovr-rb-val';
 
-    col.append(nameEl, barsEl, valEl);
+    const stepperEl = document.createElement('div');
+    stepperEl.className = 'ovr-rb-stepper';
+
+    const minusBtn = document.createElement('button');
+    minusBtn.type = 'button';
+    minusBtn.className = 'ovr-rb-step-btn';
+    minusBtn.dataset.system = String(sysIdx);
+    minusBtn.dataset.dir = 'down';
+    minusBtn.textContent = '−';
+    minusBtn.setAttribute('aria-label', `${SYSTEM_NAMES[sysIdx]} diminuisci`);
+    minusBtn.addEventListener(
+      'click',
+      () => {
+        if (solved || disposed) return;
+        if (typeof window !== 'undefined' && window.__OVERRIDLE_PAUSED__) return;
+        levels[sysIdx] = Math.max(1, levels[sysIdx] - 1);
+        updateView();
+      },
+      { signal: ac.signal }
+    );
+
+    const plusBtn = document.createElement('button');
+    plusBtn.type = 'button';
+    plusBtn.className = 'ovr-rb-step-btn';
+    plusBtn.dataset.system = String(sysIdx);
+    plusBtn.dataset.dir = 'up';
+    plusBtn.textContent = '+';
+    plusBtn.setAttribute('aria-label', `${SYSTEM_NAMES[sysIdx]} aumenta`);
+    plusBtn.addEventListener(
+      'click',
+      () => {
+        if (solved || disposed) return;
+        if (typeof window !== 'undefined' && window.__OVERRIDLE_PAUSED__) return;
+        levels[sysIdx] = Math.min(MAX_LEVEL, levels[sysIdx] + 1);
+        updateView();
+      },
+      { signal: ac.signal }
+    );
+
+    stepperEl.append(minusBtn, plusBtn);
+    col.append(nameEl, barsEl, valEl, stepperEl);
     colsEl.appendChild(col);
-    colViews.push({ segBtns, valEl });
+    colViews.push({ segBtns, valEl, minusBtn, plusBtn });
   }
 
   const execBtn = document.createElement('button');
@@ -298,11 +376,13 @@ export function mount(container, rng, callbacks = {}) {
         solved = true;
         execBtn.classList.add('is-win');
         execBtn.disabled = true;
-        colViews.forEach(({ segBtns }) =>
+        colViews.forEach(({ segBtns, minusBtn, plusBtn }) => {
           segBtns.forEach((b) => {
             b.disabled = true;
-          })
-        );
+          });
+          minusBtn.disabled = true;
+          plusBtn.disabled = true;
+        });
         statusEl.className = 'ovr-rb-status is-ok';
         statusEl.textContent = 'NOCCIOLO BILANCIATO';
         if (typeof onWin === 'function') onWin();
