@@ -3,12 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#050a07">
+  <meta name="theme-color" content="#120e24">
   <title>OVERRIDLE // SECURITY TERMINAL</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%23050a07' stroke='%2300ff66' stroke-width='2'/%3E%3Ctext x='16' y='21' text-anchor='middle' font-family='monospace' font-weight='bold' font-size='14' fill='%2300ff66'%3EOV%3C/text%3E%3C/svg%3E">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%23120e24' stroke='%2300e5ff' stroke-width='2'/%3E%3Ctext x='16' y='21' text-anchor='middle' font-family='monospace' font-weight='bold' font-size='14' fill='%23ffbe0b'%3EOV%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen&family=VT323&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./css/terminal.css">
+  <link rel="stylesheet" href="./css/pixel16.css">
 </head>
-<body>
+<body class="theme-pixel16">
   <div id="flash-overlay" aria-hidden="true"></div>
   <div class="crt-scanlines" aria-hidden="true"></div>
 
@@ -16,10 +20,15 @@
     <header id="hud" class="hud">
       <div class="hud-top">
         <span id="seed-badge" class="seed-badge">#--------</span>
-        <div id="lives-display" class="lives-display" data-i18n-aria="aria_lives" aria-label="Remaining lives">❤️❤️❤️</div>
-        <button id="mute-btn" class="crt-btn crt-btn--sm hud-mute-btn" type="button" aria-pressed="false">[AUDIO ON]</button>
+        <div class="hud-util-actions">
+          <button id="pause-btn" class="crt-btn crt-btn--sm hud-pause-btn" type="button" aria-pressed="false" data-i18n="pause_btn" data-i18n-aria="aria_pause" aria-label="Pause (P)" hidden>[⏸ PAUSE]</button>
+          <button id="music-btn" class="crt-btn crt-btn--sm hud-music-btn" type="button" aria-pressed="false" aria-label="Toggle background music">[MUSIC ON]</button>
+          <button id="mute-btn" class="crt-btn crt-btn--sm hud-mute-btn" type="button" aria-pressed="false">[AUDIO ON]</button>
+        </div>
       </div>
       <div class="hud-bottom">
+        <div id="lives-display" class="lives-display" data-i18n-aria="aria_lives" aria-label="Remaining lives">❤️❤️❤️</div>
+        <div id="timer-display" class="timer-display" aria-live="off">36.0s</div>
         <div id="round-indicators" class="round-indicators" data-i18n-aria="aria_rounds" aria-label="5-module status">
           <span class="round-led" data-round="0">[1]</span>
           <span class="round-led" data-round="1">[2]</span>
@@ -27,10 +36,12 @@
           <span class="round-led" data-round="3">[4]</span>
           <span class="round-led" data-round="4">[5]</span>
         </div>
-        <button id="pause-btn" class="crt-btn crt-btn--sm hud-pause-btn" type="button" aria-pressed="false" data-i18n="pause_btn" data-i18n-aria="aria_pause" aria-label="Pause (P)" hidden>[⏸ PAUSE]</button>
-        <div id="timer-display" class="timer-display" aria-live="off">36.0s</div>
       </div>
     </header>
+
+    <div id="containment-stage" class="containment-stage" aria-hidden="true">
+      <canvas id="containment-canvas" class="containment-canvas" width="440" height="88"></canvas>
+    </div>
 
     <main id="stage" class="stage">
       <!-- STANDBY -->
@@ -149,5 +160,6 @@
   </div>
 
   <script type="module" src="./js/engine.js"></script>
+  <script type="module" src="./js/preview-fx.js"></script>
 </body>
 </html>

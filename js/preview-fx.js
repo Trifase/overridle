@@ -937,6 +937,221 @@ function enhanceFalloutMimics() {
   obs.observe(container, { childList: true, subtree: true });
 }
 
+function initBackgroundMusic() {
+  const BGM_MUTE_KEY = 'override30_bgm_mute';
+  const STEP_SEC = 0.155; // ~96 BPM 16th-note pulse
+  const LOOKAHEAD_SEC = 0.12;
+  const TARGET_GAIN = 0.042;
+
+  // D minor -> Bb major -> G minor -> A7 (calmed sci-fi bunker loop)
+  const PROGRESSION = [
+    { pad: [146.83, 220.0], arp: [146.83, 220.0, 261.63, 329.63] },
+    { pad: [116.54, 174.61], arp: [116.54, 174.61, 220.0, 293.66] },
+    { pad: [98.0, 146.83], arp: [98.0, 146.83, 174.61, 233.08] },
+    { pad: [110.0, 164.81], arp: [110.0, 164.81, 196.0, 277.18] },
+  ];
+  const ARP_INDEX = [0, -1, 1, -1, 2, -1, 3, -1, 1, -1, 2, -1, 0, -1, 3, 2];
+
+  const loadMuted = () => {
+    try {
+      const raw = window.localStorage.getItem(BGM_MUTE_KEY);
+      return raw === '1' || raw === 'true';
+    } catch {
+      return false;
+    }
+  };
+
+  const saveMuted = (val) => {
+    try {
+      window.localStorage.setItem(BGM_MUTE_KEY, val ? '1' : '0');
+    } catch {
+      // Ignore storage errors
+    }
+  };
+
+  let bgmMuted = loadMuted();
+  let ctx = null;
+  let masterGain = null;
+  let warmFilter = null;
+  let schedulerId = null;
+  let stepCounter = 0;
+  let nextNoteTime = 0;
+  let unlocked = false;
+
+  const musicBtn = document.getElementById('music-btn');
+
+  const updateMusicBtn = () => {
+    if (!musicBtn) return;
+    musicBtn.textContent = bgmMuted ? '[MUSIC OFF]' : '[MUSIC ON]';
+    musicBtn.setAttribute('aria-pressed', bgmMuted ? 'true' : 'false');
+    musicBtn.classList.toggle('is-muted', bgmMuted);
+  };
+
+  const ensureContext = () => {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return null;
+    if (!ctx) {
+      try {
+        ctx = new AudioCtx();
+        warmFilter = ctx.createBiquadFilter();
+        warmFilter.type = 'lowpass';
+        warmFilter.frequency.setValueAtTime(820, ctx.currentTime);
+        warmFilter.Q.setValueAtTime(0.7, ctx.currentTime);
+
+        masterGain = ctx.createGain();
+        masterGain.gain.setValueAtTime(bgmMuted ? 0 : TARGET_GAIN, ctx.currentTime);
+
+        warmFilter.connect(masterGain);
+        masterGain.connect(ctx.destination);
+      } catch {
+        ctx = null;
+        return null;
+      }
+    }
+    return ctx;
+  };
+
+  const schedulePad = (time, freqs) => {
+    const dur = STEP_SEC * 16;
+    freqs.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const env = ctx.createGain();
+      const peak = idx === 0 ? 0.22 : 0.14;
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, time);
+
+      env.gain.setValueAtTime(0.0001, time);
+      env.gain.linearRampToValueAtTime(peak, time + 0.35);
+      env.gain.setValueAtTime(peak * 0.85, time + dur - 0.45);
+      env.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+
+      osc.connect(env);
+      env.connect(warmFilter);
+
+      osc.start(time);
+      osc.stop(time + dur + 0.04);
+    });
+  };
+
+  const scheduleArp = (time, freq, accent) => {
+    const dur = STEP_SEC * 1.75;
+    const osc = ctx.createOscillator();
+    const env = ctx.createGain();
+    const peak = accent ? 0.32 : 0.22;
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(freq, time);
+
+    env.gain.setValueAtTime(0.0001, time);
+    env.gain.linearRampToValueAtTime(peak, time + 0.018);
+    env.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+
+    osc.connect(env);
+    env.connect(warmFilter);
+
+    osc.start(time);
+    osc.stop(time + dur + 0.03);
+  };
+
+  const tickScheduler = () => {
+    if (!ctx || bgmMuted || document.hidden || ctx.state !== 'running') return;
+    if (nextNoteTime < ctx.currentTime - 0.2) {
+      nextNoteTime = ctx.currentTime + 0.05;
+    }
+
+    while (nextNoteTime < ctx.currentTime + LOOKAHEAD_SEC) {
+      const barIdx = Math.floor(stepCounter / 16) % PROGRESSION.length;
+      const stepInBar = stepCounter % 16;
+      const chord = PROGRESSION[barIdx];
+
+      if (stepInBar === 0) {
+        schedulePad(nextNoteTime, chord.pad);
+      }
+      const arpNoteIdx = ARP_INDEX[stepInBar];
+      if (arpNoteIdx >= 0) {
+        scheduleArp(nextNoteTime, chord.arp[arpNoteIdx], stepInBar === 0);
+      }
+
+      nextNoteTime += STEP_SEC;
+      stepCounter = (stepCounter + 1) % (PROGRESSION.length * 16);
+    }
+  };
+
+  const startLoop = () => {
+    if (bgmMuted || document.hidden) return;
+    const c = ensureContext();
+    if (!c) return;
+    const run = () => {
+      if (bgmMuted || document.hidden) return;
+      if (masterGain) {
+        masterGain.gain.setTargetAtTime(TARGET_GAIN, c.currentTime, 0.06);
+      }
+      if (nextNoteTime <= c.currentTime) {
+        nextNoteTime = c.currentTime + 0.05;
+      }
+      if (schedulerId === null) {
+        schedulerId = window.setInterval(tickScheduler, 50);
+      }
+    };
+    if (c.state === 'suspended') {
+      c.resume().then(run).catch(() => {});
+    } else {
+      run();
+    }
+  };
+
+  const pauseLoop = () => {
+    if (schedulerId !== null) {
+      clearInterval(schedulerId);
+      schedulerId = null;
+    }
+    if (ctx && masterGain) {
+      masterGain.gain.setTargetAtTime(0, ctx.currentTime, 0.03);
+    }
+  };
+
+  const unlockAndStart = (event) => {
+    if (event && musicBtn && event.type === 'pointerdown' && musicBtn.contains(event.target)) {
+      return;
+    }
+    unlocked = true;
+    startLoop();
+  };
+
+  updateMusicBtn();
+
+  if (musicBtn) {
+    musicBtn.addEventListener('click', () => {
+      unlocked = true;
+      bgmMuted = !bgmMuted;
+      saveMuted(bgmMuted);
+      updateMusicBtn();
+      if (bgmMuted) {
+        pauseLoop();
+        if (ctx && ctx.state === 'running') {
+          ctx.suspend().catch(() => {});
+        }
+      } else {
+        startLoop();
+      }
+    });
+  }
+
+  document.addEventListener('pointerdown', unlockAndStart, { passive: true });
+  document.addEventListener('keydown', unlockAndStart, { passive: true });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      pauseLoop();
+      if (ctx && ctx.state === 'running') {
+        ctx.suspend().catch(() => {});
+      }
+    } else if (unlocked && !bgmMuted) {
+      startLoop();
+    }
+  });
+}
+
 function initPreviewFx() {
   enhanceLivesDisplay();
   enhanceRoundIndicators();
@@ -946,6 +1161,7 @@ function initPreviewFx() {
   enhanceTacticalMap();
   enhanceFalloutMimics();
   initContainmentAnimator();
+  initBackgroundMusic();
 }
 
 if (document.readyState === 'loading') {

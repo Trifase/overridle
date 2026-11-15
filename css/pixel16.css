@@ -125,6 +125,7 @@ body.theme-pixel16 input {
 }
 
 body.theme-pixel16 .hud-mute-btn,
+body.theme-pixel16 .hud-music-btn,
 body.theme-pixel16 .hud-pause-btn {
   min-height: 22px !important;
   min-width: 0 !important;
@@ -143,10 +144,27 @@ body.theme-pixel16 .hud-pause-btn.is-paused {
   box-shadow: inset 1px 1px 0 #fff0b3, 0 2px 0 var(--px-outline) !important;
 }
 
-body.theme-pixel16 .hud-mute-btn.is-muted {
+body.theme-pixel16 .hud-mute-btn.is-muted,
+body.theme-pixel16 .hud-music-btn.is-muted {
   background: linear-gradient(180deg, #ff5c82 0%, #b51237 100%) !important;
   color: #ffffff !important;
   box-shadow: inset 1px 1px 0 #ffa6ba, 0 2px 0 var(--px-outline) !important;
+}
+
+@media (max-width: 480px) {
+  body.theme-pixel16 .hud-util-actions {
+    gap: 4px;
+  }
+  body.theme-pixel16 .seed-badge {
+    font-size: 0.56rem;
+    padding: 2px 5px;
+  }
+  body.theme-pixel16 .hud-mute-btn,
+  body.theme-pixel16 .hud-music-btn,
+  body.theme-pixel16 .hud-pause-btn {
+    padding: 2px 5px !important;
+    font-size: 0.54rem !important;
+  }
 }
 
 body.theme-pixel16 .hud-bottom {
