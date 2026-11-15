@@ -1,0 +1,912 @@
+/* ==========================================================================
+   OVERRIDLE // 16-BIT PIXEL ARCADE THEME (Trivmount + Containment Mockup)
+   Scoped to body.theme-pixel16; overrides terminal.css + module inline styles.
+   ========================================================================== */
+
+body.theme-pixel16 {
+  --crt-bg: #151426;
+  --crt-panel: #272947;
+  --crt-border: #63699e;
+  --crt-green: #2ce8a2;
+  --crt-green-dim: #9aa0cf;
+  --crt-amber: #ffbe0b;
+  --crt-red: #ff2a55;
+  --crt-cyan: #00e5ff;
+  --crt-text: #f4f6ff;
+
+  --px-outline: #0d0d1a;
+  --px-steel-hi: #8f96cc;
+  --px-steel-mid: #53598a;
+  --px-steel-lo: #2e3152;
+  --px-screen-bg: #131224;
+  --px-screen-hi: #1d1b36;
+
+  --font-pixel: 'Press Start 2P', 'Silkscreen', monospace;
+  --font-ui: 'Silkscreen', 'JetBrains Mono', monospace;
+  --font-mono: 'Silkscreen', 'JetBrains Mono', Consolas, monospace;
+
+  background-color: #120e24;
+  background-image:
+    radial-gradient(circle at 50% 45%, rgba(18, 14, 36, 0.25) 0%, rgba(11, 9, 24, 0.72) 100%),
+    url('../assets/trivmount-bunker-bg.jpg');
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color: var(--crt-text);
+  font-family: var(--font-ui);
+}
+
+body.theme-pixel16 *,
+body.theme-pixel16 *::before,
+body.theme-pixel16 *::after {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+body.theme-pixel16 *::-webkit-scrollbar {
+  display: none;
+}
+
+/* Soften CRT scanlines so 16-bit colors stay bright */
+body.theme-pixel16 .crt-scanlines {
+  opacity: 0.14;
+}
+
+/* Central console shell */
+body.theme-pixel16 .crt-shell {
+  background: rgba(18, 17, 36, 0.94);
+  border: 3px solid var(--px-steel-mid);
+  box-shadow:
+    0 0 0 3px var(--px-outline),
+    0 18px 48px rgba(0, 0, 0, 0.85),
+    inset 0 0 24px rgba(0, 229, 255, 0.08);
+}
+
+@media (min-width: 768px) {
+  body.theme-pixel16 .crt-shell {
+    max-width: 540px;
+    height: min(95dvh, 880px);
+    border-radius: 6px;
+    border: 4px solid var(--px-steel-mid);
+    box-shadow:
+      0 0 0 3px var(--px-outline),
+      inset 2px 2px 0 var(--px-steel-hi),
+      0 22px 60px rgba(0, 0, 0, 0.88);
+  }
+}
+
+/* ==========================================================================
+   Mockup Metallic 16-bit HUD
+   ========================================================================== */
+body.theme-pixel16 .hud {
+  background: linear-gradient(180deg, #53598a 0%, #3d426b 100%);
+  border-bottom: 3px solid var(--px-outline);
+  padding: 4px 8px 6px;
+  gap: 4px;
+  box-shadow:
+    inset 0 2px 0 var(--px-steel-hi),
+    inset 0 -2px 0 #262945;
+}
+
+body.theme-pixel16 .hud-top {
+  gap: 6px;
+  min-height: 22px;
+}
+
+body.theme-pixel16 .hud-util-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+body.theme-pixel16 .seed-badge {
+  padding: 2px 6px;
+  font-size: 0.65rem;
+  font-family: var(--font-ui);
+  border: 2px solid var(--px-outline);
+  border-radius: 2px;
+  background: var(--px-screen-bg);
+  color: var(--crt-cyan);
+  box-shadow: inset 1px 1px 0 #090814;
+}
+
+body.theme-pixel16 .seed-badge.is-practice {
+  color: var(--crt-amber);
+  border-color: var(--px-outline);
+}
+
+body.theme-pixel16 .hud-mute-btn,
+body.theme-pixel16 .hud-pause-btn {
+  min-height: 22px;
+  min-width: auto;
+  padding: 2px 7px;
+  font-size: 0.62rem;
+}
+
+body.theme-pixel16 .hud-bottom {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: stretch;
+  gap: 6px;
+}
+
+/* Left bezel box: pixel hearts */
+body.theme-pixel16 .lives-display {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: #2f3354;
+  border: 2px solid var(--px-outline);
+  border-radius: 3px;
+  box-shadow:
+    inset 2px 2px 0 #4d5382,
+    inset -2px -2px 0 #1f2138;
+}
+
+body.theme-pixel16 .pixel-heart {
+  display: block;
+  width: 22px;
+  height: 20px;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 2px 0 #11101f);
+}
+
+/* Center recessed readout: 18.4s */
+body.theme-pixel16 .timer-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 96px;
+  padding: 4px 8px;
+  font-family: var(--font-pixel);
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: #00f0ff;
+  background: #121124;
+  border: 2px solid var(--px-outline);
+  border-radius: 3px;
+  box-shadow:
+    inset 2px 2px 0 #080712,
+    inset -1px -1px 0 #3a3f66;
+  text-shadow: 0 0 8px rgba(0, 240, 255, 0.55);
+}
+
+body.theme-pixel16 .timer-display.is-amber {
+  color: var(--crt-amber);
+  text-shadow: 0 0 8px rgba(255, 190, 11, 0.65);
+}
+
+body.theme-pixel16 .timer-display.is-critical {
+  color: var(--crt-red);
+  text-shadow: 0 0 10px rgba(255, 42, 85, 0.75);
+}
+
+/* Right bezel box: 5 circular glowing LEDs + numbers below */
+body.theme-pixel16 .round-indicators {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 4px 8px 10px;
+  background: #2f3354;
+  border: 2px solid var(--px-outline);
+  border-radius: 3px;
+  box-shadow:
+    inset 2px 2px 0 #4d5382,
+    inset -2px -2px 0 #1f2138;
+}
+
+body.theme-pixel16 .round-led {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid var(--px-outline);
+  background: radial-gradient(circle at 35% 35%, #555980 0%, #2b2e47 75%);
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.15);
+  font-size: 0;
+}
+
+body.theme-pixel16 .round-led::after {
+  content: attr(data-num);
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-ui);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  color: #c2c8f2;
+  text-shadow: 1px 1px 0 var(--px-outline);
+}
+
+body.theme-pixel16 .round-led.is-active {
+  background: radial-gradient(circle at 35% 35%, #9effda 0%, #2ce8a2 55%, #127a53 100%);
+  border-color: var(--px-outline);
+  box-shadow: 0 0 8px rgba(44, 232, 162, 0.8);
+}
+
+body.theme-pixel16 .round-led.is-active::before {
+  content: '▼';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 8px;
+  line-height: 1;
+  color: #00f0ff;
+  text-shadow: 0 1px 0 var(--px-outline);
+}
+
+body.theme-pixel16 .round-led.is-won {
+  background: radial-gradient(circle at 35% 35%, #9effda 0%, #2ce8a2 65%, #127a53 100%);
+  border-color: var(--px-outline);
+  box-shadow: 0 0 6px rgba(44, 232, 162, 0.65);
+}
+
+body.theme-pixel16 .round-led.is-lost {
+  background: radial-gradient(circle at 35% 35%, #ff9ebb 0%, #ff2a55 65%, #8f102b 100%);
+  border-color: var(--px-outline);
+  box-shadow: 0 0 6px rgba(255, 42, 85, 0.65);
+}
+
+/* ==========================================================================
+   Compact Containment Room Strip (Zero-Scroll Budget)
+   ========================================================================== */
+body.theme-pixel16 .containment-stage {
+  flex-shrink: 0;
+  background: #101224;
+  border-bottom: 3px solid var(--px-outline);
+  box-shadow: 0 2px 0 #2b2e4d;
+  overflow: hidden;
+}
+
+body.theme-pixel16 .containment-canvas {
+  display: block;
+  width: 100%;
+  height: 78px;
+  object-fit: cover;
+  object-position: center bottom;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+@media (min-width: 768px) and (min-height: 760px) {
+  body.theme-pixel16 .containment-canvas {
+    height: 102px;
+  }
+}
+
+@media (max-height: 690px) {
+  body.theme-pixel16 .containment-canvas {
+    height: 64px;
+  }
+}
+
+/* ==========================================================================
+   Stage & Screens (Zero Scroll)
+   ========================================================================== */
+body.theme-pixel16 .stage {
+  padding: 8px 10px;
+}
+
+body.theme-pixel16 #screen-standby {
+  justify-content: center;
+  gap: 8px;
+  overflow: hidden;
+}
+
+body.theme-pixel16 .terminal-tag {
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  color: var(--crt-cyan);
+  text-shadow: 1px 1px 0 var(--px-outline);
+}
+
+body.theme-pixel16 .terminal-title {
+  font-family: var(--font-pixel);
+  font-size: 1.45rem;
+  color: #ffd166;
+  text-shadow:
+    0 3px 0 #9e5000,
+    3px 3px 0 var(--px-outline),
+    0 0 18px rgba(255, 190, 11, 0.45);
+}
+
+@media (min-width: 768px) {
+  body.theme-pixel16 .terminal-title {
+    font-size: 1.95rem;
+  }
+  body.theme-pixel16 .stage {
+    padding: 12px 16px;
+  }
+}
+
+body.theme-pixel16 .standby-card,
+body.theme-pixel16 .end-card,
+body.theme-pixel16 .practice-card {
+  gap: 8px;
+  padding: 10px;
+}
+
+body.theme-pixel16 .briefing-text {
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+body.theme-pixel16 .briefing-sub {
+  font-size: 0.68rem;
+  color: var(--crt-green-dim);
+}
+
+/* Metallic 16-bit panel & Trivmount-inspired 3D buttons */
+body.theme-pixel16 .crt-panel {
+  background: linear-gradient(180deg, #323557 0%, #232540 100%);
+  border: 3px solid var(--px-outline);
+  border-radius: 4px;
+  box-shadow:
+    inset 2px 2px 0 #62689c,
+    inset -2px -2px 0 #191a30,
+    0 4px 0 rgba(10, 10, 22, 0.65);
+}
+
+body.theme-pixel16 .crt-btn {
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 2px solid var(--px-outline);
+  border-radius: 4px;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  color: var(--crt-text);
+  background: linear-gradient(180deg, #565d91 0%, #3d426b 100%);
+  text-shadow: 1px 1px 0 var(--px-outline);
+  box-shadow:
+    inset 2px 2px 0 #8a92cc,
+    inset -2px -2px 0 #2a2d4d,
+    0 3px 0 var(--px-outline);
+}
+
+body.theme-pixel16 .crt-btn:hover:not(:disabled) {
+  background: linear-gradient(180deg, #6870ad 0%, #4a5080 100%);
+  border-color: var(--px-outline);
+}
+
+body.theme-pixel16 .crt-btn:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow:
+    inset 2px 2px 0 rgba(0, 0, 0, 0.3),
+    0 1px 0 var(--px-outline);
+}
+
+/* Warm Trivmount gold-amber primary CTA */
+body.theme-pixel16 .crt-btn--primary {
+  color: #241200;
+  text-shadow: 0 1px 0 rgba(255, 240, 190, 0.65);
+  background: linear-gradient(180deg, #ffe07d 0%, #ffb02e 55%, #e87a00 100%);
+  border-color: var(--px-outline);
+  box-shadow:
+    inset 2px 2px 0 #fff3ba,
+    inset -2px -2px 0 #b85d00,
+    0 4px 0 var(--px-outline);
+}
+
+body.theme-pixel16 .crt-btn--primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, #ffe89e 0%, #ffbe4d 55%, #f5880a 100%);
+  box-shadow:
+    inset 2px 2px 0 #fff7d1,
+    inset -2px -2px 0 #b85d00,
+    0 4px 0 var(--px-outline),
+    0 0 14px rgba(255, 190, 11, 0.45);
+}
+
+body.theme-pixel16 .crt-btn--amber {
+  color: #1c1200;
+  text-shadow: none;
+  background: linear-gradient(180deg, #ffcf56 0%, #f09c00 100%);
+  box-shadow:
+    inset 2px 2px 0 #ffe9a8,
+    inset -2px -2px 0 #a86b00,
+    0 3px 0 var(--px-outline);
+}
+
+body.theme-pixel16 .crt-btn--cyan {
+  color: #041d26;
+  text-shadow: none;
+  background: linear-gradient(180deg, #6ef5ff 0%, #00c4de 100%);
+  box-shadow:
+    inset 2px 2px 0 #b8fbff,
+    inset -2px -2px 0 #008299,
+    0 3px 0 var(--px-outline);
+}
+
+body.theme-pixel16 .crt-btn--danger {
+  color: #ffffff;
+  background: linear-gradient(180deg, #ff5c82 0%, #d41542 100%);
+  box-shadow:
+    inset 2px 2px 0 #ffa6ba,
+    inset -2px -2px 0 #8c0b29,
+    0 3px 0 var(--px-outline);
+}
+
+body.theme-pixel16 .crt-btn--lg {
+  min-height: 40px;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+}
+
+body.theme-pixel16 .autopause-toggle {
+  padding: 6px 10px;
+  border: 2px solid var(--px-outline);
+  background: #232540;
+}
+
+body.theme-pixel16 .autopause-text {
+  font-size: 0.68rem;
+}
+
+body.theme-pixel16 .lang-selector {
+  padding: 6px 10px;
+}
+
+body.theme-pixel16 .lang-label {
+  font-size: 0.68rem;
+}
+
+body.theme-pixel16 .lang-btn.is-active {
+  background: linear-gradient(180deg, #52f7ba 0%, #1bb87e 100%);
+  color: #082419;
+  text-shadow: none;
+  border-color: var(--px-outline);
+}
+
+/* Practice grid compact zero-scroll */
+body.theme-pixel16 .practice-title {
+  font-family: var(--font-pixel);
+  font-size: 1rem;
+  color: var(--crt-amber);
+}
+
+body.theme-pixel16 .practice-mod-btn {
+  min-height: 40px;
+  padding: 4px;
+  background: linear-gradient(180deg, #3c4069 0%, #2a2d4d 100%);
+  border-color: var(--px-outline);
+}
+
+@media (min-width: 768px) {
+  body.theme-pixel16 .practice-mod-btn {
+    min-height: 44px;
+    padding: 5px 6px;
+  }
+}
+
+body.theme-pixel16 .practice-mod-name {
+  font-size: 0.6rem;
+}
+
+/* ==========================================================================
+   Active Playing Console Frame (Mockup Bottom Unit)
+   ========================================================================== */
+body.theme-pixel16 #screen-playing {
+  gap: 0;
+  background: linear-gradient(180deg, #686fa3 0%, #4d5380 100%);
+  border: 3px solid var(--px-outline);
+  border-radius: 6px;
+  padding: 6px;
+  box-shadow:
+    inset 3px 3px 0 #9da5db,
+    inset -3px -3px 0 #2e3252,
+    0 5px 0 var(--px-outline);
+}
+
+body.theme-pixel16 .module-meta {
+  flex-shrink: 0;
+  margin: 0 auto 6px;
+  padding: 6px 14px;
+  width: 92%;
+  text-align: center;
+  font-family: var(--font-pixel);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  color: #ffffff;
+  background: #161529;
+  border: 2px solid var(--px-outline);
+  border-radius: 3px;
+  box-shadow:
+    inset 2px 2px 0 #090814,
+    0 2px 0 #8a92cc;
+  text-shadow: 0 2px 0 var(--px-outline);
+}
+
+@media (min-width: 768px) {
+  body.theme-pixel16 .module-meta {
+    font-size: 0.82rem;
+    padding: 8px 16px;
+  }
+}
+
+body.theme-pixel16 .playing-stage {
+  background: #1a1930;
+  border: 3px solid var(--px-outline);
+  border-radius: 4px;
+  box-shadow:
+    inset 3px 3px 0 #0d0c1a,
+    inset -2px -2px 0 #3f446b;
+  padding: 6px;
+}
+
+body.theme-pixel16 .module-container {
+  justify-content: center;
+  align-items: center;
+}
+
+body.theme-pixel16 .pause-overlay {
+  background: #161529;
+  border: 3px solid var(--crt-cyan);
+  padding: 12px;
+  gap: 8px;
+}
+
+body.theme-pixel16 .pause-title {
+  font-family: var(--font-pixel);
+  font-size: 0.9rem;
+}
+
+/* ==========================================================================
+   All 15 Minigames 16-Bit Restyling (Overrides inline module <style>)
+   ========================================================================== */
+
+/* Shared overrides across every module shell */
+body.theme-pixel16 .crt-shell [class^='ovr-'] {
+  font-family: var(--font-ui) !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-wires,
+body.theme-pixel16 .crt-shell .ovr-bin,
+body.theme-pixel16 .crt-shell .ovr-math,
+body.theme-pixel16 .crt-shell .ovr-glyph,
+body.theme-pixel16 .crt-shell .ovr-fh,
+body.theme-pixel16 .crt-shell .ovr-mf,
+body.theme-pixel16 .crt-shell .ovr-fa,
+body.theme-pixel16 .crt-shell .ovr-pp,
+body.theme-pixel16 .crt-shell .ovr-rl,
+body.theme-pixel16 .crt-shell .ovr-vs,
+body.theme-pixel16 .crt-shell .ovr-tm,
+body.theme-pixel16 .crt-shell .ovr-ms,
+body.theme-pixel16 .crt-shell .ovr-so,
+body.theme-pixel16 .crt-shell .ovr-st,
+body.theme-pixel16 .crt-shell .ovr-rb {
+  padding: 4px 6px !important;
+  gap: 7px !important;
+  color: var(--crt-text) !important;
+}
+
+/* 1. WIRES: Thick 3D cables + chunky metallic terminal pins */
+body.theme-pixel16 .crt-shell .ovr-wires-rule {
+  background: #111021 !important;
+  border: 2px solid #565c8c !important;
+  border-left: 5px solid var(--crt-amber) !important;
+  padding: 6px 8px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-wires-tag {
+  font-family: var(--font-pixel) !important;
+  font-size: 8px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-wires-rule-text {
+  font-size: 12px !important;
+  color: #ffffff !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-wire-btn {
+  min-height: 40px !important;
+  padding: 4px 8px !important;
+  background: #22233d !important;
+  border: 2px solid var(--px-outline) !important;
+  box-shadow: inset 2px 2px 0 #3f4370, 0 3px 0 var(--px-outline) !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-wire-pin {
+  width: 12px !important;
+  height: 22px !important;
+  flex: 0 0 12px !important;
+  background: linear-gradient(180deg, #98a0d6 0%, #525782 55%, #343859 100%) !important;
+  border: 2px solid var(--px-outline) !important;
+  border-radius: 2px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-wire-span {
+  height: 12px !important;
+  border-top: 3px solid rgba(255, 255, 255, 0.45) !important;
+  border-bottom: 3px solid rgba(0, 0, 0, 0.55) !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-wire-label {
+  background: #121124 !important;
+  border: 2px solid #565c8c !important;
+  font-family: var(--font-pixel) !important;
+  font-size: 9px !important;
+}
+
+/* 2. BINARY SWITCHES: Mockup-exact TARGET box + 3D cyan/slate toggle levers */
+body.theme-pixel16 .crt-shell .ovr-bin {
+  gap: 8px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-bin-header {
+  background: #272947 !important;
+  border: 2px solid var(--px-outline) !important;
+  box-shadow: inset 2px 2px 0 #53598a, 0 3px 0 var(--px-outline) !important;
+  padding: 6px 8px !important;
+  gap: 5px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-bin-sub {
+  font-family: var(--font-pixel) !important;
+  font-size: 8px !important;
+  color: var(--crt-cyan) !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-bin-box {
+  background: #101021 !important;
+  border: 2px solid var(--px-outline) !important;
+  box-shadow: inset 2px 2px 0 #070612, 0 1px 0 #62689c !important;
+  padding: 5px 6px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-bin-box.is-target {
+  border-color: var(--px-outline) !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-bin-box-lbl {
+  font-family: var(--font-pixel) !important;
+  font-size: 8px !important;
+  color: #8f96cc !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-bin-box-val {
+  font-family: var(--font-pixel) !important;
+  font-size: 18px !important;
+  color: #00f0ff !important;
+  text-shadow: 0 0 8px rgba(0, 240, 255, 0.55) !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-bin-box.is-target .ovr-bin-box-val {
+  color: var(--crt-amber) !important;
+  text-shadow: 0 0 8px rgba(255, 190, 11, 0.5) !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-bin-grid {
+  gap: 5px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-bin-sw {
+  min-height: 118px !important;
+  padding: 6px 2px !important;
+  background: linear-gradient(180deg, #3b3f69 0%, #262945 100%) !important;
+  border: 2px solid var(--px-outline) !important;
+  box-shadow: inset 2px 2px 0 #676ea8, 0 3px 0 var(--px-outline) !important;
+  color: var(--crt-text) !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-bin-weight {
+  font-family: var(--font-pixel) !important;
+  font-size: 10px !important;
+  color: #ffffff !important;
+  text-shadow: 1px 1px 0 var(--px-outline) !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-bin-led {
+  width: 18px !important;
+  height: 6px !important;
+  border-radius: 2px !important;
+  border: 1px solid var(--px-outline) !important;
+  background: #471422 !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-bin-track {
+  width: 26px !important;
+  height: 46px !important;
+  background: #101021 !important;
+  border: 2px solid var(--px-outline) !important;
+  box-shadow: inset 2px 2px 0 #070612 !important;
+  padding: 2px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-bin-thumb {
+  height: 22px !important;
+  background: linear-gradient(180deg, #a3abd9 0%, #636a99 100%) !important;
+  border: 1px solid var(--px-outline) !important;
+  box-shadow: inset 1px 1px 0 #d5dcff !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-bin-sw.is-on {
+  background: linear-gradient(180deg, #43497a 0%, #2b2f52 100%) !important;
+  border-color: var(--px-outline) !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-bin-sw.is-on .ovr-bin-led {
+  background: #00f5d4 !important;
+  box-shadow: 0 0 8px #00f5d4 !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-bin-sw.is-on .ovr-bin-track {
+  border-color: var(--px-outline) !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-bin-sw.is-on .ovr-bin-thumb {
+  background: linear-gradient(180deg, #6ef7ff 0%, #00b8d4 100%) !important;
+  box-shadow: inset 1px 1px 0 #c9fcff, 0 0 8px rgba(0, 229, 255, 0.5) !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-bin-sw.is-on .ovr-bin-state {
+  color: #00f5d4 !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-bin-exec {
+  min-height: 42px !important;
+  font-family: var(--font-pixel) !important;
+  font-size: 12px !important;
+  color: #141526 !important;
+  border: 2px solid var(--px-outline) !important;
+  background: linear-gradient(180deg, #b5bce6 0%, #7d85b8 65%, #5b6294 100%) !important;
+  box-shadow: inset 2px 2px 0 #e6eaff, inset -2px -2px 0 #444a75, 0 4px 0 var(--px-outline) !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-bin-exec:active:not(:disabled) {
+  transform: translateY(2px) !important;
+  box-shadow: inset 2px 2px 0 rgba(0, 0, 0, 0.25), 0 1px 0 var(--px-outline) !important;
+}
+
+/* 3-15. Unified 16-bit Console Panels, Recessed Displays, & 3D Arcade Keycaps */
+body.theme-pixel16 .crt-shell .ovr-math-header,
+body.theme-pixel16 .crt-shell .ovr-glyph-rule,
+body.theme-pixel16 .crt-shell .ovr-fh-head,
+body.theme-pixel16 .crt-shell .ovr-fh-dump,
+body.theme-pixel16 .crt-shell .ovr-fa-head,
+body.theme-pixel16 .crt-shell .ovr-fa-ctrl,
+body.theme-pixel16 .crt-shell .ovr-pp-head,
+body.theme-pixel16 .crt-shell .ovr-pp-card,
+body.theme-pixel16 .crt-shell .ovr-rl-head,
+body.theme-pixel16 .crt-shell .ovr-vs-head,
+body.theme-pixel16 .crt-shell .ovr-tm-rule,
+body.theme-pixel16 .crt-shell .ovr-tm-board,
+body.theme-pixel16 .crt-shell .ovr-ms-rule,
+body.theme-pixel16 .crt-shell .ovr-ms-box,
+body.theme-pixel16 .crt-shell .ovr-so-rule,
+body.theme-pixel16 .crt-shell .ovr-so-display,
+body.theme-pixel16 .crt-shell .ovr-st-rule,
+body.theme-pixel16 .crt-shell .ovr-st-transmitter,
+body.theme-pixel16 .crt-shell .ovr-rb-rule,
+body.theme-pixel16 .crt-shell .ovr-rb-total,
+body.theme-pixel16 .crt-shell .ovr-rb-col {
+  background: #131224 !important;
+  border: 2px solid #565c8c !important;
+  box-shadow: inset 2px 2px 0 #080712 !important;
+  border-radius: 4px !important;
+}
+
+/* Digital readouts in Press Start 2P */
+body.theme-pixel16 .crt-shell .ovr-math-expr,
+body.theme-pixel16 .crt-shell .ovr-tm-target,
+body.theme-pixel16 .crt-shell .ovr-ms-val,
+body.theme-pixel16 .crt-shell .ovr-ms-wval,
+body.theme-pixel16 .crt-shell .ovr-pp-val,
+body.theme-pixel16 .crt-shell .ovr-rb-val,
+body.theme-pixel16 .crt-shell .ovr-so-word,
+body.theme-pixel16 .crt-shell .ovr-st-tx-text {
+  font-family: var(--font-pixel) !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-tm-target {
+  background: #101021 !important;
+  border: 2px solid var(--crt-cyan) !important;
+  color: var(--crt-cyan) !important;
+}
+
+/* 3D Arcade Keycap Buttons across all grid/token/weight/valve modules */
+body.theme-pixel16 .crt-shell .ovr-math-btn,
+body.theme-pixel16 .crt-shell .ovr-glyph-cell,
+body.theme-pixel16 .crt-shell .ovr-fh-tok,
+body.theme-pixel16 .crt-shell .ovr-mf-cell,
+body.theme-pixel16 .crt-shell .ovr-vs-card,
+body.theme-pixel16 .crt-shell .ovr-tm-cell,
+body.theme-pixel16 .crt-shell .ovr-ms-weight,
+body.theme-pixel16 .crt-shell .ovr-so-btn,
+body.theme-pixel16 .crt-shell .ovr-st-ch,
+body.theme-pixel16 .crt-shell .ovr-rb-step-btn {
+  background: linear-gradient(180deg, #424775 0%, #2a2d4d 100%) !important;
+  border: 2px solid var(--px-outline) !important;
+  box-shadow:
+    inset 2px 2px 0 #6f76b3,
+    inset -2px -2px 0 #1c1e36,
+    0 3px 0 var(--px-outline) !important;
+  color: #ffffff !important;
+  border-radius: 4px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-math-btn:active:not(:disabled),
+body.theme-pixel16 .crt-shell .ovr-glyph-cell:active:not(:disabled),
+body.theme-pixel16 .crt-shell .ovr-fh-tok:active:not(:disabled),
+body.theme-pixel16 .crt-shell .ovr-mf-cell:active:not(:disabled),
+body.theme-pixel16 .crt-shell .ovr-vs-card:active:not(:disabled),
+body.theme-pixel16 .crt-shell .ovr-tm-cell:active:not(:disabled),
+body.theme-pixel16 .crt-shell .ovr-ms-weight:active:not(:disabled),
+body.theme-pixel16 .crt-shell .ovr-so-btn:active:not(:disabled),
+body.theme-pixel16 .crt-shell .ovr-st-ch:active:not(:disabled),
+body.theme-pixel16 .crt-shell .ovr-rb-step-btn:active:not(:disabled) {
+  transform: translateY(2px) !important;
+  box-shadow: inset 2px 2px 0 rgba(0, 0, 0, 0.35), 0 1px 0 var(--px-outline) !important;
+}
+
+/* Primary action buttons inside Pressure Purge, Rotor Lock, Reactor Balance */
+body.theme-pixel16 .crt-shell .ovr-pp-btn,
+body.theme-pixel16 .crt-shell .ovr-rl-btn,
+body.theme-pixel16 .crt-shell .ovr-rb-exec {
+  border: 2px solid var(--px-outline) !important;
+  font-family: var(--font-pixel) !important;
+  font-size: 11px !important;
+  color: #241200 !important;
+  background: linear-gradient(180deg, #ffe07d 0%, #ffb02e 55%, #e87a00 100%) !important;
+  box-shadow:
+    inset 2px 2px 0 #fff3ba,
+    inset -2px -2px 0 #b85d00,
+    0 4px 0 var(--px-outline) !important;
+}
+
+/* Compact height safeguards for active modules so nothing ever clips or scrolls */
+@media (max-height: 820px) {
+  body.theme-pixel16 .crt-shell .ovr-bin-sw {
+    min-height: 102px !important;
+  }
+  body.theme-pixel16 .crt-shell .ovr-fa-scope-wrap {
+    height: 156px !important;
+  }
+  body.theme-pixel16 .crt-shell .ovr-pp-body {
+    height: 172px !important;
+  }
+  body.theme-pixel16 .crt-shell .ovr-rl-dial-wrap,
+  body.theme-pixel16 .crt-shell .ovr-rl-canvas {
+    width: 180px !important;
+    height: 180px !important;
+  }
+  body.theme-pixel16 .crt-shell .ovr-mf-grid {
+    grid-template-columns: repeat(3, 80px) !important;
+    grid-template-rows: repeat(3, 80px) !important;
+    gap: 8px !important;
+  }
+  body.theme-pixel16 .crt-shell .ovr-mf-cell {
+    width: 80px !important;
+    height: 80px !important;
+  }
+}
+
+/* Stroop swatches keep vibrant legible contrast */
+body.theme-pixel16 .crt-shell .ovr-so-btn {
+  text-shadow: 1px 1px 0 var(--px-outline) !important;
+}
+
+/* Reactor Balance segmented bars */
+body.theme-pixel16 .crt-shell .ovr-rb-seg {
+  border: 1px solid var(--px-outline) !important;
+  background: #1f213b !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-rb-seg.is-lit {
+  background: #00e5ff !important;
+  box-shadow: 0 0 6px rgba(0, 229, 255, 0.55) !important;
+}
+
+/* Tactical Map axes */
+body.theme-pixel16 .crt-shell .ovr-tm-axis {
+  color: var(--crt-amber) !important;
+  font-family: var(--font-pixel) !important;
+  font-size: 11px !important;
+}
