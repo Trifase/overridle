@@ -1381,7 +1381,10 @@ body.theme-pixel16 .crt-shell .ovr-rb-exec {
     min-height: 102px !important;
   }
   body.theme-pixel16 .crt-shell .ovr-fa-scope-wrap {
-    height: 156px !important;
+    height: 120px !important;
+  }
+  body.theme-pixel16 .crt-shell .ovr-fa[data-variant="waveform"] .ovr-fa-scope-wrap {
+    height: 102px !important;
   }
   body.theme-pixel16 .crt-shell .ovr-pp-body {
     height: 172px !important;
@@ -1570,4 +1573,125 @@ body.theme-pixel16 .crt-shell .ovr-rb-status {
 
 body.theme-pixel16 .crt-shell .ovr-rb-status.is-err {
   color: var(--crt-red) !important;
+}
+
+/* Frequency Align (.ovr-fa): dual sliders + 4-button waveform selector */
+body.theme-pixel16 .crt-shell .ovr-fa {
+  padding: 4px 6px !important;
+  gap: 5px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-fa .ovr-variant-banner {
+  padding: 4px 8px !important;
+  font-size: 10.5px !important;
+  line-height: 1.25 !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-fa-head {
+  padding: 4px 8px !important;
+  font-size: 11px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-fa-scope-wrap {
+  border: 2px solid #565c8c !important;
+  box-shadow: inset 2px 2px 0 #020503 !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-fa-lock-head {
+  font-size: 10.5px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-fa-wave-row {
+  gap: 6px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-fa-wave-btn {
+  height: 32px !important;
+  gap: 4px !important;
+  padding: 0 3px !important;
+  background: linear-gradient(180deg, #424775 0%, #2a2d4d 100%) !important;
+  border: 2px solid var(--px-outline) !important;
+  box-shadow:
+    inset 2px 2px 0 #6f76b3,
+    inset -2px -2px 0 #1c1e36,
+    0 3px 0 var(--px-outline) !important;
+  color: #cfd5f5 !important;
+  font-family: var(--font-ui) !important;
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  border-radius: 4px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-fa-wave-btn:active:not(:disabled) {
+  transform: translateY(2px) !important;
+  box-shadow: inset 2px 2px 0 rgba(0, 0, 0, 0.35), 0 1px 0 var(--px-outline) !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-fa-wave-btn.is-active {
+  background: linear-gradient(180deg, #1b6982 0%, #0d4154 100%) !important;
+  border-color: #36e8ff !important;
+  color: #7df4ff !important;
+  box-shadow:
+    inset 2px 2px 0 #5bf0ff,
+    inset -2px -2px 0 #082936,
+    0 0 10px rgba(54, 232, 255, 0.6),
+    0 2px 0 var(--px-outline) !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-fa-ctrl {
+  padding: 5px 8px !important;
+  gap: 4px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-fa-slider-lbl,
+body.theme-pixel16 .crt-shell .ovr-fa-slider-val {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-fa-slider {
+  height: 28px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-fa-slider::-webkit-slider-runnable-track {
+  height: 10px !important;
+  background: #0a0a18 !important;
+  border: 2px solid #565c8c !important;
+  border-radius: 3px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-fa-slider::-webkit-slider-thumb {
+  width: 24px !important;
+  height: 24px !important;
+  margin-top: -9px !important;
+  border-radius: 3px !important;
+  background: linear-gradient(180deg, #5cff9e 0%, #1cc964 100%) !important;
+  border: 2px solid var(--px-outline) !important;
+  box-shadow: inset 1px 1px 0 #b3ffd1, 0 0 8px rgba(56, 255, 142, 0.6) !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-fa-slider::-moz-range-track {
+  height: 10px !important;
+  background: #0a0a18 !important;
+  border: 2px solid #565c8c !important;
+  border-radius: 3px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-fa-slider::-moz-range-thumb {
+  width: 24px !important;
+  height: 24px !important;
+  border-radius: 3px !important;
+  background: linear-gradient(180deg, #5cff9e 0%, #1cc964 100%) !important;
+  border: 2px solid var(--px-outline) !important;
+  box-shadow: inset 1px 1px 0 #b3ffd1, 0 0 8px rgba(56, 255, 142, 0.6) !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-fa-slider-row.is-match .ovr-fa-slider::-webkit-slider-thumb {
+  background: linear-gradient(180deg, #6ef7ff 0%, #00b8d4 100%) !important;
+  box-shadow: inset 1px 1px 0 #c9fcff, 0 0 10px rgba(0, 229, 255, 0.75) !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-fa-slider-row.is-match .ovr-fa-slider::-moz-range-thumb {
+  background: linear-gradient(180deg, #6ef7ff 0%, #00b8d4 100%) !important;
+  box-shadow: inset 1px 1px 0 #c9fcff, 0 0 10px rgba(0, 229, 255, 0.75) !important;
 }
