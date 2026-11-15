@@ -741,12 +741,104 @@ function enhancePressurePurgeStages() {
   obs.observe(container, { childList: true, subtree: true, characterData: true });
 }
 
+function enhanceTacticalMap() {
+  const container = document.getElementById('module-container');
+  if (!container) return;
+
+  const SYM_TO_GREEK = {
+    '▲': 'α',
+    '◆': 'β',
+    '●': 'γ',
+    '★': 'Ψ',
+    '✚': 'Ω',
+  };
+
+  const syncMap = () => {
+    const tm = container.querySelector('.ovr-tm[data-mode="2"]');
+    if (!tm) return;
+
+    if (!tm.dataset.pxEnhanced) {
+      const board = tm.querySelector('.ovr-tm-board');
+      if (!board) return;
+      const axes = board.querySelectorAll('.ovr-tm-axis');
+      if (axes.length < 10) return;
+
+      const colAxes = Array.from(axes).slice(0, 5);
+      const rowAxes = Array.from(axes).slice(5, 10);
+      const origCols = colAxes.map((el) => (el.textContent || '').trim());
+      const rowSymbols = origCols.map((_, idx) => origCols[(idx + 2) % 5]);
+
+      const coordMap = {};
+      for (let c = 0; c < 5; c++) {
+        const sym = origCols[c];
+        const greek = SYM_TO_GREEK[sym] || sym;
+        colAxes[c].textContent = greek;
+        for (let r = 0; r < 5; r++) {
+          const rowSym = rowSymbols[r];
+          coordMap[`${sym}-${r + 1}`] = `${greek}${rowSym}`;
+        }
+      }
+
+      for (let r = 0; r < 5; r++) {
+        rowAxes[r].textContent = rowSymbols[r];
+      }
+
+      tm.querySelectorAll('.ovr-tm-target').forEach((badge) => {
+        const raw = (badge.textContent || '').trim();
+        if (coordMap[raw]) {
+          badge.textContent = coordMap[raw];
+        }
+      });
+
+      tm.querySelectorAll('.ovr-tm-cell').forEach((cell) => {
+        const raw = cell.dataset.coord || '';
+        if (coordMap[raw]) {
+          cell.dataset.coord = coordMap[raw];
+        }
+      });
+
+      const ruleEl = tm.querySelector('.ovr-tm-rule');
+      if (ruleEl) {
+        const rTxt = (ruleEl.textContent || '').trim();
+        if (rTxt.includes('SYMBOL AXES')) {
+          ruleEl.textContent = 'SYMBOL AXES: CROSS COLUMN GREEK LETTER AND ROW SYMBOL';
+        } else if (rTxt.includes('ASSI SIMBOLICI')) {
+          ruleEl.textContent = 'ASSI SIMBOLICI: INCROCIA LETTERA GRECA E SIMBOLO RIGA';
+        }
+      }
+
+      tm._pxCoordMap = coordMap;
+      tm.dataset.pxEnhanced = '1';
+    }
+
+    if (tm._pxCoordMap) {
+      const statusEl = tm.querySelector('.ovr-tm-status');
+      if (statusEl && statusEl.textContent) {
+        let sTxt = statusEl.textContent;
+        for (const [oldCoord, newCoord] of Object.entries(tm._pxCoordMap)) {
+          if (sTxt.includes(oldCoord)) {
+            sTxt = sTxt.replace(oldCoord, newCoord);
+          }
+        }
+        if (statusEl.textContent !== sTxt) {
+          statusEl.textContent = sTxt;
+        }
+      }
+    }
+  };
+
+  syncMap();
+  const obs = new MutationObserver(syncMap);
+  obs.observe(container, { childList: true, subtree: true, characterData: true });
+}
+
 function initPreviewFx() {
   enhanceLivesDisplay();
   enhanceRoundIndicators();
   enhanceModuleMeta();
   enhanceWiresLabels();
   enhancePressurePurgeStages();
+  enhanceTacticalMap();
   initContainmentAnimator();
 }
 

@@ -1373,9 +1373,49 @@ body.theme-pixel16 .crt-shell .ovr-rb-seg.is-lit {
   box-shadow: 0 0 6px rgba(0, 229, 255, 0.55) !important;
 }
 
-/* Tactical Map axes */
+/* Tactical Map (.ovr-tm): larger axes, transparent terrain decor, & lit hit states */
 body.theme-pixel16 .crt-shell .ovr-tm-axis {
   color: var(--crt-amber) !important;
-  font-family: var(--font-pixel) !important;
-  font-size: 11px !important;
+  font-family: var(--font-ui) !important;
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-tm-target {
+  font-family: var(--font-ui) !important;
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  line-height: 1.1 !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-tm-target.is-done {
+  background: linear-gradient(180deg, #1b4d3e 0%, #102e24 100%) !important;
+  border-color: var(--crt-green) !important;
+  color: var(--crt-green) !important;
+  text-decoration: line-through !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-tm-cell:not(.is-hit):not(.is-err) {
+  color: rgba(180, 190, 235, 0.24) !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-tm-cell.is-hit {
+  background: linear-gradient(180deg, #1b5c3e 0%, #103825 100%) !important;
+  border-color: var(--crt-green) !important;
+  color: var(--crt-green) !important;
+  font-size: 16px !important;
+  box-shadow:
+    inset 2px 2px 0 #38ff8e,
+    0 2px 0 var(--px-outline) !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-tm-cell.is-err {
+  background: linear-gradient(180deg, #7a1c29 0%, #4a0e17 100%) !important;
+  border-color: var(--crt-red) !important;
+  color: #ff8a9b !important;
+  box-shadow:
+    inset 2px 2px 0 #ff5268,
+    0 2px 0 var(--px-outline) !important;
 }
