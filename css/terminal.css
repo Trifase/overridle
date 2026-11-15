@@ -339,6 +339,83 @@ input {
   font-weight: 700;
 }
 
+/* Auto-pause toggle */
+.autopause-toggle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  border: 1px solid rgba(0, 229, 255, 0.35);
+  border-radius: 4px;
+  background: rgba(0, 229, 255, 0.05);
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.autopause-toggle:hover {
+  border-color: rgba(0, 229, 255, 0.7);
+  background: rgba(0, 229, 255, 0.1);
+}
+
+.autopause-toggle--compact {
+  padding: 5px 8px;
+  gap: 7px;
+}
+
+.autopause-input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  pointer-events: none;
+}
+
+.autopause-box {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--crt-border);
+  border-radius: 3px;
+  background: #040906;
+  color: var(--crt-green);
+  font-size: 0.84rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.autopause-box::before {
+  content: ' ';
+}
+
+.autopause-input:checked + .autopause-box {
+  border-color: var(--crt-green);
+  background: rgba(0, 255, 102, 0.16);
+  box-shadow: 0 0 8px rgba(0, 255, 102, 0.25);
+}
+
+.autopause-input:checked + .autopause-box::before {
+  content: '✓';
+}
+
+.autopause-input:focus-visible + .autopause-box {
+  outline: 2px solid var(--crt-cyan);
+  outline-offset: 2px;
+}
+
+.autopause-text {
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--crt-cyan);
+  line-height: 1.2;
+}
+
 /* Practice selector screen */
 #screen-practice {
   justify-content: center;
@@ -1048,6 +1125,25 @@ input {
     font-size: 0.9rem;
   }
 
+  .autopause-toggle {
+    padding: 11px 14px;
+    gap: 10px;
+  }
+
+  .autopause-toggle--compact {
+    padding: 8px 12px;
+  }
+
+  .autopause-box {
+    width: 24px;
+    height: 24px;
+    font-size: 1rem;
+  }
+
+  .autopause-text {
+    font-size: 0.9rem;
+  }
+
   .practice-card {
     padding: 20px;
     gap: 14px;
@@ -1719,6 +1815,9 @@ input {
   .practice-mod-btn {
     min-height: 48px;
     padding: 6px 8px;
+  }
+  .autopause-toggle--compact {
+    padding: 6px 10px;
   }
   .crt-shell .ovr-tm-cell {
     min-height: 40px;

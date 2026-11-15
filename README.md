@@ -11,7 +11,7 @@ Live: https://overridle.trifase.online
 - **Mobile-first, zero backend**: Pure static HTML/CSS/ES Modules (`touch-action: manipulation`, no system keyboard required).
 - **Daily Persistence & Share**: Saves daily result in `localStorage` (`override30_YYYYMMDD`), unlocks Practice mode afterwards, and copies compact Telegram-ready share text with elapsed time (or `💥`), remaining lives, and `https://overridle.trifase.online`.
 - **Practice Mode Selector**: Pick any single module (`1` or `5` rounds) or launch a `5`-module random mix directly from standby or end screen.
-- **Pause & Instructions Overlay**: `[⏸ PAUSA]` (or `P` / `Esc`) freezes the timer and animated modules while hiding the puzzle board and keeping module instructions visible.
+- **Pause & Auto-Pause (`default ON`)**: `[⏸ PAUSA]` (or `P` / `Esc`) freezes the timer and animated modules while hiding the puzzle board and keeping module instructions visible. With `AUTO-PAUSA TRA I MODULI` enabled (default on), the game pauses automatically before Round 1 and between modules so new players can read instructions first.
 
 ## Procedural Module Pool (15 Modules)
 

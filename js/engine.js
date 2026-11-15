@@ -172,6 +172,7 @@ const MODULE_META = {
 };
 
 const STORAGE_PREFIX = 'override30_';
+const AUTOPAUSE_STORAGE_KEY = 'overridle_autopause';
 const SHARE_URL = 'https://overridle.trifase.online';
 const COPY_DEFAULT_LABEL = '[ COPIA RISULTATO ]';
 const COPY_SUCCESS_LABEL = 'COPIATO NEGLI APPUNTI!';
@@ -179,11 +180,23 @@ const COPY_SUCCESS_LABEL = 'COPIATO NEGLI APPUNTI!';
 const testFlags = getTestModeFlags();
 const isTestMode = testFlags.bypassStorage;
 
+function loadAutoPausePref() {
+  try {
+    const raw = window.localStorage.getItem(AUTOPAUSE_STORAGE_KEY);
+    if (raw === '0' || raw === 'false') return false;
+    if (raw === '1' || raw === 'true') return true;
+    return true;
+  } catch {
+    return true;
+  }
+}
+
 // Game state
 let state = 'STANDBY'; // 'STANDBY' | 'PRACTICE_SELECT' | 'PLAYING' | 'WIN' | 'LOSE'
 let localTodaySeed = getLocalDateSeed();
 let seed = getTodaySeed();
 let isPractice = false;
+let autoPause = typeof window !== 'undefined' ? loadAutoPausePref() : true;
 let practiceModuleId = null;
 let practiceRepeatCount = 1;
 let practiceReturnScreen = 'STANDBY';
@@ -256,6 +269,17 @@ function queryDom() {
   dom.copyShareBtn = document.getElementById('copy-share-btn');
   dom.retryPracticeBtn = document.getElementById('retry-practice-btn');
   dom.practiceBtn = document.getElementById('practice-btn');
+
+  const queriedChecks = Array.from(document.querySelectorAll('.js-autopause-check'));
+  if (queriedChecks.length > 0) {
+    dom.autoPauseChecks = queriedChecks;
+  } else {
+    dom.autoPauseChecks = [
+      document.getElementById('autopause-check'),
+      document.getElementById('autopause-practice-check'),
+      document.getElementById('autopause-overlay-check'),
+    ].filter(Boolean);
+  }
 }
 
 function getDailyStorageKey(targetSeed) {
@@ -472,10 +496,28 @@ function populatePauseInstructions() {
   }
 }
 
+function setAutoPause(enabled, { persist = true } = {}) {
+  autoPause = Boolean(enabled);
+  if (Array.isArray(dom.autoPauseChecks)) {
+    dom.autoPauseChecks.forEach((chk) => {
+      chk.checked = autoPause;
+    });
+  }
+  if (persist) {
+    try {
+      window.localStorage.setItem(AUTOPAUSE_STORAGE_KEY, autoPause ? '1' : '0');
+    } catch {
+      // Ignore storage restriction errors
+    }
+  }
+}
+
 function pauseGame() {
   if (state !== 'PLAYING' || isPaused) return;
   pausedAt = performance.now();
   stopTimerLoop();
+  const remaining = Math.max(0, TOTAL_TIME - (pausedAt - startTime) / 1000);
+  updateTimerDisplay(remaining);
   populatePauseInstructions();
   setPausedState(true);
 }
@@ -561,6 +603,9 @@ function handleRoundWin() {
     runCleanup();
     roundIndex += 1;
     mountCurrentRound();
+    if (autoPause) {
+      pauseGame();
+    }
   } else {
     endGame(true);
   }
@@ -780,7 +825,11 @@ function startGame({ practice = false, moduleId = null, roundsCount = ROUNDS_COU
   setPausedState(false);
 
   mountCurrentRound();
-  rafId = requestAnimationFrame(tickLoop);
+  if (autoPause) {
+    pauseGame();
+  } else {
+    rafId = requestAnimationFrame(tickLoop);
+  }
 }
 
 async function copyToClipboard(text, buttonEl) {
@@ -963,6 +1012,14 @@ function bindEvents() {
     dom.resumeBtn.addEventListener('click', resumeGame);
   }
 
+  if (Array.isArray(dom.autoPauseChecks)) {
+    dom.autoPauseChecks.forEach((chk) => {
+      chk.addEventListener('change', () => {
+        setAutoPause(chk.checked);
+      });
+    });
+  }
+
   document.addEventListener('keydown', (event) => {
     if (state !== 'PLAYING' || event.ctrlKey || event.metaKey || event.altKey) {
       return;
@@ -1002,6 +1059,10 @@ function exposeReadOnlyDebug() {
     get isPaused() {
       return isPaused;
     },
+    get autoPause() {
+      return autoPause;
+    },
+    setAutoPause: (val) => setAutoPause(val),
     get selectedModules() {
       return selectedModules.slice();
     },
@@ -1029,6 +1090,7 @@ function exposeReadOnlyDebug() {
 
 function init() {
   queryDom();
+  setAutoPause(autoPause, { persist: false });
   renderPracticeModuleGrid();
   setPracticeRepeatCount(1);
   bindEvents();

@@ -62,6 +62,12 @@
             <button id="practice-standby-btn" class="crt-btn crt-btn--amber" type="button">[ MODALITÀ PRATICA ]</button>
           </div>
         </div>
+
+        <label class="autopause-toggle crt-panel" for="autopause-check">
+          <input id="autopause-check" class="autopause-input js-autopause-check" type="checkbox" checked>
+          <span class="autopause-box" aria-hidden="true"></span>
+          <span class="autopause-text">AUTO-PAUSA TRA I MODULI (MOSTRA REGOLE)</span>
+        </label>
       </section>
 
       <!-- PRACTICE SELECTOR -->
@@ -78,6 +84,11 @@
               <button id="practice-mode-5" class="crt-btn crt-btn--sm practice-mode-btn" type="button" aria-pressed="false">[ 5 ROUND ]</button>
             </div>
           </div>
+          <label class="autopause-toggle autopause-toggle--compact" for="autopause-practice-check">
+            <input id="autopause-practice-check" class="autopause-input js-autopause-check" type="checkbox" checked>
+            <span class="autopause-box" aria-hidden="true"></span>
+            <span class="autopause-text">AUTO-PAUSA TRA I MODULI</span>
+          </label>
           <button id="practice-random-btn" class="crt-btn crt-btn--primary practice-random-btn" type="button">[ 🎲 MIX CASUALE (5 MODULI) ]</button>
           <div id="practice-module-grid" class="practice-grid" aria-label="Elenco minigiochi"></div>
           <button id="practice-back-btn" class="crt-btn practice-back-btn" type="button">[ ← INDIETRO ]</button>
@@ -102,6 +113,11 @@
                 <p id="pause-mod-rule" class="pause-mod-rule"></p>
               </div>
             </div>
+            <label class="autopause-toggle autopause-toggle--compact" for="autopause-overlay-check">
+              <input id="autopause-overlay-check" class="autopause-input js-autopause-check" type="checkbox" checked>
+              <span class="autopause-box" aria-hidden="true"></span>
+              <span class="autopause-text">AUTO-PAUSA TRA I MODULI</span>
+            </label>
             <button id="resume-btn" class="crt-btn crt-btn--primary pause-resume-btn" type="button">[ ▶ RIPRENDI OVERRIDE ]</button>
           </div>
         </div>
