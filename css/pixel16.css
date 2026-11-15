@@ -1020,6 +1020,12 @@ body.theme-pixel16 .crt-shell .ovr-fh {
   padding: 4px 6px !important;
 }
 
+body.theme-pixel16 .crt-shell .ovr-fh .ovr-variant-banner {
+  padding: 3px 6px !important;
+  font-size: 10px !important;
+  line-height: 1.25 !important;
+}
+
 body.theme-pixel16 .crt-shell .ovr-fh-head {
   padding: 3px 6px !important;
   font-size: 11px !important;
@@ -1028,6 +1034,20 @@ body.theme-pixel16 .crt-shell .ovr-fh-head {
 body.theme-pixel16 .crt-shell .ovr-fh-chip {
   height: 26px !important;
   font-size: 11px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-fh-chip.is-found {
+  background: linear-gradient(180deg, #1b4d3e 0%, #102e24 100%) !important;
+  border-color: var(--crt-green) !important;
+  color: var(--crt-green) !important;
+  text-decoration: line-through !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-fh-chip.is-next {
+  background: rgba(255, 190, 11, 0.22) !important;
+  border-color: var(--crt-amber) !important;
+  color: #ffe680 !important;
+  box-shadow: 0 0 8px rgba(255, 190, 11, 0.45) !important;
 }
 
 body.theme-pixel16 .crt-shell .ovr-fh-dump {
@@ -1060,6 +1080,13 @@ body.theme-pixel16 .crt-shell .ovr-fh-tok.is-found {
   border-color: var(--crt-green) !important;
   color: var(--crt-green) !important;
   box-shadow: inset 1px 1px 0 #2ce8a2 !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-fh-tok.is-error {
+  background: linear-gradient(180deg, #7a1c29 0%, #4a0e17 100%) !important;
+  border-color: var(--crt-red) !important;
+  color: #ff8a9b !important;
+  box-shadow: inset 1px 1px 0 #ff5268 !important;
 }
 
 /* Keycard Flash (.ovr-mf) lit & feedback states */

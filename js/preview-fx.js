@@ -832,6 +832,111 @@ function enhanceTacticalMap() {
   obs.observe(container, { childList: true, subtree: true, characterData: true });
 }
 
+function enhanceFalloutMimics() {
+  const container = document.getElementById('module-container');
+  if (!container) return;
+
+  const FALLOUT_POOL = [
+    'CORE', 'FLUX', 'NODE', 'SYNC', 'BIOS', 'LOCK',
+    'VOID', 'GATE', 'HEX7', 'KRNL', 'BOOT', 'CHIP',
+    'WIRE', 'GRID', 'VOLT', 'SCAN', 'PING', 'ECHO',
+    'MASK', 'DATA', 'CODE', 'PORT', 'ROOT', 'FIRE',
+  ];
+
+  // Pixel-font-clear substitutions: never substitute digits (0-9) or homoglyphs (O/0, I/1/L, S/5, B/8, Z/2, D/Q/O)
+  const CLEAR_SUBS = {
+    A: ['E', 'K', 'X'],
+    B: ['K', 'T', 'X'],
+    C: ['K', 'T', 'X'],
+    D: ['K', 'T', 'X'],
+    E: ['A', 'K', 'U'],
+    F: ['K', 'T', 'X'],
+    G: ['K', 'T', 'X'],
+    H: ['A', 'K', 'T'],
+    I: ['A', 'E', 'U'],
+    K: ['A', 'E', 'T'],
+    L: ['A', 'E', 'R'],
+    M: ['K', 'T', 'X'],
+    N: ['K', 'T', 'X'],
+    O: ['A', 'E', 'U'],
+    P: ['K', 'T', 'X'],
+    Q: ['A', 'E', 'K'],
+    R: ['A', 'T', 'U'],
+    S: ['K', 'T', 'X'],
+    T: ['A', 'K', 'O'],
+    U: ['A', 'E', 'K'],
+    V: ['A', 'K', 'T'],
+    W: ['K', 'T', 'X'],
+    X: ['A', 'E', 'T'],
+    Y: ['A', 'K', 'E'],
+    Z: ['A', 'K', 'T'],
+    '7': ['A', 'E', 'K'],
+  };
+
+  const syncMimics = () => {
+    const fh = container.querySelector('.ovr-fh[data-variant="mimic"]');
+    if (!fh || fh.dataset.pxMimicEnhanced) return;
+
+    const targets = Array.from(fh.querySelectorAll('.ovr-fh-chip'))
+      .map((el) => (el.textContent || '').trim())
+      .filter(Boolean);
+    if (targets.length === 0) return;
+
+    const targetSet = new Set(targets);
+    const usedWords = new Set(targets);
+    const decoyBtns = Array.from(fh.querySelectorAll('.ovr-fh-tok')).filter(
+      (btn) => !targetSet.has((btn.textContent || '').trim())
+    );
+    if (decoyBtns.length === 0) return;
+
+    const seed = targets.join('').split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+    const unusedPool = FALLOUT_POOL.filter((w) => !usedWords.has(w));
+    const rotatedPool = unusedPool.map((_, i) => unusedPool[(i + (seed % Math.max(1, unusedPool.length))) % unusedPool.length]);
+    let poolCursor = 0;
+
+    const mimicCount = Math.min(4, decoyBtns.length);
+    for (let i = 0; i < decoyBtns.length; i++) {
+      let replacement = null;
+      if (i < mimicCount) {
+        const base = targets[(seed + i) % targets.length];
+        for (let p = 0; p < base.length && !replacement; p++) {
+          const pos = (seed + i + p) % base.length;
+          const alts = CLEAR_SUBS[base[pos]] || ['A', 'K', 'X'];
+          for (let a = 0; a < alts.length; a++) {
+            const sub = alts[(seed + i + a) % alts.length];
+            const cand = base.slice(0, pos) + sub + base.slice(pos + 1);
+            if (!usedWords.has(cand)) {
+              replacement = cand;
+              break;
+            }
+          }
+        }
+      }
+
+      if (!replacement) {
+        while (poolCursor < rotatedPool.length) {
+          const cand = rotatedPool[poolCursor++];
+          if (!usedWords.has(cand)) {
+            replacement = cand;
+            break;
+          }
+        }
+      }
+
+      if (replacement) {
+        usedWords.add(replacement);
+        decoyBtns[i].textContent = replacement;
+      }
+    }
+
+    fh.dataset.pxMimicEnhanced = '1';
+  };
+
+  syncMimics();
+  const obs = new MutationObserver(syncMimics);
+  obs.observe(container, { childList: true, subtree: true });
+}
+
 function initPreviewFx() {
   enhanceLivesDisplay();
   enhanceRoundIndicators();
@@ -839,6 +944,7 @@ function initPreviewFx() {
   enhanceWiresLabels();
   enhancePressurePurgeStages();
   enhanceTacticalMap();
+  enhanceFalloutMimics();
   initContainmentAnimator();
 }
 
