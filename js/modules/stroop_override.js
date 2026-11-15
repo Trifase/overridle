@@ -1,10 +1,11 @@
 import { randInt, shuffle } from '../prng.js';
+import { t } from '../i18n.js';
 
 const COLORS = [
-  { id: 'red', label: 'ROSSO', hex: '#ff3b3b' },
-  { id: 'green', label: 'VERDE', hex: '#00ff66' },
-  { id: 'yellow', label: 'GIALLO', hex: '#ffcc00' },
-  { id: 'cyan', label: 'CIANO', hex: '#00e5ff' },
+  { id: 'red', en: 'RED', it: 'ROSSO', hex: '#ff3b3b' },
+  { id: 'green', en: 'GREEN', it: 'VERDE', hex: '#00ff66' },
+  { id: 'yellow', en: 'YELLOW', it: 'GIALLO', hex: '#ffcc00' },
+  { id: 'cyan', en: 'CYAN', it: 'CIANO', hex: '#00e5ff' },
 ];
 
 const TOTAL_STEPS = 3;
@@ -16,8 +17,14 @@ export function mount(container, rng, callbacks = {}) {
 
   const ruleText =
     mode === 0
-      ? 'REGOLA: PREMI IL PULSANTE DELLA PAROLA SCRITTA'
-      : 'REGOLA: PREMI IL PULSANTE DEL COLORE DELLE LETTERE';
+      ? t(
+          'RULE: PRESS THE BUTTON OF THE WRITTEN WORD',
+          'REGOLA: PREMI IL PULSANTE DELLA PAROLA SCRITTA'
+        )
+      : t(
+          'RULE: PRESS THE BUTTON OF THE INK COLOR',
+          'REGOLA: PREMI IL PULSANTE DEL COLORE DELLE LETTERE'
+        );
 
   let step = 0;
   let currentWordIdx = 0;
@@ -210,7 +217,7 @@ export function mount(container, rng, callbacks = {}) {
   const renderStep = () => {
     rollPrompt();
     const expectedIdx = mode === 0 ? currentWordIdx : currentInkIdx;
-    wordEl.textContent = COLORS[currentWordIdx].label;
+    wordEl.textContent = t(COLORS[currentWordIdx].en, COLORS[currentWordIdx].it);
     wordEl.style.color = COLORS[currentInkIdx].hex;
     root.dataset.expectedId = COLORS[expectedIdx].id;
 
@@ -220,7 +227,9 @@ export function mount(container, rng, callbacks = {}) {
     }
     statusEl.className = 'ovr-so-status';
     statusEl.textContent =
-      mode === 0 ? 'SELEZIONA IL NOME SCRITTO' : 'SELEZIONA IL COLORE VISIVO';
+      mode === 0
+        ? t('SELECT WRITTEN WORD', 'SELEZIONA IL NOME SCRITTO')
+        : t('SELECT INK COLOR', 'SELEZIONA IL COLORE VISIVO');
   };
 
   const colorBtns = buttonOrder.map((c) => {
@@ -233,7 +242,7 @@ export function mount(container, rng, callbacks = {}) {
     const swatch = document.createElement('span');
     swatch.className = 'ovr-so-swatch';
     const text = document.createElement('span');
-    text.textContent = c.label;
+    text.textContent = t(c.en, c.it);
     btn.append(swatch, text);
 
     btn.addEventListener(
@@ -255,7 +264,7 @@ export function mount(container, rng, callbacks = {}) {
               b.disabled = true;
             });
             statusEl.className = 'ovr-so-status is-ok';
-            statusEl.textContent = 'SEQUENZA CROMATICA SUPERATA';
+            statusEl.textContent = t('COLOR SEQUENCE CLEARED', 'SEQUENZA CROMATICA SUPERATA');
             if (typeof onWin === 'function') onWin();
           } else {
             renderStep();
@@ -265,7 +274,7 @@ export function mount(container, rng, callbacks = {}) {
           void displayEl.offsetWidth;
           displayEl.classList.add('is-err');
           statusEl.className = 'ovr-so-status is-err';
-          statusEl.textContent = 'RISPOSTA ERRATA!';
+          statusEl.textContent = t('WRONG ANSWER!', 'RISPOSTA ERRATA!');
           scheduleTimer(() => {
             displayEl.classList.remove('is-err');
           }, 300);

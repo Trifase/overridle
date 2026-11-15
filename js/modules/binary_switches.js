@@ -1,4 +1,5 @@
 import { randInt } from '../prng.js';
+import { t } from '../i18n.js';
 
 const WEIGHTS = [32, 16, 8, 4, 2, 1];
 
@@ -242,14 +243,20 @@ export function mount(container, rng, callbacks = {}) {
     vBanner.className = 'ovr-variant-banner';
     vBanner.textContent =
       variant === 'inverted'
-        ? '⚡ VARIANTE: BIT INVERTITI — Partono ON, spegni fino al target!'
-        : '⚡ VARIANTE: SOMMA MASCHERATA — Somma a mente e premi EXEC!';
+        ? t(
+            '⚡ VARIANT: INVERTED BITS — Start ON, toggle off to match target!',
+            '⚡ VARIANTE: BIT INVERTITI — Partono ON, spegni fino al target!'
+          )
+        : t(
+            '⚡ VARIANT: BLIND SUM — Add mentally and press EXEC!',
+            '⚡ VARIANTE: SOMMA MASCHERATA — Somma a mente e premi EXEC!'
+          );
     root.appendChild(vBanner);
   }
 
   const header = document.createElement('div');
   header.className = 'ovr-bin-header';
-  header.innerHTML = `<div class="ovr-bin-sub">SWITCH BINARI // COMPONI SOMMA ESATTA</div>`;
+  header.innerHTML = `<div class="ovr-bin-sub">${t('BINARY SWITCHES // MATCH EXACT SUM', 'SWITCH BINARI // COMPONI SOMMA ESATTA')}</div>`;
 
   const readouts = document.createElement('div');
   readouts.className = 'ovr-bin-readouts';
@@ -267,7 +274,7 @@ export function mount(container, rng, callbacks = {}) {
   const currentValEl = document.createElement('div');
   currentValEl.className = 'ovr-bin-box-val';
   currentValEl.textContent = variant === 'blind' ? '??' : String(initialSum).padStart(2, '0');
-  currentBox.innerHTML = `<div class="ovr-bin-box-lbl">ATTUALE</div>`;
+  currentBox.innerHTML = `<div class="ovr-bin-box-lbl">${t('CURRENT', 'ATTUALE')}</div>`;
   currentBox.appendChild(currentValEl);
 
   readouts.append(targetBox, currentBox);
@@ -285,7 +292,10 @@ export function mount(container, rng, callbacks = {}) {
     btn.dataset.weight = String(weight);
     btn.dataset.state = startOn ? '1' : '0';
     btn.setAttribute('aria-pressed', String(startOn));
-    btn.setAttribute('aria-label', `Switch peso ${weight}, stato ${startOn ? 'ON' : 'OFF'}`);
+    btn.setAttribute(
+      'aria-label',
+      t(`Switch weight ${weight}, state ${startOn ? 'ON' : 'OFF'}`, `Switch peso ${weight}, stato ${startOn ? 'ON' : 'OFF'}`)
+    );
 
     const weightEl = document.createElement('span');
     weightEl.className = 'ovr-bin-weight';
@@ -318,7 +328,10 @@ export function mount(container, rng, callbacks = {}) {
         btn.classList.toggle('is-on', isOn);
         btn.dataset.state = isOn ? '1' : '0';
         btn.setAttribute('aria-pressed', String(isOn));
-        btn.setAttribute('aria-label', `Switch peso ${weight}, stato ${isOn ? 'ON' : 'OFF'}`);
+        btn.setAttribute(
+          'aria-label',
+          t(`Switch weight ${weight}, state ${isOn ? 'ON' : 'OFF'}`, `Switch peso ${weight}, stato ${isOn ? 'ON' : 'OFF'}`)
+        );
         stateEl.textContent = isOn ? 'ON' : 'OFF';
 
         const sum = getSum();
@@ -345,7 +358,7 @@ export function mount(container, rng, callbacks = {}) {
 
   const statusEl = document.createElement('div');
   statusEl.className = 'ovr-bin-status';
-  statusEl.textContent = 'ATTIVA LE LEVE E PREMI EXEC';
+  statusEl.textContent = t('TOGGLE SWITCHES AND PRESS EXEC', 'ATTIVA LE LEVE E PREMI EXEC');
 
   execBtn.addEventListener(
     'click',
@@ -362,7 +375,10 @@ export function mount(container, rng, callbacks = {}) {
           b.disabled = true;
         });
         statusEl.className = 'ovr-bin-status is-ok';
-        statusEl.textContent = `SOMMA ${sum} CONFERMATA // MODULO SBLOCCATO`;
+        statusEl.textContent = t(
+          `SUM ${sum} CONFIRMED // MODULE UNLOCKED`,
+          `SOMMA ${sum} CONFERMATA // MODULO SBLOCCATO`
+        );
         if (typeof onWin === 'function') onWin();
       } else {
         execBtn.classList.remove('is-err');
@@ -371,7 +387,7 @@ export function mount(container, rng, callbacks = {}) {
         execBtn.classList.add('is-err');
         currentBox.classList.add('is-err');
         statusEl.className = 'ovr-bin-status is-err';
-        statusEl.textContent = `SOMMA ERRATA: ${sum} != ${target}`;
+        statusEl.textContent = t(`WRONG SUM: ${sum} != ${target}`, `SOMMA ERRATA: ${sum} != ${target}`);
         scheduleTimer(() => {
           execBtn.classList.remove('is-err');
           currentBox.classList.remove('is-err');

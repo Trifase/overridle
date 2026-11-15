@@ -1,3 +1,5 @@
+import { t } from '../i18n.js';
+
 /**
  * Spurgo Pressione (pressure_purge)
  * Tieni premuto PURGE per far salire la pressione e rilascia dentro la fascia verde mobile.
@@ -276,8 +278,14 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
     vBanner.className = 'ovr-variant-banner';
     vBanner.textContent =
       variant === 'two_stage'
-        ? '⚡ VARIANTE: 2 STADI — Completa 2 spurghi di fila!'
-        : '⚡ VARIANTE: PRECISIONE — Fascia verde fissa e stretta!';
+        ? t(
+            '⚡ VARIANT: 2 STAGES — Complete 2 purges in a row!',
+            '⚡ VARIANTE: 2 STADI — Completa 2 spurghi di fila!'
+          )
+        : t(
+            '⚡ VARIANT: PRECISION — Narrow static green zone!',
+            '⚡ VARIANTE: PRECISIONE — Fascia verde fissa e stretta!'
+          );
     root.appendChild(vBanner);
   }
 
@@ -285,10 +293,13 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
   head.className = 'ovr-pp-head';
   const titleEl = document.createElement('span');
   titleEl.className = 'ovr-pp-title';
-  titleEl.textContent = variant === 'two_stage' ? 'SPURGO (1/2)' : 'SPURGO PRESSIONE';
+  titleEl.textContent =
+    variant === 'two_stage'
+      ? t('PURGE (1/2)', 'SPURGO (1/2)')
+      : t('PRESSURE PURGE', 'SPURGO PRESSIONE');
   const badgeEl = document.createElement('span');
   badgeEl.className = 'ovr-pp-badge';
-  badgeEl.textContent = 'PRONTO';
+  badgeEl.textContent = t('READY', 'PRONTO');
   head.append(titleEl, badgeEl);
 
   const body = document.createElement('div');
@@ -319,7 +330,7 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
   pCard.className = 'ovr-pp-card';
   const pLbl = document.createElement('div');
   pLbl.className = 'ovr-pp-lbl';
-  pLbl.textContent = 'PRESSIONE';
+  pLbl.textContent = t('PRESSURE', 'PRESSIONE');
   const pVal = document.createElement('div');
   pVal.className = 'ovr-pp-val';
   pVal.textContent = '0%';
@@ -329,14 +340,14 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
   zCard.className = 'ovr-pp-card';
   const zLbl = document.createElement('div');
   zLbl.className = 'ovr-pp-lbl';
-  zLbl.textContent = 'FASCIA VERDE';
+  zLbl.textContent = t('GREEN ZONE', 'FASCIA VERDE');
   const zRange = document.createElement('div');
   zRange.className = 'ovr-pp-range';
   zCard.append(zLbl, zRange);
 
   const ledEl = document.createElement('div');
   ledEl.className = 'ovr-pp-led';
-  ledEl.textContent = 'TIENI PREMUTO';
+  ledEl.textContent = t('HOLD', 'TIENI PREMUTO');
 
   info.append(pCard, zCard, ledEl);
   body.append(scale, tube, info);
@@ -344,7 +355,7 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'ovr-pp-btn';
-  btn.textContent = '[ TIENI PREMUTO: PURGE ]';
+  btn.textContent = t('[ HOLD: PURGE ]', '[ TIENI PREMUTO: PURGE ]');
 
   root.append(head, body, btn);
   container.append(style, root);
@@ -384,29 +395,29 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
 
     if (isErr) {
       badgeEl.className = 'ovr-pp-badge is-err';
-      badgeEl.textContent = 'FUORI ZONA!';
+      badgeEl.textContent = t('OUT OF ZONE!', 'FUORI ZONA!');
       ledEl.className = 'ovr-pp-led is-err';
-      ledEl.textContent = 'ERRORE — RIPROVA';
+      ledEl.textContent = t('ERROR — RETRY', 'ERRORE — RIPROVA');
     } else if (atMax && holding) {
       badgeEl.className = 'ovr-pp-badge is-err';
-      badgeEl.textContent = 'SOVRAPRESSIONE!';
+      badgeEl.textContent = t('OVERPRESSURE!', 'SOVRAPRESSIONE!');
       ledEl.className = 'ovr-pp-led is-err';
-      ledEl.textContent = 'MAX 100% — RILASCIA';
+      ledEl.textContent = t('MAX 100% — RELEASE', 'MAX 100% — RILASCIA');
     } else if (holding && inZone) {
       badgeEl.className = 'ovr-pp-badge is-zone';
-      badgeEl.textContent = 'IN FASCIA!';
+      badgeEl.textContent = t('IN ZONE!', 'IN FASCIA!');
       ledEl.className = 'ovr-pp-led is-zone';
-      ledEl.textContent = 'RILASCIA ORA!';
+      ledEl.textContent = t('RELEASE NOW!', 'RILASCIA ORA!');
     } else if (holding) {
       badgeEl.className = 'ovr-pp-badge';
-      badgeEl.textContent = 'CARICA...';
+      badgeEl.textContent = t('CHARGING...', 'CARICA...');
       ledEl.className = 'ovr-pp-led';
-      ledEl.textContent = 'ATTENDI ZONA VERDE';
+      ledEl.textContent = t('WAIT FOR GREEN ZONE', 'ATTENDI ZONA VERDE');
     } else {
       badgeEl.className = 'ovr-pp-badge';
-      badgeEl.textContent = 'PRONTO';
+      badgeEl.textContent = t('READY', 'PRONTO');
       ledEl.className = 'ovr-pp-led';
-      ledEl.textContent = 'TIENI PREMUTO PURGE';
+      ledEl.textContent = t('HOLD PURGE', 'TIENI PREMUTO PURGE');
     }
   }
 
@@ -426,7 +437,7 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
         holding = false;
         activePointerId = null;
         pressure = 0;
-        btn.textContent = '[ TIENI PREMUTO: PURGE ]';
+        btn.textContent = t('[ HOLD: PURGE ]', '[ TIENI PREMUTO: PURGE ]');
         render(now);
       }
       rafId = requestAnimationFrame(frame);
@@ -455,7 +466,7 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
     } catch {
       // Ignora se pointer capture non disponibile
     }
-    btn.textContent = '[ RILASCIA NELLA FASCIA VERDE ]';
+    btn.textContent = t('[ RELEASE IN GREEN ZONE ]', '[ RILASCIA NELLA FASCIA VERDE ]');
     render(performance.now());
   }
 
@@ -472,7 +483,7 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
     }
     holding = false;
     activePointerId = null;
-    btn.textContent = '[ TIENI PREMUTO: PURGE ]';
+    btn.textContent = t('[ HOLD: PURGE ]', '[ TIENI PREMUTO: PURGE ]');
 
     const zone = getZoneBounds(getElapsedSec(now));
     if (pressure >= zone.min && pressure <= zone.max) {
@@ -480,19 +491,19 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
         stage += 1;
         pressure = 0;
         phase0 = (phase0 + Math.PI * 0.85) % (Math.PI * 2);
-        titleEl.textContent = `SPURGO (${stage}/${totalStages})`;
+        titleEl.textContent = t(`PURGE (${stage}/${totalStages})`, `SPURGO (${stage}/${totalStages})`);
         badgeEl.className = 'ovr-pp-badge is-zone';
-        badgeEl.textContent = 'STADIO 1 OK';
+        badgeEl.textContent = t('STAGE 1 OK', 'STADIO 1 OK');
         ledEl.className = 'ovr-pp-led is-zone';
-        ledEl.textContent = 'RIPETI PER STADIO 2!';
+        ledEl.textContent = t('REPEAT FOR STAGE 2!', 'RIPETI PER STADIO 2!');
         render(now);
         return;
       }
       solved = true;
       badgeEl.className = 'ovr-pp-badge is-zone';
-      badgeEl.textContent = 'SPURGO OK';
+      badgeEl.textContent = t('PURGE OK', 'SPURGO OK');
       ledEl.className = 'ovr-pp-led is-zone';
-      ledEl.textContent = 'PRESSIONE SCARICATA';
+      ledEl.textContent = t('PRESSURE VENTED', 'PRESSIONE SCARICATA');
       btn.classList.remove('is-holding');
       btn.classList.add('is-zone');
       if (rafId !== null) {

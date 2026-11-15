@@ -1,4 +1,5 @@
 import { pick } from '../prng.js';
+import { t } from '../i18n.js';
 
 const TOLERANCE = 0.04;
 const LOCK_DURATION_CLASSIC = 0.35;
@@ -197,8 +198,14 @@ export function mount(container, rng, { onWin, onMistake: _onMistake } = {}) {
     vBanner.className = 'ovr-variant-banner';
     vBanner.textContent =
       variant === 'inverted'
-        ? '⚡ VARIANTE: FASE INVERSA — Lo slider muove al contrario!'
-        : '⚡ VARIANTE: DUAL LOCK — Aggancia 2 frequenze consecutive!';
+        ? t(
+            '⚡ VARIANT: REVERSE PHASE — Slider moves in reverse!',
+            '⚡ VARIANTE: FASE INVERSA — Lo slider muove al contrario!'
+          )
+        : t(
+            '⚡ VARIANT: DUAL LOCK — Lock 2 consecutive frequencies!',
+            '⚡ VARIANTE: DUAL LOCK — Aggancia 2 frequenze consecutive!'
+          );
     root.appendChild(vBanner);
   }
 
@@ -206,7 +213,10 @@ export function mount(container, rng, { onWin, onMistake: _onMistake } = {}) {
   head.className = 'ovr-fa-head';
   const titleEl = document.createElement('span');
   titleEl.className = 'ovr-fa-title';
-  titleEl.textContent = variant === 'dual' ? 'OSCILLOSCOPIO (1/2)' : 'OSCILLOSCOPIO';
+  titleEl.textContent =
+    variant === 'dual'
+      ? t('OSCILLOSCOPE (1/2)', 'OSCILLOSCOPIO (1/2)')
+      : t('OSCILLOSCOPE', 'OSCILLOSCOPIO');
   const freqEl = document.createElement('span');
   freqEl.className = 'ovr-fa-freq';
   head.append(titleEl, freqEl);
@@ -223,7 +233,7 @@ export function mount(container, rng, { onWin, onMistake: _onMistake } = {}) {
   lockHead.className = 'ovr-fa-lock-head';
   const stateEl = document.createElement('span');
   stateEl.className = 'ovr-fa-state';
-  stateEl.textContent = 'ALLINEA AL TARGET';
+  stateEl.textContent = t('ALIGN TO TARGET', 'ALLINEA AL TARGET');
   const lockPctEl = document.createElement('span');
   lockPctEl.className = 'ovr-fa-lock-pct';
   lockPctEl.textContent = 'LOCK: 0%';
@@ -245,14 +255,14 @@ export function mount(container, rng, { onWin, onMistake: _onMistake } = {}) {
   slider.max = '1000';
   slider.step = '1';
   slider.value = String(Math.round((variant === 'inverted' ? 1 - initNorm : initNorm) * 1000));
-  slider.setAttribute('aria-label', 'Frequenza onda');
+  slider.setAttribute('aria-label', t('Wave frequency', 'Frequenza onda'));
 
   const scale = document.createElement('div');
   scale.className = 'ovr-fa-scale';
   const minLbl = document.createElement('span');
   minLbl.textContent = '20.0 Hz';
   const midLbl = document.createElement('span');
-  midLbl.textContent = 'TARGET: AMBRA';
+  midLbl.textContent = t('TARGET: AMBER', 'TARGET: AMBRA');
   const maxLbl = document.createElement('span');
   maxLbl.textContent = '100.0 Hz';
   scale.append(minLbl, midLbl, maxLbl);
@@ -407,12 +417,14 @@ export function mount(container, rng, { onWin, onMistake: _onMistake } = {}) {
     if (inTol) {
       lockSeconds += dt;
       stateEl.className = 'ovr-fa-state is-locking';
-      stateEl.textContent = 'IN FASE — MANTIENI!';
+      stateEl.textContent = t('IN PHASE — HOLD!', 'IN FASE — MANTIENI!');
     } else {
       lockSeconds = 0;
       stateEl.className = 'ovr-fa-state';
       stateEl.textContent =
-        variant === 'dual' ? `ALLINEA TARGET (${stage}/${totalStages})` : 'ALLINEA AL TARGET';
+        variant === 'dual'
+          ? t(`ALIGN TARGET (${stage}/${totalStages})`, `ALLINEA TARGET (${stage}/${totalStages})`)
+          : t('ALIGN TO TARGET', 'ALLINEA AL TARGET');
     }
 
     const pct = Math.min(100, Math.round((lockSeconds / lockRequiredSec) * 100));
@@ -426,17 +438,20 @@ export function mount(container, rng, { onWin, onMistake: _onMistake } = {}) {
         stage += 1;
         lockSeconds = 0;
         targetNorm = pickFarNorm(currentNorm);
-        titleEl.textContent = `OSCILLOSCOPIO (${stage}/${totalStages})`;
+        titleEl.textContent = t(
+          `OSCILLOSCOPE (${stage}/${totalStages})`,
+          `OSCILLOSCOPIO (${stage}/${totalStages})`
+        );
         barFill.style.width = '0%';
         lockPctEl.textContent = 'LOCK: 0%';
         stateEl.className = 'ovr-fa-state';
-        stateEl.textContent = 'STAGE 1 OK — NUOVO TARGET!';
+        stateEl.textContent = t('STAGE 1 OK — NEW TARGET!', 'STAGE 1 OK — NUOVO TARGET!');
       } else {
         solved = true;
         barFill.style.width = '100%';
         lockPctEl.textContent = 'LOCK: 100%';
         stateEl.className = 'ovr-fa-state is-win';
-        stateEl.textContent = 'FREQUENZA AGGANCIATA';
+        stateEl.textContent = t('FREQUENCY LOCKED', 'FREQUENZA AGGANCIATA');
         rafId = null;
         onWin?.();
         return;

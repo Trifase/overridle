@@ -1,4 +1,5 @@
 import { shuffle } from '../prng.js';
+import { t } from '../i18n.js';
 
 const FLASH_DURATION_MS = 1500;
 const SIMON_STEP_MS = 450;
@@ -204,10 +205,19 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
     vBanner.className = 'ovr-variant-banner';
     vBanner.textContent =
       variant === 'simon'
-        ? '⚡ VARIANTE: SEQUENZA SIMON — Ripeti nello stesso ordine!'
+        ? t(
+            '⚡ VARIANT: SIMON SEQUENCE — Repeat in the exact order!',
+            '⚡ VARIANTE: SEQUENZA SIMON — Ripeti nello stesso ordine!'
+          )
         : variant === 'negative'
-          ? '⚡ VARIANTE: NEGATIVO — Seleziona i 4 nodi SPENTI!'
-          : '⚡ VARIANTE: PRIORITÀ — Prima i 2 AMBRA, poi i 2 VERDI!';
+          ? t(
+              '⚡ VARIANT: NEGATIVE — Select the 4 UNLIT nodes!',
+              '⚡ VARIANTE: NEGATIVO — Seleziona i 4 nodi SPENTI!'
+            )
+          : t(
+              '⚡ VARIANT: PRIORITY — First the 2 AMBER, then the 2 GREEN!',
+              '⚡ VARIANTE: PRIORITÀ — Prima i 2 AMBRA, poi i 2 VERDI!'
+            );
     root.appendChild(vBanner);
   }
 
@@ -216,7 +226,7 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
 
   const statusEl = document.createElement('div');
   statusEl.className = 'ovr-mf-status';
-  statusEl.textContent = 'MEMORIA ATTIVA — OSSERVA...';
+  statusEl.textContent = t('MEMORY ACTIVE — OBSERVE...', 'MEMORIA ATTIVA — OSSERVA...');
 
   const barTrack = document.createElement('div');
   barTrack.className = 'ovr-mf-bar-track';
@@ -288,11 +298,11 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
         foundSet.add(i);
         cell.classList.add('is-correct');
         glyph.textContent = '✓';
-        counterEl.textContent = `NODI: ${foundSet.size}/4`;
+        counterEl.textContent = t(`NODES: ${foundSet.size}/4`, `NODI: ${foundSet.size}/4`);
         if (foundSet.size >= 4) {
           solved = true;
           statusEl.className = 'ovr-mf-status is-win';
-          statusEl.textContent = 'KEYCARD VERIFICATA';
+          statusEl.textContent = t('KEYCARD VERIFIED', 'KEYCARD VERIFICATA');
           onWin?.();
         }
       } else {
@@ -317,7 +327,7 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
   const modeLabel = document.createElement('span');
   modeLabel.textContent = 'KEYCARD 3×3';
   const counterEl = document.createElement('span');
-  counterEl.textContent = 'NODI: 0/4';
+  counterEl.textContent = t('NODES: 0/4', 'NODI: 0/4');
   foot.append(modeLabel, counterEl);
 
   root.append(head, grid, foot);
@@ -336,12 +346,12 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
     statusEl.className = 'ovr-mf-status is-input';
     statusEl.textContent =
       variant === 'simon'
-        ? 'RIPETI LA SEQUENZA (1→4)'
+        ? t('REPEAT SEQUENCE (1→4)', 'RIPETI LA SEQUENZA (1→4)')
         : variant === 'negative'
-          ? 'TOCCA I 4 NODI SPENTI'
+          ? t('TAP THE 4 UNLIT NODES', 'TOCCA I 4 NODI SPENTI')
           : variant === 'priority'
-            ? 'PRIMA I 2 AMBRA, POI I 2 VERDI'
-            : 'INSERISCI I 4 NODI';
+            ? t('FIRST 2 AMBER, THEN 2 GREEN', 'PRIMA I 2 AMBRA, POI I 2 VERDI')
+            : t('ENTER THE 4 NODES', 'INSERISCI I 4 NODI');
 
     for (let i = 0; i < cells.length; i++) {
       const { cell, glyph } = cells[i];

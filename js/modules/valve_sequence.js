@@ -1,4 +1,5 @@
 import { shuffle } from '../prng.js';
+import { t } from '../i18n.js';
 
 const RESET_WINDOW_SEC = 2.0;
 
@@ -222,8 +223,14 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
     vBanner.className = 'ovr-variant-banner';
     vBanner.textContent =
       variant === 'jump'
-        ? '⚡ VARIANTE: SCATTO RANDOM — Saltano da 0% a 100%!'
-        : '⚡ VARIANTE: DOPPIA ONDA — Scendono e risalgono ancora!';
+        ? t(
+            '⚡ VARIANT: RANDOM SURGE — Valves jump straight from 0% to 100%!',
+            '⚡ VARIANTE: SCATTO RANDOM — Saltano da 0% a 100%!'
+          )
+        : t(
+            '⚡ VARIANT: DOUBLE WAVE — Valves drain and climb back up!',
+            '⚡ VARIANTE: DOPPIA ONDA — Scendono e risalgono ancora!'
+          );
     root.appendChild(vBanner);
   }
 
@@ -233,7 +240,7 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
   headTop.className = 'ovr-vs-head-top';
   const titleEl = document.createElement('span');
   titleEl.className = 'ovr-vs-title';
-  titleEl.textContent = 'RESET VALVOLE';
+  titleEl.textContent = t('VALVE RESET', 'RESET VALVOLE');
   const countEl = document.createElement('span');
   countEl.className = 'ovr-vs-count';
   countEl.textContent = `RESET: 0/${targetResets}`;
@@ -241,7 +248,7 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
 
   const subEl = document.createElement('div');
   subEl.className = 'ovr-vs-sub';
-  subEl.textContent = 'CLICCA SOLO AL 100% ENTRO 2.0s';
+  subEl.textContent = t('TAP ONLY AT 100% WITHIN 2.0s', 'CLICCA SOLO AL 100% ENTRO 2.0s');
   head.append(headTop, subEl);
 
   const list = document.createElement('div');
@@ -267,13 +274,13 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
 
     const name = document.createElement('span');
     name.className = 'ovr-vs-name';
-    name.textContent = `VALVOLA ${valve.idx + 1}`;
+    name.textContent = t(`VALVE ${valve.idx + 1}`, `VALVOLA ${valve.idx + 1}`);
 
     const meta = document.createElement('div');
     meta.className = 'ovr-vs-meta';
     const status = document.createElement('span');
     status.className = 'ovr-vs-status';
-    status.textContent = 'IN CARICO';
+    status.textContent = t('CHARGING', 'IN CARICO');
     const pct = document.createElement('span');
     pct.className = 'ovr-vs-pct';
     pct.textContent = `${Math.round(valve.level)}%`;
@@ -359,15 +366,16 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
       ui.fill.className = 'ovr-vs-fill is-crit';
     } else if (valve.phase === 'draining') {
       ui.card.classList.remove('is-at100');
-      ui.status.textContent = 'SCARICO...';
+      ui.status.textContent = t('DRAINING...', 'SCARICO...');
       ui.fill.className = 'ovr-vs-fill is-ok';
     } else if (valve.level >= 70) {
       ui.card.classList.remove('is-at100');
-      ui.status.textContent = 'QUASI AL 100%';
+      ui.status.textContent = t('NEAR 100%', 'QUASI AL 100%');
       ui.fill.className = 'ovr-vs-fill is-warn';
     } else {
       ui.card.classList.remove('is-at100');
-      ui.status.textContent = variant === 'jump' ? 'IN ATTESA' : 'IN SALITA';
+      ui.status.textContent =
+        variant === 'jump' ? t('STANDBY', 'IN ATTESA') : t('RISING', 'IN SALITA');
       ui.fill.className = 'ovr-vs-fill';
     }
   }

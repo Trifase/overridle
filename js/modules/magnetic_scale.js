@@ -1,4 +1,5 @@
 import { randInt, shuffle } from '../prng.js';
+import { t } from '../i18n.js';
 
 const WEIGHT_POOL = [2, 3, 4, 5, 6, 7, 8, 9, 11, 12];
 
@@ -16,8 +17,14 @@ export function mount(container, rng, callbacks = {}) {
 
   const ruleText =
     mode === 0
-      ? 'CARICO: TOCCA 2 PESI DA AGGIUNGERE PER PAREGGIARE IL TARGET'
-      : 'SCARICO: TOCCA 2 PESI DA RIMUOVERE PER SCENDERE AL TARGET';
+      ? t(
+          'LOAD: TAP 2 WEIGHTS TO ADD TO MATCH TARGET',
+          'CARICO: TOCCA 2 PESI DA AGGIUNGERE PER PAREGGIARE IL TARGET'
+        )
+      : t(
+          'UNLOAD: TAP 2 WEIGHTS TO REMOVE TO REACH TARGET',
+          'SCARICO: TOCCA 2 PESI DA RIMUOVERE PER SCENDERE AL TARGET'
+        );
 
   const selected = new Set();
   let solved = false;
@@ -232,14 +239,14 @@ export function mount(container, rng, callbacks = {}) {
 
   const currBox = document.createElement('div');
   currBox.className = 'ovr-ms-box';
-  currBox.innerHTML = '<div class="ovr-ms-lbl">ATTUALE</div>';
+  currBox.innerHTML = `<div class="ovr-ms-lbl">${t('CURRENT', 'ATTUALE')}</div>`;
   const currValEl = document.createElement('div');
   currValEl.className = 'ovr-ms-val';
   currBox.appendChild(currValEl);
 
   const deltaBox = document.createElement('div');
   deltaBox.className = 'ovr-ms-box is-delta';
-  deltaBox.innerHTML = `<div class="ovr-ms-lbl">${mode === 0 ? 'AGGIUNTA' : 'RIMOZIONE'}</div>`;
+  deltaBox.innerHTML = `<div class="ovr-ms-lbl">${mode === 0 ? t('ADDED', 'AGGIUNTA') : t('REMOVED', 'RIMOZIONE')}</div>`;
   const deltaValEl = document.createElement('div');
   deltaValEl.className = 'ovr-ms-val';
   deltaBox.appendChild(deltaValEl);
@@ -272,7 +279,7 @@ export function mount(container, rng, callbacks = {}) {
 
   const statusEl = document.createElement('div');
   statusEl.className = 'ovr-ms-status';
-  statusEl.textContent = 'SELEZIONA 2 PESI (0/2)';
+  statusEl.textContent = t('SELECT 2 WEIGHTS (0/2)', 'SELEZIONA 2 PESI (0/2)');
 
   const updateView = () => {
     let selectedSum = 0;
@@ -297,7 +304,7 @@ export function mount(container, rng, callbacks = {}) {
     btn.dataset.index = String(idx);
     btn.dataset.weight = String(w);
     btn.setAttribute('aria-pressed', 'false');
-    btn.setAttribute('aria-label', `Peso ${w} chilogrammi`);
+    btn.setAttribute('aria-label', t(`Weight ${w} kilograms`, `Peso ${w} chilogrammi`));
 
     const wVal = document.createElement('span');
     wVal.className = 'ovr-ms-wval';
@@ -320,7 +327,10 @@ export function mount(container, rng, callbacks = {}) {
           btn.setAttribute('aria-pressed', 'false');
           updateView();
           statusEl.className = 'ovr-ms-status';
-          statusEl.textContent = `SELEZIONA 2 PESI (${selected.size}/2)`;
+          statusEl.textContent = t(
+            `SELECT 2 WEIGHTS (${selected.size}/2)`,
+            `SELEZIONA 2 PESI (${selected.size}/2)`
+          );
           return;
         }
 
@@ -331,7 +341,7 @@ export function mount(container, rng, callbacks = {}) {
 
         if (selected.size < 2) {
           statusEl.className = 'ovr-ms-status';
-          statusEl.textContent = 'SELEZIONA IL 2° PESO (1/2)';
+          statusEl.textContent = t('SELECT 2ND WEIGHT (1/2)', 'SELEZIONA IL 2° PESO (1/2)');
           return;
         }
 
@@ -345,7 +355,10 @@ export function mount(container, rng, callbacks = {}) {
             }
           });
           statusEl.className = 'ovr-ms-status is-ok';
-          statusEl.textContent = `BILANCIAMENTO ESATTO (${targetWeight} KG)`;
+          statusEl.textContent = t(
+            `EXACT BALANCE (${targetWeight} KG)`,
+            `BILANCIAMENTO ESATTO (${targetWeight} KG)`
+          );
           if (typeof onWin === 'function') onWin();
         } else {
           locked = true;
@@ -355,7 +368,10 @@ export function mount(container, rng, callbacks = {}) {
             weightBtns[sIdx].classList.add('is-err');
           }
           statusEl.className = 'ovr-ms-status is-err';
-          statusEl.textContent = `TOTALE ERRATO: ${currentTotal} != ${targetWeight} KG`;
+          statusEl.textContent = t(
+            `WRONG TOTAL: ${currentTotal} != ${targetWeight} KG`,
+            `TOTALE ERRATO: ${currentTotal} != ${targetWeight} KG`
+          );
           if (typeof onMistake === 'function') onMistake();
           scheduleTimer(() => {
             currBox.classList.remove('is-err');
@@ -368,7 +384,7 @@ export function mount(container, rng, callbacks = {}) {
             updateView();
             if (!solved) {
               statusEl.className = 'ovr-ms-status';
-              statusEl.textContent = 'SELEZIONA 2 PESI (0/2)';
+              statusEl.textContent = t('SELECT 2 WEIGHTS (0/2)', 'SELEZIONA 2 PESI (0/2)');
             }
           }, 340);
         }

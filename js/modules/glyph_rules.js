@@ -1,85 +1,91 @@
 import { pick, shuffle } from '../prng.js';
+import { t } from '../i18n.js';
 
 const GLYPHS = [
-  { id: 'ALFA', glyph: 'α' },
-  { id: 'BETA', glyph: 'β' },
-  { id: 'GAMMA', glyph: 'γ' },
-  { id: 'DELTA', glyph: 'Δ' },
-  { id: 'THETA', glyph: 'Θ' },
-  { id: 'LAMBDA', glyph: 'Λ' },
-  { id: 'SIGMA', glyph: 'Σ' },
-  { id: 'PSI', glyph: 'Ψ' },
-  { id: 'OMEGA', glyph: 'Ω' },
+  { id: 'ALFA', en: 'ALPHA', it: 'ALFA', glyph: 'α' },
+  { id: 'BETA', en: 'BETA', it: 'BETA', glyph: 'β' },
+  { id: 'GAMMA', en: 'GAMMA', it: 'GAMMA', glyph: 'γ' },
+  { id: 'DELTA', en: 'DELTA', it: 'DELTA', glyph: 'Δ' },
+  { id: 'THETA', en: 'THETA', it: 'THETA', glyph: 'Θ' },
+  { id: 'LAMBDA', en: 'LAMBDA', it: 'LAMBDA', glyph: 'Λ' },
+  { id: 'SIGMA', en: 'SIGMA', it: 'SIGMA', glyph: 'Σ' },
+  { id: 'PSI', en: 'PSI', it: 'PSI', glyph: 'Ψ' },
+  { id: 'OMEGA', en: 'OMEGA', it: 'OMEGA', glyph: 'Ω' },
 ];
 
-const CONDITIONS = [
-  {
-    id: 'row0',
-    phrase: 'è nella prima riga',
-    test: (idx) => Math.floor(idx / 3) === 0,
-  },
-  {
-    id: 'row1',
-    phrase: 'è nella riga centrale',
-    test: (idx) => Math.floor(idx / 3) === 1,
-  },
-  {
-    id: 'row2',
-    phrase: "è nell'ultima riga",
-    test: (idx) => Math.floor(idx / 3) === 2,
-  },
-  {
-    id: 'col0',
-    phrase: 'è nella prima colonna',
-    test: (idx) => idx % 3 === 0,
-  },
-  {
-    id: 'col1',
-    phrase: 'è nella colonna centrale',
-    test: (idx) => idx % 3 === 1,
-  },
-  {
-    id: 'col2',
-    phrase: "è nell'ultima colonna",
-    test: (idx) => idx % 3 === 2,
-  },
-  {
-    id: 'center',
-    phrase: 'è al centro',
-    test: (idx) => idx === 4,
-  },
-  {
-    id: 'corner',
-    phrase: 'è in un angolo',
-    test: (idx) => idx === 0 || idx === 2 || idx === 6 || idx === 8,
-  },
-];
+function getConditions() {
+  return [
+    {
+      id: 'row0',
+      phrase: t('is in the top row', 'è nella prima riga'),
+      test: (idx) => Math.floor(idx / 3) === 0,
+    },
+    {
+      id: 'row1',
+      phrase: t('is in the middle row', 'è nella riga centrale'),
+      test: (idx) => Math.floor(idx / 3) === 1,
+    },
+    {
+      id: 'row2',
+      phrase: t('is in the bottom row', "è nell'ultima riga"),
+      test: (idx) => Math.floor(idx / 3) === 2,
+    },
+    {
+      id: 'col0',
+      phrase: t('is in the left column', 'è nella prima colonna'),
+      test: (idx) => idx % 3 === 0,
+    },
+    {
+      id: 'col1',
+      phrase: t('is in the middle column', 'è nella colonna centrale'),
+      test: (idx) => idx % 3 === 1,
+    },
+    {
+      id: 'col2',
+      phrase: t('is in the right column', "è nell'ultima colonna"),
+      test: (idx) => idx % 3 === 2,
+    },
+    {
+      id: 'center',
+      phrase: t('is in the center', 'è al centro'),
+      test: (idx) => idx === 4,
+    },
+    {
+      id: 'corner',
+      phrase: t('is in a corner', 'è in un angolo'),
+      test: (idx) => idx === 0 || idx === 2 || idx === 6 || idx === 8,
+    },
+  ];
+}
 
-const POSITIONAL_TARGETS = [
-  { key: 'pos_tl', label: "l'angolo in alto a sinistra", resolve: () => 0 },
-  { key: 'pos_tr', label: "l'angolo in alto a destra", resolve: () => 2 },
-  { key: 'pos_center', label: 'il centro della griglia', resolve: () => 4 },
-  { key: 'pos_bl', label: "l'angolo in basso a sinistra", resolve: () => 6 },
-  { key: 'pos_br', label: "l'angolo in basso a destra", resolve: () => 8 },
-];
+function getPositionalTargets() {
+  return [
+    { key: 'pos_tl', label: t('the top-left corner', "l'angolo in alto a sinistra"), resolve: () => 0 },
+    { key: 'pos_tr', label: t('the top-right corner', "l'angolo in alto a destra"), resolve: () => 2 },
+    { key: 'pos_center', label: t('the center of the grid', 'il centro della griglia'), resolve: () => 4 },
+    { key: 'pos_bl', label: t('the bottom-left corner', "l'angolo in basso a sinistra"), resolve: () => 6 },
+    { key: 'pos_br', label: t('the bottom-right corner', "l'angolo in basso a destra"), resolve: () => 8 },
+  ];
+}
 
 function makeGlyphTargets() {
   return GLYPHS.map((g) => ({
     key: `glyph_${g.id}`,
-    label: `${g.id} (${g.glyph})`,
+    label: `${t(g.en, g.it)} (${g.glyph})`,
     resolve: (grid) => grid.findIndex((cell) => cell.id === g.id),
   }));
 }
 
 function pickDistinctTargets(rng, grid) {
   const glyphTargets = makeGlyphTargets();
+  const posTargets = getPositionalTargets();
   const usedIndices = new Set();
   const chosen = [];
 
   for (let slot = 0; slot < 3; slot++) {
     let picked = null;
     for (let attempt = 0; attempt < 40; attempt++) {
-      const pool = rng() < 0.35 ? POSITIONAL_TARGETS : glyphTargets;
+      const pool = rng() < 0.35 ? posTargets : glyphTargets;
       const candidate = pick(rng, pool);
       const idx = candidate.resolve(grid);
       if (idx >= 0 && idx < 9 && !usedIndices.has(idx)) {
@@ -106,12 +112,12 @@ function pickDistinctTargets(rng, grid) {
 function generatePuzzle(rng) {
   const grid = shuffle(rng, GLYPHS);
   const [g1, g2] = shuffle(rng, GLYPHS).slice(0, 2);
-  const [pred1, pred2] = shuffle(rng, CONDITIONS).slice(0, 2);
+  const [pred1, pred2] = shuffle(rng, getConditions()).slice(0, 2);
 
   const cond1 = {
     glyph: g1,
     predicate: pred1,
-    subjectLabel: `${g1.id} (${g1.glyph})`,
+    subjectLabel: `${t(g1.en, g1.it)} (${g1.glyph})`,
     evalGrid: (cells) => {
       const idx = cells.findIndex((c) => c.id === g1.id);
       return idx >= 0 && pred1.test(idx);
@@ -121,7 +127,7 @@ function generatePuzzle(rng) {
   const cond2 = {
     glyph: g2,
     predicate: pred2,
-    subjectLabel: `${g2.id} (${g2.glyph})`,
+    subjectLabel: `${t(g2.en, g2.it)} (${g2.glyph})`,
     evalGrid: (cells) => {
       const idx = cells.findIndex((c) => c.id === g2.id);
       return idx >= 0 && pred2.test(idx);
@@ -140,10 +146,14 @@ function generatePuzzle(rng) {
     expectedIndex = t3.index;
   }
 
-  const ruleText =
+  const ruleText = t(
+    `If ${cond1.subjectLabel} ${cond1.predicate.phrase}, press ${t1.target.label}; ` +
+      `else if ${cond2.subjectLabel} ${cond2.predicate.phrase}, press ${t2.target.label}; ` +
+      `else press ${t3.target.label}.`,
     `Se ${cond1.subjectLabel} ${cond1.predicate.phrase}, premi ${t1.target.label}; ` +
-    `altrimenti se ${cond2.subjectLabel} ${cond2.predicate.phrase}, premi ${t2.target.label}; ` +
-    `altrimenti premi ${t3.target.label}.`;
+      `altrimenti se ${cond2.subjectLabel} ${cond2.predicate.phrase}, premi ${t2.target.label}; ` +
+      `altrimenti premi ${t3.target.label}.`
+  );
 
   return { grid, cond1, cond2, t1, t2, t3, ruleText, expectedIndex };
 }
@@ -303,21 +313,21 @@ export function mount(container, rng, callbacks = {}) {
 
   const ruleBox = document.createElement('div');
   ruleBox.className = 'ovr-glyph-rule';
-  ruleBox.innerHTML = `<div class="ovr-glyph-tag">PROTOCOLLO GEROGLIFICI</div>`;
+  ruleBox.innerHTML = `<div class="ovr-glyph-tag">${t('GLYPH PROTOCOL', 'PROTOCOLLO GEROGLIFICI')}</div>`;
 
   const ruleP = document.createElement('div');
   ruleP.className = 'ovr-glyph-text';
   ruleP.dataset.ruleText = ruleText;
 
-  appendSpan(ruleP, 'Se ');
+  appendSpan(ruleP, t('If ', 'Se '));
   appendSpan(ruleP, cond1.subjectLabel, 'ovr-glyph-cond');
-  appendSpan(ruleP, ` ${cond1.predicate.phrase}, premi `);
+  appendSpan(ruleP, ` ${cond1.predicate.phrase}, ${t('press ', 'premi ')}`);
   appendSpan(ruleP, t1.target.label, 'ovr-glyph-tgt');
-  appendSpan(ruleP, '; altrimenti se ');
+  appendSpan(ruleP, t('; else if ', '; altrimenti se '));
   appendSpan(ruleP, cond2.subjectLabel, 'ovr-glyph-cond');
-  appendSpan(ruleP, ` ${cond2.predicate.phrase}, premi `);
+  appendSpan(ruleP, ` ${cond2.predicate.phrase}, ${t('press ', 'premi ')}`);
   appendSpan(ruleP, t2.target.label, 'ovr-glyph-tgt');
-  appendSpan(ruleP, '; altrimenti premi ');
+  appendSpan(ruleP, t('; else press ', '; altrimenti premi '));
   appendSpan(ruleP, t3.target.label, 'ovr-glyph-tgt');
   appendSpan(ruleP, '.');
 
@@ -328,16 +338,23 @@ export function mount(container, rng, callbacks = {}) {
 
   const statusEl = document.createElement('div');
   statusEl.className = 'ovr-glyph-status';
-  statusEl.textContent = 'VALUTA LA REGOLA E TOCCA IL SIMBOLO';
+  statusEl.textContent = t('EVALUATE THE RULE AND TAP THE SYMBOL', 'VALUTA LA REGOLA E TOCCA IL SIMBOLO');
 
   const cellButtons = grid.map((cell, index) => {
+    const cellLabel = t(cell.en, cell.it);
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'ovr-glyph-cell';
     btn.dataset.cellIndex = String(index);
     btn.dataset.glyph = cell.id;
     btn.dataset.correct = String(index === expectedIndex);
-    btn.setAttribute('aria-label', `${cell.id} (${cell.glyph}), riga ${Math.floor(index / 3) + 1}, colonna ${(index % 3) + 1}`);
+    btn.setAttribute(
+      'aria-label',
+      t(
+        `${cellLabel} (${cell.glyph}), row ${Math.floor(index / 3) + 1}, column ${(index % 3) + 1}`,
+        `${cellLabel} (${cell.glyph}), riga ${Math.floor(index / 3) + 1}, colonna ${(index % 3) + 1}`
+      )
+    );
 
     const symSpan = document.createElement('span');
     symSpan.className = 'ovr-glyph-sym';
@@ -345,7 +362,7 @@ export function mount(container, rng, callbacks = {}) {
 
     const idSpan = document.createElement('span');
     idSpan.className = 'ovr-glyph-id';
-    idSpan.textContent = cell.id;
+    idSpan.textContent = cellLabel;
 
     btn.append(symSpan, idSpan);
 
@@ -361,14 +378,20 @@ export function mount(container, rng, callbacks = {}) {
             b.disabled = true;
           });
           statusEl.className = 'ovr-glyph-status is-ok';
-          statusEl.textContent = `GLIFO ${cell.id} (${cell.glyph}) CONFERMATO // OK`;
+          statusEl.textContent = t(
+            `GLYPH ${cellLabel} (${cell.glyph}) CONFIRMED // OK`,
+            `GLIFO ${cellLabel} (${cell.glyph}) CONFERMATO // OK`
+          );
           if (typeof onWin === 'function') onWin();
         } else {
           btn.classList.remove('is-err');
           void btn.offsetWidth;
           btn.classList.add('is-err');
           statusEl.className = 'ovr-glyph-status is-err';
-          statusEl.textContent = `GLIFO ERRATO: ${cell.id} (${cell.glyph})!`;
+          statusEl.textContent = t(
+            `WRONG GLYPH: ${cellLabel} (${cell.glyph})!`,
+            `GLIFO ERRATO: ${cellLabel} (${cell.glyph})!`
+          );
           scheduleTimer(() => {
             btn.classList.remove('is-err');
           }, 380);

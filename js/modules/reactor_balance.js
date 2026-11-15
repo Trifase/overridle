@@ -1,10 +1,16 @@
 import { randInt, shuffle } from '../prng.js';
+import { t } from '../i18n.js';
 
-const SYSTEM_NAMES = ['SCUDI', 'MOTORI', 'CRIO'];
+const SYSTEM_DEF = [
+  { en: 'SHIELDS', it: 'SCUDI' },
+  { en: 'ENGINES', it: 'MOTORI' },
+  { en: 'CRYO', it: 'CRIO' },
+];
 const MAX_LEVEL = 5;
 
 export function mount(container, rng, callbacks = {}) {
   const { onWin, onMistake } = callbacks;
+  const SYSTEM_NAMES = SYSTEM_DEF.map((s) => t(s.en, s.it));
   const mode = randInt(rng, 0, 1); // 0 = Somma + Uguali, 1 = Somma + Doppio
   const perm = shuffle(rng, [0, 1, 2]);
   const [idxA, idxB, idxC] = perm;
@@ -23,7 +29,10 @@ export function mount(container, rng, callbacks = {}) {
     target[idxB] = valEqual;
     target[idxC] = valEqual;
     total = valFixed + valEqual * 2;
-    ruleText = `TOTALE = ${total} MW • ${SYSTEM_NAMES[idxA]} = ${valFixed} MW • ${SYSTEM_NAMES[idxB]} = ${SYSTEM_NAMES[idxC]}`;
+    ruleText = t(
+      `TOTAL = ${total} MW • ${SYSTEM_NAMES[idxA]} = ${valFixed} MW • ${SYSTEM_NAMES[idxB]} = ${SYSTEM_NAMES[idxC]}`,
+      `TOTALE = ${total} MW • ${SYSTEM_NAMES[idxA]} = ${valFixed} MW • ${SYSTEM_NAMES[idxB]} = ${SYSTEM_NAMES[idxC]}`
+    );
   } else {
     const valBase = randInt(rng, 1, 2);
     const valDouble = valBase * 2;
@@ -32,7 +41,10 @@ export function mount(container, rng, callbacks = {}) {
     target[idxB] = valBase;
     target[idxC] = valFixed;
     total = valDouble + valBase + valFixed;
-    ruleText = `TOTALE = ${total} MW • ${SYSTEM_NAMES[idxC]} = ${valFixed} MW • ${SYSTEM_NAMES[idxA]} = 2× ${SYSTEM_NAMES[idxB]}`;
+    ruleText = t(
+      `TOTAL = ${total} MW • ${SYSTEM_NAMES[idxC]} = ${valFixed} MW • ${SYSTEM_NAMES[idxA]} = 2× ${SYSTEM_NAMES[idxB]}`,
+      `TOTALE = ${total} MW • ${SYSTEM_NAMES[idxC]} = ${valFixed} MW • ${SYSTEM_NAMES[idxA]} = 2× ${SYSTEM_NAMES[idxB]}`
+    );
   }
 
   const levels = [1, 1, 1];
@@ -246,7 +258,7 @@ export function mount(container, rng, callbacks = {}) {
   const totalBar = document.createElement('div');
   totalBar.className = 'ovr-rb-total';
   const totalLbl = document.createElement('span');
-  totalLbl.textContent = 'CARICO REATTORE';
+  totalLbl.textContent = t('REACTOR LOAD', 'CARICO REATTORE');
   const totalVal = document.createElement('span');
   totalBar.append(totalLbl, totalVal);
 
@@ -320,7 +332,7 @@ export function mount(container, rng, callbacks = {}) {
     minusBtn.dataset.system = String(sysIdx);
     minusBtn.dataset.dir = 'down';
     minusBtn.textContent = '−';
-    minusBtn.setAttribute('aria-label', `${SYSTEM_NAMES[sysIdx]} diminuisci`);
+    minusBtn.setAttribute('aria-label', t(`${SYSTEM_NAMES[sysIdx]} decrease`, `${SYSTEM_NAMES[sysIdx]} diminuisci`));
     minusBtn.addEventListener(
       'click',
       () => {
@@ -338,7 +350,7 @@ export function mount(container, rng, callbacks = {}) {
     plusBtn.dataset.system = String(sysIdx);
     plusBtn.dataset.dir = 'up';
     plusBtn.textContent = '+';
-    plusBtn.setAttribute('aria-label', `${SYSTEM_NAMES[sysIdx]} aumenta`);
+    plusBtn.setAttribute('aria-label', t(`${SYSTEM_NAMES[sysIdx]} increase`, `${SYSTEM_NAMES[sysIdx]} aumenta`));
     plusBtn.addEventListener(
       'click',
       () => {
@@ -359,11 +371,14 @@ export function mount(container, rng, callbacks = {}) {
   const execBtn = document.createElement('button');
   execBtn.type = 'button';
   execBtn.className = 'ovr-rb-exec';
-  execBtn.textContent = '[ STABILIZZA NOCCIOLO ]';
+  execBtn.textContent = t('[ STABILIZE CORE ]', '[ STABILIZZA NOCCIOLO ]');
 
   const statusEl = document.createElement('div');
   statusEl.className = 'ovr-rb-status';
-  statusEl.textContent = 'IMPOSTA I LIVELLI (1–5 MW) E STABILIZZA';
+  statusEl.textContent = t(
+    'SET LEVELS (1–5 MW) AND STABILIZE',
+    'IMPOSTA I LIVELLI (1–5 MW) E STABILIZZA'
+  );
 
   execBtn.addEventListener(
     'click',
@@ -384,14 +399,17 @@ export function mount(container, rng, callbacks = {}) {
           plusBtn.disabled = true;
         });
         statusEl.className = 'ovr-rb-status is-ok';
-        statusEl.textContent = 'NOCCIOLO BILANCIATO';
+        statusEl.textContent = t('CORE BALANCED', 'NOCCIOLO BILANCIATO');
         if (typeof onWin === 'function') onWin();
       } else {
         execBtn.classList.remove('is-err');
         void execBtn.offsetWidth;
         execBtn.classList.add('is-err');
         statusEl.className = 'ovr-rb-status is-err';
-        statusEl.textContent = 'DISTRIBUZIONE ERRATA — RICALIBRA!';
+        statusEl.textContent = t(
+          'WRONG DISTRIBUTION — RECALIBRATE!',
+          'DISTRIBUZIONE ERRATA — RICALIBRA!'
+        );
         scheduleTimer(() => {
           execBtn.classList.remove('is-err');
         }, 340);

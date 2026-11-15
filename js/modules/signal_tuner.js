@@ -1,4 +1,5 @@
 import { randInt, shuffle } from '../prng.js';
+import { t } from '../i18n.js';
 
 const SYM_A = '●';
 const SYM_B = '▲';
@@ -29,8 +30,14 @@ export function mount(container, rng, callbacks = {}) {
 
   const ruleText =
     mode === 0
-      ? 'SEGNALE DIRETTO: PREMI IL CANALE CHE CORRISPONDE AL PATTERN TRASMESSO'
-      : `SEGNALE INVERTITO (${SYM_A} ↔ ${SYM_B}): SCAMBIA I SIMBOLI E PREMI IL CANALE`;
+      ? t(
+          'DIRECT SIGNAL: PRESS THE CHANNEL MATCHING THE TRANSMITTED PATTERN',
+          'SEGNALE DIRETTO: PREMI IL CANALE CHE CORRISPONDE AL PATTERN TRASMESSO'
+        )
+      : t(
+          `INVERTED SIGNAL (${SYM_A} ↔ ${SYM_B}): SWAP SYMBOLS AND PRESS THE CHANNEL`,
+          `SEGNALE INVERTITO (${SYM_A} ↔ ${SYM_B}): SCAMBIA I SIMBOLI E PREMI IL CANALE`
+        );
 
   let solved = false;
   let disposed = false;
@@ -218,7 +225,10 @@ export function mount(container, rng, callbacks = {}) {
 
   const txLbl = document.createElement('div');
   txLbl.className = 'ovr-st-tx-lbl';
-  txLbl.textContent = mode === 0 ? 'IMPULSO RICEVUTO [DIRETTO]' : 'IMPULSO RICEVUTO [INVERTITO]';
+  txLbl.textContent =
+    mode === 0
+      ? t('SIGNAL RECEIVED [DIRECT]', 'IMPULSO RICEVUTO [DIRETTO]')
+      : t('SIGNAL RECEIVED [INVERTED]', 'IMPULSO RICEVUTO [INVERTITO]');
 
   const pulsesEl = document.createElement('div');
   pulsesEl.className = 'ovr-st-pulses';
@@ -245,7 +255,7 @@ export function mount(container, rng, callbacks = {}) {
 
   const statusEl = document.createElement('div');
   statusEl.className = 'ovr-st-status';
-  statusEl.textContent = 'SELEZIONA IL CANALE CORRISPONDENTE';
+  statusEl.textContent = t('SELECT MATCHING CHANNEL', 'SELEZIONA IL CANALE CORRISPONDENTE');
 
   const chBtns = channelPatterns.map((pat, i) => {
     const btn = document.createElement('button');
@@ -276,14 +286,20 @@ export function mount(container, rng, callbacks = {}) {
             b.disabled = true;
           });
           statusEl.className = 'ovr-st-status is-ok';
-          statusEl.textContent = `CANALE CH-${i + 1} AGGANCIATO`;
+          statusEl.textContent = t(
+            `CHANNEL CH-${i + 1} LOCKED`,
+            `CANALE CH-${i + 1} AGGANCIATO`
+          );
           if (typeof onWin === 'function') onWin();
         } else {
           btn.classList.remove('is-err');
           void btn.offsetWidth;
           btn.classList.add('is-err');
           statusEl.className = 'ovr-st-status is-err';
-          statusEl.textContent = `CH-${i + 1} NON VALIDO — INTERFERENZA!`;
+          statusEl.textContent = t(
+            `CH-${i + 1} INVALID — INTERFERENCE!`,
+            `CH-${i + 1} NON VALIDO — INTERFERENZA!`
+          );
           scheduleTimer(() => {
             btn.classList.remove('is-err');
           }, 340);

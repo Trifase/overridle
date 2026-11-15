@@ -1871,3 +1871,38 @@ input {
     padding: 6px 10px;
   }
 }
+
+/* Homepage Language Selector */
+.lang-selector {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 10px;
+}
+
+.lang-label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--crt-cyan, #00e5ff);
+}
+
+.lang-btns {
+  display: flex;
+  gap: 6px;
+}
+
+.lang-btn {
+  min-width: 54px;
+  min-height: 30px;
+  padding: 3px 8px;
+}
+
+.lang-btn.is-active {
+  border-color: var(--crt-green, #00ff66);
+  background: rgba(0, 255, 102, 0.2);
+  color: var(--crt-green, #00ff66);
+  box-shadow: 0 0 8px rgba(0, 255, 102, 0.35);
+}

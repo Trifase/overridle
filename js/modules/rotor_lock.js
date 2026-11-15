@@ -1,3 +1,5 @@
+import { t } from '../i18n.js';
+
 /**
  * Aggancio Rotore (rotor_lock)
  * Premi LOCK due volte quando la lancetta passa nella zona verde per agganciare entrambi i perni.
@@ -179,8 +181,14 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
     vBanner.className = 'ovr-variant-banner';
     vBanner.textContent =
       variant === 'drift'
-        ? '⚡ VARIANTE: ZONA MOBILE — La zona verde si sposta!'
-        : '⚡ VARIANTE: ZONA PULSANTE — La zona si restringe e riapre!';
+        ? t(
+            '⚡ VARIANT: MOVING ZONE — The green zone rotates!',
+            '⚡ VARIANTE: ZONA MOBILE — La zona verde si sposta!'
+          )
+        : t(
+            '⚡ VARIANT: PULSING ZONE — The zone shrinks and expands!',
+            '⚡ VARIANTE: ZONA PULSANTE — La zona si restringe e riapre!'
+          );
     root.appendChild(vBanner);
   }
 
@@ -188,16 +196,16 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
   head.className = 'ovr-rl-head';
   const titleEl = document.createElement('span');
   titleEl.className = 'ovr-rl-title';
-  titleEl.textContent = 'ROTORE';
+  titleEl.textContent = t('ROTOR', 'ROTORE');
 
   const leds = document.createElement('div');
   leds.className = 'ovr-rl-leds';
   const led1 = document.createElement('span');
   led1.className = 'ovr-rl-led';
-  led1.textContent = 'PERNO 1';
+  led1.textContent = t('PIN 1', 'PERNO 1');
   const led2 = document.createElement('span');
   led2.className = 'ovr-rl-led';
-  led2.textContent = 'PERNO 2';
+  led2.textContent = t('PIN 2', 'PERNO 2');
   leds.append(led1, led2);
   head.append(titleEl, leds);
 
@@ -209,7 +217,7 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
 
   const statusEl = document.createElement('div');
   statusEl.className = 'ovr-rl-status';
-  statusEl.textContent = 'PREMI LOCK NELLA ZONA VERDE';
+  statusEl.textContent = t('PRESS LOCK IN THE GREEN ZONE', 'PREMI LOCK NELLA ZONA VERDE');
 
   const btn = document.createElement('button');
   btn.type = 'button';
@@ -376,7 +384,7 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
         led1.classList.add('is-locked');
         btn.classList.add('is-ok');
         statusEl.className = 'ovr-rl-status is-ok';
-        statusEl.textContent = 'PERNO 1 AGGANCIATO — ANCORA 1!';
+        statusEl.textContent = t('PIN 1 LOCKED — 1 TO GO!', 'PERNO 1 AGGANCIATO — ANCORA 1!');
 
         dir *= -1;
         speed *= 1.08;
@@ -392,7 +400,7 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
         led2.classList.add('is-locked');
         solved = true;
         statusEl.className = 'ovr-rl-status is-ok';
-        statusEl.textContent = 'ROTORE BLOCCATO!';
+        statusEl.textContent = t('ROTOR LOCKED!', 'ROTORE BLOCCATO!');
         drawDial(now);
         if (rafId !== null) {
           cancelAnimationFrame(rafId);
@@ -404,14 +412,14 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
       errorFlashUntil = now + 350;
       btn.classList.add('is-err');
       statusEl.className = 'ovr-rl-status is-err';
-      statusEl.textContent = 'FUORI ZONA — ERRORE!';
+      statusEl.textContent = t('OUTSIDE ZONE — ERROR!', 'FUORI ZONA — ERRORE!');
       drawDial(now);
       onMistake?.();
       if (!destroyed && !solved) {
         trackTimeout(() => {
           btn.classList.remove('is-err');
           statusEl.className = 'ovr-rl-status';
-          statusEl.textContent = 'PREMI LOCK NELLA ZONA VERDE';
+          statusEl.textContent = t('PRESS LOCK IN THE GREEN ZONE', 'PREMI LOCK NELLA ZONA VERDE');
         }, 350);
       }
     }

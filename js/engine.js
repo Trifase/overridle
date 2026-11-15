@@ -17,6 +17,14 @@ import {
   playWin,
   playExplode,
 } from './audio.js';
+import {
+  initLang,
+  getLang,
+  setLang,
+  t,
+  msg,
+  applyDomTranslations,
+} from './i18n.js';
 
 import * as wires from './modules/wires.js';
 import * as binary_switches from './modules/binary_switches.js';
@@ -59,130 +67,170 @@ export const MODULE_POOL = [
 const MODULE_META = {
   wires: {
     id: 'wires',
-    title: 'TAGLIA I CAVI',
+    title: { en: 'CUT THE WIRES', it: 'TAGLIA I CAVI' },
     mod: wires,
-    instructions:
-      'Leggi la regola logica dei cavi (colori, quantità e posizioni) e recidi solo il cavo richiesto.',
+    instructions: {
+      en: 'Read the wire logic rule (colors, counts, and positions) and cut only the required wire.',
+      it: 'Leggi la regola logica dei cavi (colori, quantità e posizioni) e recidi solo il cavo richiesto.',
+    },
     ruleSelector: '.ovr-wires-rule-text',
   },
   binary_switches: {
     id: 'binary_switches',
-    title: 'SWITCH BINARI',
+    title: { en: 'BINARY SWITCHES', it: 'SWITCH BINARI' },
     mod: binary_switches,
-    instructions:
-      'Attiva gli switch binari per sommare esattamente il valore decimale target e premi EXEC.',
+    instructions: {
+      en: 'Toggle the binary switches to sum to the exact decimal target and press EXEC.',
+      it: 'Attiva gli switch binari per sommare esattamente il valore decimale target e premi EXEC.',
+    },
     ruleSelector: '.ovr-variant-banner',
   },
   math_order: {
     id: 'math_order',
-    title: 'ORDINE DI SCARICA',
+    title: { en: 'DISCHARGE ORDER', it: 'ORDINE DI SCARICA' },
     mod: math_order,
-    instructions:
-      'Calcola il valore di ciascun nodo matematico e toccali tutti nella sequenza indicata.',
+    instructions: {
+      en: "Calculate each math node's value and tap them all in the indicated sequence.",
+      it: 'Calcola il valore di ciascun nodo matematico e toccali tutti nella sequenza indicata.',
+    },
     ruleSelector: '.ovr-math-dir',
   },
   fallout_hack: {
     id: 'fallout_hack',
-    title: 'TERMINALE FALLOUT',
+    title: { en: 'FALLOUT TERMINAL', it: 'TERMINALE FALLOUT' },
     mod: fallout_hack,
-    instructions:
-      'Trova e tocca i 5 codici target nel dump esadecimale evitando le esche.',
+    instructions: {
+      en: 'Find and tap the 5 target codes in the hex dump while avoiding decoys.',
+      it: 'Trova e tocca i 5 codici target nel dump esadecimale evitando le esche.',
+    },
     ruleSelector: '.ovr-variant-banner',
   },
   memory_flash: {
     id: 'memory_flash',
-    title: 'KEYCARD FLASH',
+    title: { en: 'KEYCARD FLASH', it: 'KEYCARD FLASH' },
     mod: memory_flash,
-    instructions:
-      'Memorizza i nodi illuminati durante il flash iniziale e seleziona quelli richiesti.',
+    instructions: {
+      en: 'Memorize the illuminated nodes during the initial flash and select the required ones.',
+      it: 'Memorizza i nodi illuminati durante il flash iniziale e seleziona quelli richiesti.',
+    },
     ruleSelector: '.ovr-variant-banner',
   },
   glyph_rules: {
     id: 'glyph_rules',
-    title: 'GRIGLIA GEROGLIFICI',
+    title: { en: 'GLYPH GRID', it: 'GRIGLIA GEROGLIFICI' },
     mod: glyph_rules,
-    instructions:
-      'Verifica quali simboli compaiono nella griglia 3×3 rispetto alla regola attiva e premi il glifo corretto.',
+    instructions: {
+      en: 'Check where symbols appear on the 3×3 grid against the active rule and press the matching glyph.',
+      it: 'Verifica quali simboli compaiono nella griglia 3×3 rispetto alla regola attiva e premi il glifo corretto.',
+    },
     ruleSelector: '.ovr-glyph-text',
   },
   freq_align: {
     id: 'freq_align',
-    title: 'ALLINEA FREQUENZA',
+    title: { en: 'FREQUENCY ALIGN', it: 'ALLINEA FREQUENZA' },
     mod: freq_align,
-    instructions:
-      'Regola lo slider della frequenza finché la tua onda si sovrappone al target e mantieni l’aggancio.',
+    instructions: {
+      en: 'Adjust the frequency slider until your wave overlaps the target and hold the lock.',
+      it: 'Regola lo slider della frequenza finché la tua onda si sovrappone al target e mantieni l’aggancio.',
+    },
     ruleSelector: '.ovr-variant-banner',
   },
   pressure_purge: {
     id: 'pressure_purge',
-    title: 'SPURGO PRESSIONE',
+    title: { en: 'PRESSURE PURGE', it: 'SPURGO PRESSIONE' },
     mod: pressure_purge,
-    instructions:
-      'Tieni premuto PURGE per far salire la pressione e rilascia esattamente dentro la fascia verde.',
+    instructions: {
+      en: 'Hold PURGE to raise pressure and release exactly inside the green zone.',
+      it: 'Tieni premuto PURGE per far salire la pressione e rilascia esattamente dentro la fascia verde.',
+    },
     ruleSelector: '.ovr-variant-banner',
   },
   rotor_lock: {
     id: 'rotor_lock',
-    title: 'AGGANCIO ROTORE',
+    title: { en: 'ROTOR LOCK', it: 'AGGANCIO ROTORE' },
     mod: rotor_lock,
-    instructions:
-      'Premi LOCK due volte quando la lancetta rotante passa dentro la zona verde per agganciare entrambi i perni.',
+    instructions: {
+      en: 'Press LOCK twice when the rotating needle passes inside the green zone to lock both pins.',
+      it: 'Premi LOCK due volte quando la lancetta rotante passa dentro la zona verde per agganciare entrambi i perni.',
+    },
     ruleSelector: '.ovr-variant-banner',
   },
   valve_sequence: {
     id: 'valve_sequence',
-    title: 'RESET VALVOLE',
+    title: { en: 'VALVE RESET', it: 'RESET VALVOLE' },
     mod: valve_sequence,
-    instructions:
-      'Quando una valvola arriva al 100%, toccala per resettarla entro 2 secondi. Toccare prima del 100% o superare i 2s è errore.',
+    instructions: {
+      en: 'When a valve reaches 100%, tap it to reset within 2 seconds. Tapping early or exceeding 2s is a mistake.',
+      it: 'Quando una valvola arriva al 100%, toccala per resettarla entro 2 secondi. Toccare prima del 100% o superare i 2s è errore.',
+    },
     ruleSelector: '.ovr-variant-banner',
   },
   tactical_map: {
     id: 'tactical_map',
-    title: 'MAPPA TATTICA',
+    title: { en: 'TACTICAL MAP', it: 'MAPPA TATTICA' },
     mod: tactical_map,
-    instructions:
-      'Individua sulla griglia 5×5 le 3 coordinate indicate incrociando colonna e riga sugli assi della mappa.',
+    instructions: {
+      en: 'Locate the 3 listed coordinates on the 5×5 grid by crossing column and row labels on the map axes.',
+      it: 'Individua sulla griglia 5×5 le 3 coordinate indicate incrociando colonna e riga sugli assi della mappa.',
+    },
     ruleSelector: '.ovr-tm-rule',
   },
   magnetic_scale: {
     id: 'magnetic_scale',
-    title: 'BILANCIA MAGNETICA',
+    title: { en: 'MAGNETIC SCALE', it: 'BILANCIA MAGNETICA' },
     mod: magnetic_scale,
-    instructions:
-      'Tocca esattamente 2 pesi tra i 5 disponibili per aggiungere o rimuovere il carico necessario al target.',
+    instructions: {
+      en: 'Tap exactly 2 of the 5 available weights to add or remove the load needed to hit the target.',
+      it: 'Tocca esattamente 2 pesi tra i 5 disponibili per aggiungere o rimuovere il carico necessario al target.',
+    },
     ruleSelector: '.ovr-ms-rule',
   },
   stroop_override: {
     id: 'stroop_override',
-    title: 'PARADOSSO CROMATICO',
+    title: { en: 'COLOR PARADOX', it: 'PARADOSSO CROMATICO' },
     mod: stroop_override,
-    instructions:
-      'Completa 3 step seguendo la regola attiva: scegli il pulsante della parola scritta oppure del colore visivo.',
+    instructions: {
+      en: 'Complete 3 steps following the active rule: pick the button matching the written word or the ink color.',
+      it: 'Completa 3 step seguendo la regola attiva: scegli il pulsante della parola scritta oppure del colore visivo.',
+    },
     ruleSelector: '.ovr-so-rule',
   },
   signal_tuner: {
     id: 'signal_tuner',
-    title: 'DECODIFICA IMPULSI',
+    title: { en: 'PULSE DECODER', it: 'DECODIFICA IMPULSI' },
     mod: signal_tuner,
-    instructions:
-      'Confronta il segnale (• e ━━) con la tabella canali; se invertito, scambia ogni punto con una linea.',
+    instructions: {
+      en: 'Match the signal (● and ▲) to the channel table; if inverted, swap circles and triangles.',
+      it: 'Confronta il segnale (● e ▲) con la tabella canali; se invertito, scambia ogni cerchio con un triangolo.',
+    },
     ruleSelector: '.ovr-st-rule',
   },
   reactor_balance: {
     id: 'reactor_balance',
-    title: 'BILANC. NOCCIOLO',
+    title: { en: 'CORE BALANCE', it: 'BILANC. NOCCIOLO' },
     mod: reactor_balance,
-    instructions:
-      'Imposta i megawatt (1–5) di SCUDI, MOTORI e CRIO rispettando il totale e le relazioni date, poi premi STABILIZZA.',
+    instructions: {
+      en: 'Set megawatts (1–5) for SHIELDS, ENGINES, and CRYO matching the total and relations, then press STABILIZE.',
+      it: 'Imposta i megawatt (1–5) di SCUDI, MOTORI e CRIO rispettando il totale e le relazioni date, poi premi STABILIZZA.',
+    },
   },
 };
+
+function getModuleTitle(entry) {
+  if (!entry) return '';
+  return typeof entry.title === 'object' ? t(entry.title.en, entry.title.it) : entry.title;
+}
+
+function getModuleInstructions(entry) {
+  if (!entry) return '';
+  return typeof entry.instructions === 'object'
+    ? t(entry.instructions.en, entry.instructions.it)
+    : entry.instructions;
+}
 
 const STORAGE_PREFIX = 'override30_';
 const AUTOPAUSE_STORAGE_KEY = 'overridle_autopause';
 const SHARE_URL = 'https://overridle.trifase.online';
-const COPY_DEFAULT_LABEL = '[ COPIA RISULTATO ]';
-const COPY_SUCCESS_LABEL = 'COPIATO NEGLI APPUNTI!';
 
 const testFlags = getTestModeFlags();
 const isTestMode = testFlags.bypassStorage;
@@ -287,6 +335,8 @@ function queryDom() {
       document.getElementById('autopause-overlay-check'),
     ].filter(Boolean);
   }
+  dom.langEnBtn = document.getElementById('lang-en-btn');
+  dom.langItBtn = document.getElementById('lang-it-btn');
 }
 
 function getDailyStorageKey(targetSeed) {
@@ -341,7 +391,9 @@ export function buildShareText({
 }) {
   const heartsStr = formatHearts(remainingLives);
   const outcomePart = won ? `${timeSec.toFixed(1)}s` : '💥';
-  const prefix = practice ? `OVERRIDLE [PRATICA] #${gameSeed}` : `OVERRIDLE #${gameSeed}`;
+  const prefix = practice
+    ? t(`OVERRIDLE [PRACTICE] #${gameSeed}`, `OVERRIDLE [PRATICA] #${gameSeed}`)
+    : `OVERRIDLE #${gameSeed}`;
   return `${prefix} — ${outcomePart} | ${heartsStr}\n${roundSquares.join(' ')}\n${SHARE_URL}`;
 }
 
@@ -374,12 +426,16 @@ function updateMuteButton() {
 function updateSeedBadge() {
   if (!dom.seedBadge) return;
   if (isPractice) {
-    dom.seedBadge.textContent = isTestMode ? 'TEST // PRATICA' : 'PRATICA';
-    dom.seedBadge.title = `Seed Pratica #${seed}`;
+    dom.seedBadge.textContent = isTestMode
+      ? t('TEST // PRACTICE', 'TEST // PRATICA')
+      : t('PRACTICE', 'PRATICA');
+    dom.seedBadge.title = t(`Practice Seed #${seed}`, `Seed Pratica #${seed}`);
     dom.seedBadge.classList.add('is-practice');
   } else {
     dom.seedBadge.textContent = isTestMode ? `TEST #${seed}` : `#${seed}`;
-    dom.seedBadge.title = isTestMode ? `Modalità Test — Seed #${seed}` : `Seed #${seed}`;
+    dom.seedBadge.title = isTestMode
+      ? t(`Test Mode — Seed #${seed}`, `Modalità Test — Seed #${seed}`)
+      : `Seed #${seed}`;
     dom.seedBadge.classList.toggle('is-practice', isTestMode);
   }
 }
@@ -427,15 +483,15 @@ function renderStatsMarkup(won, timeSec, remainingLives, roundSquares) {
   const timeClass = won ? 'text-green' : 'text-red';
   return `
     <div class="stat-box">
-      <span class="stat-label">TEMPO</span>
+      <span class="stat-label">${msg('stat_time')}</span>
       <span class="stat-value ${timeClass}">${timeLabel}</span>
     </div>
     <div class="stat-box">
-      <span class="stat-label">VITE</span>
+      <span class="stat-label">${msg('stat_lives')}</span>
       <span class="stat-value">${formatHearts(remainingLives)}</span>
     </div>
     <div class="stat-box stat-box--full">
-      <span class="stat-label">SEQUENZA MODULI</span>
+      <span class="stat-label">${msg('stat_seq')}</span>
       <span class="stat-value">${roundSquares.join(' ')}</span>
     </div>
   `;
@@ -473,7 +529,7 @@ function setPausedState(activePaused) {
   if (dom.pauseBtn) {
     dom.pauseBtn.classList.toggle('is-paused', activePaused);
     dom.pauseBtn.setAttribute('aria-pressed', activePaused ? 'true' : 'false');
-    dom.pauseBtn.textContent = activePaused ? '[▶ RIPRENDI]' : '[⏸ PAUSA]';
+    dom.pauseBtn.textContent = activePaused ? msg('resume_btn_hud') : msg('pause_btn');
   }
 }
 
@@ -481,7 +537,7 @@ function populatePauseInstructions() {
   const modId = selectedModules[roundIndex];
   const entry = MODULE_META[modId];
   if (dom.pauseModDesc) {
-    dom.pauseModDesc.textContent = entry ? entry.instructions : '';
+    dom.pauseModDesc.textContent = getModuleInstructions(entry);
   }
 
   let ruleText = '';
@@ -557,10 +613,13 @@ function mountCurrentRound() {
   const modId = selectedModules[roundIndex];
   const entry = MODULE_META[modId];
   if (!entry || !entry.mod || typeof entry.mod.mount !== 'function') {
-    throw new Error(`Modulo non valido: ${modId}`);
+    throw new Error(t(`Invalid module: ${modId}`, `Modulo non valido: ${modId}`));
   }
 
-  dom.moduleMeta.textContent = `MODULO ${roundIndex + 1}/${selectedModules.length} • ${entry.title}`;
+  dom.moduleMeta.textContent = t(
+    `MODULE ${roundIndex + 1}/${selectedModules.length} • ${getModuleTitle(entry)}`,
+    `MODULO ${roundIndex + 1}/${selectedModules.length} • ${getModuleTitle(entry)}`
+  );
   updateRoundIndicators();
 
   const roundRng = mulberry32(getSubSeed(seed, roundIndex));
@@ -676,37 +735,48 @@ function endGame(won) {
 function renderEndScreen(won) {
   if (dom.endModeBadge) {
     if (isPractice && practiceModuleId && MODULE_META[practiceModuleId]) {
-      dom.endModeBadge.textContent = `PRATICA • ${MODULE_META[practiceModuleId].title} // #${seed}`;
+      const mTitle = getModuleTitle(MODULE_META[practiceModuleId]);
+      dom.endModeBadge.textContent = t(
+        `PRACTICE • ${mTitle} // #${seed}`,
+        `PRATICA • ${mTitle} // #${seed}`
+      );
     } else if (isPractice) {
-      dom.endModeBadge.textContent = `MODALITÀ PRATICA // #${seed}`;
+      dom.endModeBadge.textContent = t(`PRACTICE MODE // #${seed}`, `MODALITÀ PRATICA // #${seed}`);
     } else if (isTestMode) {
-      dom.endModeBadge.textContent = `MODALITÀ TEST // #${seed}`;
+      dom.endModeBadge.textContent = t(`TEST MODE // #${seed}`, `MODALITÀ TEST // #${seed}`);
     } else {
-      dom.endModeBadge.textContent = `PROTOCOLLO DAILY // #${seed}`;
+      dom.endModeBadge.textContent = t(`DAILY PROTOCOL // #${seed}`, `PROTOCOLLO DAILY // #${seed}`);
     }
   }
 
-  dom.endTitle.textContent = won ? 'OVERRIDE COMPLETATO' : 'INCENERITO';
+  dom.endTitle.textContent = won ? msg('override_complete') : msg('incinerated');
   dom.endTitle.classList.toggle('is-win', won);
   dom.endTitle.classList.toggle('is-lose', !won);
 
   dom.endStats.innerHTML = renderStatsMarkup(won, elapsed, lives, squares);
   dom.sharePreview.textContent = currentShareText;
-  dom.copyShareBtn.textContent = COPY_DEFAULT_LABEL;
+  dom.copyShareBtn.textContent = msg('copy_result');
 
   if (dom.retryPracticeBtn) {
     const canRetrySingle = isPractice && Boolean(practiceModuleId && MODULE_META[practiceModuleId]);
     dom.retryPracticeBtn.hidden = !canRetrySingle;
     dom.retryPracticeBtn.disabled = !canRetrySingle;
     if (canRetrySingle) {
-      const roundLabel = practiceRepeatCount === 1 ? '1 ROUND' : `${practiceRepeatCount} ROUND`;
-      dom.retryPracticeBtn.textContent = `[ ↻ RIPROVA: ${MODULE_META[practiceModuleId].title} (${roundLabel}) ]`;
+      const mTitle = getModuleTitle(MODULE_META[practiceModuleId]);
+      const roundLabel =
+        practiceRepeatCount === 1
+          ? '1 ROUND'
+          : t(`${practiceRepeatCount} ROUNDS`, `${practiceRepeatCount} ROUND`);
+      dom.retryPracticeBtn.textContent = t(
+        `[ ↻ RETRY: ${mTitle} (${roundLabel}) ]`,
+        `[ ↻ RIPROVA: ${mTitle} (${roundLabel}) ]`
+      );
     }
   }
 
   dom.practiceBtn.disabled = false;
   dom.practiceBtn.hidden = false;
-  dom.practiceBtn.textContent = '[ SCEGLI MINIGIOCO / PRATICA ]';
+  dom.practiceBtn.textContent = msg('practice_select_btn');
 }
 
 function tickLoop(now) {
@@ -770,7 +840,7 @@ function renderPracticeModuleGrid() {
 
     const nameSpan = document.createElement('span');
     nameSpan.className = 'practice-mod-name';
-    nameSpan.textContent = entry.title;
+    nameSpan.textContent = getModuleTitle(entry);
 
     btn.append(numSpan, nameSpan);
     btn.addEventListener('click', () => {
@@ -873,9 +943,9 @@ async function copyToClipboard(text, buttonEl) {
     if (prevTimer) {
       clearTimeout(prevTimer);
     }
-    buttonEl.textContent = COPY_SUCCESS_LABEL;
+    buttonEl.textContent = msg('copied_clipboard');
     const timer = setTimeout(() => {
-      buttonEl.textContent = COPY_DEFAULT_LABEL;
+      buttonEl.textContent = msg('copy_result');
       copyResetTimers.delete(buttonEl);
     }, 1800);
     copyResetTimers.set(buttonEl, timer);
@@ -925,7 +995,7 @@ function renderInitialStandby() {
     dom.standbyCompleted.hidden = false;
 
     const won = Boolean(savedDaily.won);
-    dom.standbyResultTitle.textContent = won ? 'OVERRIDE COMPLETATO' : 'INCENERITO';
+    dom.standbyResultTitle.textContent = won ? msg('override_complete') : msg('incinerated');
     dom.standbyResultTitle.classList.toggle('is-win', won);
     dom.standbyResultTitle.classList.toggle('is-lose', !won);
     dom.standbyResultStats.innerHTML = renderStatsMarkup(won, savedDaily.elapsed || 0, lives, squares);
@@ -1027,6 +1097,17 @@ function bindEvents() {
     });
   }
 
+  if (dom.langEnBtn) {
+    dom.langEnBtn.addEventListener('click', () => {
+      applyLanguage('en');
+    });
+  }
+  if (dom.langItBtn) {
+    dom.langItBtn.addEventListener('click', () => {
+      applyLanguage('it');
+    });
+  }
+
   document.addEventListener('keydown', (event) => {
     if (state !== 'PLAYING' || event.ctrlKey || event.metaKey || event.altKey) {
       return;
@@ -1095,9 +1176,37 @@ function exposeReadOnlyDebug() {
   window.__OVERRIDLE_DEBUG__ = debugApi;
 }
 
+function updateLangButtons() {
+  const active = getLang();
+  if (dom.langEnBtn) {
+    const isEn = active === 'en';
+    dom.langEnBtn.classList.toggle('is-active', isEn);
+    dom.langEnBtn.setAttribute('aria-pressed', isEn ? 'true' : 'false');
+  }
+  if (dom.langItBtn) {
+    const isItalian = active === 'it';
+    dom.langItBtn.classList.toggle('is-active', isItalian);
+    dom.langItBtn.setAttribute('aria-pressed', isItalian ? 'true' : 'false');
+  }
+}
+
+function applyLanguage(lang, { persist = true } = {}) {
+  setLang(lang, { persist });
+  updateLangButtons();
+  applyDomTranslations(document);
+  renderPracticeModuleGrid();
+  updateSeedBadge();
+  if (state === 'STANDBY') {
+    renderInitialStandby();
+  }
+}
+
 function init() {
+  initLang();
   queryDom();
   setAutoPause(autoPause, { persist: false });
+  updateLangButtons();
+  applyDomTranslations(document);
   renderPracticeModuleGrid();
   setPracticeRepeatCount(1);
   bindEvents();

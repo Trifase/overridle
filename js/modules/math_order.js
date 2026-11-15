@@ -1,4 +1,5 @@
 import { randInt, pick, shuffle } from '../prng.js';
+import { t } from '../i18n.js';
 
 function makeExpression(rng, op) {
   if (op === '+') {
@@ -228,14 +229,14 @@ export function mount(container, rng, callbacks = {}) {
   topRow.className = 'ovr-math-top';
   const progEl = document.createElement('span');
   progEl.textContent = 'STEP: 0 / 5';
-  topRow.innerHTML = `<span>ORDINE DI SCARICA</span>`;
+  topRow.innerHTML = `<span>${t('DISCHARGE ORDER', 'ORDINE DI SCARICA')}</span>`;
   topRow.appendChild(progEl);
 
   const dirEl = document.createElement('div');
   dirEl.className = 'ovr-math-dir';
   dirEl.textContent = ascending
-    ? 'TOCCA IN ORDINE CRESCENTE (MIN → MAX)'
-    : 'TOCCA IN ORDINE DECRESCENTE (MAX → MIN)';
+    ? t('TAP IN ASCENDING ORDER (MIN → MAX)', 'TOCCA IN ORDINE CRESCENTE (MIN → MAX)')
+    : t('TAP IN DESCENDING ORDER (MAX → MIN)', 'TOCCA IN ORDINE DECRESCENTE (MAX → MIN)');
 
   header.append(topRow, dirEl);
 
@@ -245,8 +246,8 @@ export function mount(container, rng, callbacks = {}) {
   const statusEl = document.createElement('div');
   statusEl.className = 'ovr-math-status';
   statusEl.textContent = ascending
-    ? 'PARTI DAL RISULTATO PIÙ BASSO'
-    : 'PARTI DAL RISULTATO PIÙ ALTO';
+    ? t('START FROM THE LOWEST RESULT', 'PARTI DAL RISULTATO PIÙ BASSO')
+    : t('START FROM THE HIGHEST RESULT', 'PARTI DAL RISULTATO PIÙ ALTO');
 
   const btnRefs = [];
 
@@ -256,7 +257,7 @@ export function mount(container, rng, callbacks = {}) {
     btn.className = idx === 4 ? 'ovr-math-btn is-wide' : 'ovr-math-btn';
     btn.dataset.stepIndex = String(stepById.get(item.id));
     btn.dataset.result = String(item.result);
-    btn.setAttribute('aria-label', `Operazione ${item.label}`);
+    btn.setAttribute('aria-label', t(`Operation ${item.label}`, `Operazione ${item.label}`));
 
     const exprSpan = document.createElement('span');
     exprSpan.className = 'ovr-math-expr';
@@ -290,18 +291,27 @@ export function mount(container, rng, callbacks = {}) {
               ref.badgeSpan.textContent = `✓ #${stepNum} (= ${ref.item.result})`;
             });
             statusEl.className = 'ovr-math-status is-ok';
-            statusEl.textContent = 'SEQUENZA COMPLETA // SCARICA AUTORIZZATA';
+            statusEl.textContent = t(
+              'SEQUENCE COMPLETE // DISCHARGE AUTHORIZED',
+              'SEQUENZA COMPLETA // SCARICA AUTORIZZATA'
+            );
             if (typeof onWin === 'function') onWin();
           } else {
             statusEl.className = 'ovr-math-status';
-            statusEl.textContent = `OK (${nextStep}/5) — CONTINUA LA SEQUENZA`;
+            statusEl.textContent = t(
+              `OK (${nextStep}/5) — CONTINUE SEQUENCE`,
+              `OK (${nextStep}/5) — CONTINUA LA SEQUENZA`
+            );
           }
         } else {
           btn.classList.remove('is-err');
           void btn.offsetWidth;
           btn.classList.add('is-err');
           statusEl.className = 'ovr-math-status is-err';
-          statusEl.textContent = `ORDINE ERRATO SU "${item.label}"!`;
+          statusEl.textContent = t(
+            `WRONG ORDER ON "${item.label}"!`,
+            `ORDINE ERRATO SU "${item.label}"!`
+          );
           scheduleTimer(() => {
             btn.classList.remove('is-err');
           }, 380);

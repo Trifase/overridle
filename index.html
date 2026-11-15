@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -16,25 +16,25 @@
     <header id="hud" class="hud">
       <div class="hud-top">
         <span id="seed-badge" class="seed-badge">#--------</span>
-        <div id="lives-display" class="lives-display" aria-label="Vite rimanenti">❤️❤️❤️</div>
+        <div id="lives-display" class="lives-display" data-i18n-aria="aria_lives" aria-label="Remaining lives">❤️❤️❤️</div>
         <button id="mute-btn" class="crt-btn crt-btn--sm hud-mute-btn" type="button" aria-pressed="false">[AUDIO ON]</button>
       </div>
       <div class="hud-bottom">
-        <div id="round-indicators" class="round-indicators" aria-label="Stato dei 5 moduli">
+        <div id="round-indicators" class="round-indicators" data-i18n-aria="aria_rounds" aria-label="5-module status">
           <span class="round-led" data-round="0">[1]</span>
           <span class="round-led" data-round="1">[2]</span>
           <span class="round-led" data-round="2">[3]</span>
           <span class="round-led" data-round="3">[4]</span>
           <span class="round-led" data-round="4">[5]</span>
         </div>
-        <button id="pause-btn" class="crt-btn crt-btn--sm hud-pause-btn" type="button" aria-pressed="false" aria-label="Metti in pausa (P)" hidden>[⏸ PAUSA]</button>
+        <button id="pause-btn" class="crt-btn crt-btn--sm hud-pause-btn" type="button" aria-pressed="false" data-i18n="pause_btn" data-i18n-aria="aria_pause" aria-label="Pause (P)" hidden>[⏸ PAUSE]</button>
         <div id="timer-display" class="timer-display" aria-live="off">60.0s</div>
       </div>
     </header>
 
     <main id="stage" class="stage">
       <!-- STANDBY -->
-      <section id="screen-standby" class="screen is-active" aria-label="Schermata iniziale">
+      <section id="screen-standby" class="screen is-active" data-i18n-aria="aria_standby" aria-label="Start screen">
         <div class="standby-hero">
           <div class="terminal-tag">SECURITY TERMINAL // EMERGENCY PROTOCOL</div>
           <h1 class="terminal-title">OVERRIDLE</h1>
@@ -42,98 +42,106 @@
 
         <div id="standby-fresh" class="standby-card crt-panel">
           <p class="briefing-text">
-            REAZIONE A CATENA IN CORSO.<br>
-            <strong>5 MODULI. 60.0 SECONDI. 3 VITE.</strong>
+            <span data-i18n="briefing_line1">CHAIN REACTION IN PROGRESS.</span><br>
+            <strong data-i18n="briefing_line2">5 MODULES. 60.0 SECONDS. 3 LIVES.</strong>
           </p>
-          <p class="briefing-sub">
-            Completa ogni sequenza procedurale prima dell'incenerimento del terminale.
+          <p class="briefing-sub" data-i18n="briefing_sub">
+            Complete every procedural sequence before terminal incineration.
           </p>
-          <button id="start-btn" class="crt-btn crt-btn--primary crt-btn--lg" type="button">[ AVVIA OVERRIDE ]</button>
-          <button id="practice-fresh-btn" class="crt-btn crt-btn--amber" type="button">[ MODALITÀ PRATICA ]</button>
+          <button id="start-btn" class="crt-btn crt-btn--primary crt-btn--lg" type="button" data-i18n="start_btn">[ START OVERRIDE ]</button>
+          <button id="practice-fresh-btn" class="crt-btn crt-btn--amber" type="button" data-i18n="practice_btn">[ PRACTICE MODE ]</button>
         </div>
 
         <div id="standby-completed" class="standby-card crt-panel" hidden>
-          <div class="standby-done-label">DAILY COMPLETATO</div>
-          <h2 id="standby-result-title" class="end-title">OVERRIDE COMPLETATO</h2>
+          <div class="standby-done-label" data-i18n="daily_completed">DAILY COMPLETED</div>
+          <h2 id="standby-result-title" class="end-title" data-i18n="override_complete">OVERRIDE COMPLETE</h2>
           <div id="standby-result-stats" class="end-stats"></div>
           <pre id="standby-share-preview" class="share-preview"></pre>
           <div class="end-actions">
-            <button id="copy-standby-btn" class="crt-btn crt-btn--primary" type="button">[ COPIA RISULTATO ]</button>
-            <button id="practice-standby-btn" class="crt-btn crt-btn--amber" type="button">[ MODALITÀ PRATICA ]</button>
+            <button id="copy-standby-btn" class="crt-btn crt-btn--primary" type="button" data-i18n="copy_result">[ COPY RESULT ]</button>
+            <button id="practice-standby-btn" class="crt-btn crt-btn--amber" type="button" data-i18n="practice_btn">[ PRACTICE MODE ]</button>
           </div>
         </div>
 
         <label class="autopause-toggle crt-panel" for="autopause-check">
           <input id="autopause-check" class="autopause-input js-autopause-check" type="checkbox" checked>
           <span class="autopause-box" aria-hidden="true"></span>
-          <span class="autopause-text">AUTO-PAUSA TRA I MODULI (MOSTRA REGOLE)</span>
+          <span class="autopause-text" data-i18n="autopause_full">AUTO-PAUSE BETWEEN MODULES (SHOW RULES)</span>
         </label>
+
+        <div class="lang-selector crt-panel" role="group" aria-label="Language / Lingua">
+          <span class="lang-label" data-i18n="lang_label">LANGUAGE:</span>
+          <div class="lang-btns">
+            <button id="lang-en-btn" class="crt-btn crt-btn--sm lang-btn is-active" type="button" data-lang="en" aria-pressed="true">[ EN ]</button>
+            <button id="lang-it-btn" class="crt-btn crt-btn--sm lang-btn" type="button" data-lang="it" aria-pressed="false">[ IT ]</button>
+          </div>
+        </div>
       </section>
 
       <!-- PRACTICE SELECTOR -->
-      <section id="screen-practice" class="screen" aria-label="Selezione minigioco pratica" hidden>
+      <section id="screen-practice" class="screen" data-i18n-aria="aria_practice" aria-label="Practice minigame selector" hidden>
         <div class="practice-card crt-panel">
           <div class="practice-header">
             <div class="standby-done-label">TRAINING SIMULATOR // OVERRIDLE</div>
-            <h2 class="practice-title">MODALITÀ PRATICA</h2>
+            <h2 class="practice-title" data-i18n="practice_title">PRACTICE MODE</h2>
           </div>
-          <div class="practice-mode-bar" role="group" aria-label="Formato allenamento modulo singolo">
-            <span class="practice-mode-label">FORMATO SINGOLO:</span>
+          <div class="practice-mode-bar" role="group" data-i18n-aria="aria_practice_format" aria-label="Single-module training format">
+            <span class="practice-mode-label" data-i18n="single_format">SINGLE FORMAT:</span>
             <div class="practice-mode-btns">
-              <button id="practice-mode-1" class="crt-btn crt-btn--sm practice-mode-btn is-active" type="button" aria-pressed="true">[ 1 ROUND ]</button>
-              <button id="practice-mode-5" class="crt-btn crt-btn--sm practice-mode-btn" type="button" aria-pressed="false">[ 5 ROUND ]</button>
+              <button id="practice-mode-1" class="crt-btn crt-btn--sm practice-mode-btn is-active" type="button" aria-pressed="true" data-i18n="round_1">[ 1 ROUND ]</button>
+              <button id="practice-mode-5" class="crt-btn crt-btn--sm practice-mode-btn" type="button" aria-pressed="false" data-i18n="round_5">[ 5 ROUNDS ]</button>
             </div>
           </div>
           <label class="autopause-toggle autopause-toggle--compact" for="autopause-practice-check">
             <input id="autopause-practice-check" class="autopause-input js-autopause-check" type="checkbox" checked>
             <span class="autopause-box" aria-hidden="true"></span>
-            <span class="autopause-text">AUTO-PAUSA TRA I MODULI</span>
+            <span class="autopause-text" data-i18n="autopause_short">AUTO-PAUSE BETWEEN MODULES</span>
           </label>
-          <button id="practice-random-btn" class="crt-btn crt-btn--primary practice-random-btn" type="button">[ 🎲 MIX CASUALE (5 MODULI) ]</button>
-          <div id="practice-module-grid" class="practice-grid" aria-label="Elenco minigiochi"></div>
-          <button id="practice-back-btn" class="crt-btn practice-back-btn" type="button">[ ← INDIETRO ]</button>
+          <button id="practice-random-btn" class="crt-btn crt-btn--primary practice-random-btn" type="button" data-i18n="practice_random">[ 🎲 RANDOM MIX (5 MODULES) ]</button>
+          <div id="practice-module-grid" class="practice-grid" data-i18n-aria="aria_practice_grid" aria-label="Minigame list"></div>
+          <button id="practice-back-btn" class="crt-btn practice-back-btn" type="button" data-i18n="back">[ ← BACK ]</button>
         </div>
       </section>
 
       <!-- PLAYING -->
-      <section id="screen-playing" class="screen" aria-label="Modulo attivo" hidden>
-        <div id="module-meta" class="module-meta">MODULO 1/5</div>
+      <section id="screen-playing" class="screen" data-i18n-aria="aria_playing" aria-label="Active module" hidden>
+        <div id="module-meta" class="module-meta">MODULE 1/5</div>
         <div class="playing-stage">
           <div id="module-container" class="module-container"></div>
           <div id="pause-overlay" class="pause-overlay crt-panel" role="dialog" aria-modal="true" aria-labelledby="pause-title" hidden>
             <div class="pause-header">
-              <div id="pause-title" class="pause-title">SISTEMA IN PAUSA</div>
-              <div class="pause-sub">TIMER E MODULO BLOCCATI — CONSULTA LE ISTRUZIONI</div>
+              <div id="pause-title" class="pause-title" data-i18n="pause_title">SYSTEM PAUSED</div>
+              <div class="pause-sub" data-i18n="pause_sub">TIMER &amp; MODULE LOCKED — CHECK INSTRUCTIONS</div>
             </div>
             <div class="pause-instructions">
-              <div class="pause-section-label">ISTRUZIONI MODULO</div>
+              <div class="pause-section-label" data-i18n="pause_instr_label">MODULE INSTRUCTIONS</div>
               <p id="pause-mod-desc" class="pause-mod-desc"></p>
               <div id="pause-mod-rule-wrap" class="pause-mod-rule-wrap" hidden>
-                <div class="pause-section-label">REGOLA ATTIVA</div>
+                <div class="pause-section-label" data-i18n="pause_rule_label">ACTIVE RULE</div>
                 <p id="pause-mod-rule" class="pause-mod-rule"></p>
               </div>
             </div>
             <label class="autopause-toggle autopause-toggle--compact" for="autopause-overlay-check">
               <input id="autopause-overlay-check" class="autopause-input js-autopause-check" type="checkbox" checked>
               <span class="autopause-box" aria-hidden="true"></span>
-              <span class="autopause-text">AUTO-PAUSA TRA I MODULI</span>
+              <span class="autopause-text" data-i18n="autopause_short">AUTO-PAUSE BETWEEN MODULES</span>
             </label>
-            <button id="resume-btn" class="crt-btn crt-btn--primary pause-resume-btn" type="button">[ ▶ RIPRENDI OVERRIDE ]</button>
+            <button id="resume-btn" class="crt-btn crt-btn--primary pause-resume-btn" type="button" data-i18n="resume_override">[ ▶ RESUME OVERRIDE ]</button>
           </div>
         </div>
       </section>
 
       <!-- END -->
-      <section id="screen-end" class="screen" aria-label="Esito partita" hidden>
+      <section id="screen-end" class="screen" data-i18n-aria="aria_end" aria-label="Game result" hidden>
         <div class="end-card crt-panel">
-          <div id="end-mode-badge" class="end-mode-badge">PROTOCOLLO DAILY</div>
-          <h2 id="end-title" class="end-title">OVERRIDE COMPLETATO</h2>
+          <div id="end-mode-badge" class="end-mode-badge">DAILY PROTOCOL</div>
+          <h2 id="end-title" class="end-title" data-i18n="override_complete">OVERRIDE COMPLETE</h2>
           <div id="end-stats" class="end-stats"></div>
           <pre id="share-preview" class="share-preview"></pre>
           <div class="end-actions">
-            <button id="copy-share-btn" class="crt-btn crt-btn--primary crt-btn--lg" type="button">[ COPIA RISULTATO ]</button>
-            <button id="retry-practice-btn" class="crt-btn crt-btn--amber" type="button" hidden>[ ↻ RIPROVA STESSO MODULO ]</button>
-            <button id="practice-btn" class="crt-btn crt-btn--amber" type="button">[ MODALITÀ PRATICA ]</button>
+            <button id="copy-share-btn" class="crt-btn crt-btn--primary crt-btn--lg" type="button" data-i18n="copy_result">[ COPY RESULT ]</button>
+            <button id="retry-practice-btn" class="crt-btn crt-btn--amber" type="button" hidden>[ ↻ RETRY MODULE ]</button>
+            <button id="practice-btn" class="crt-btn crt-btn--amber" type="button" data-i18n="practice_btn">[ PRACTICE MODE ]</button>
           </div>
         </div>
       </section>

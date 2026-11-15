@@ -1,4 +1,5 @@
 import { randInt, pick, shuffle } from '../prng.js';
+import { t } from '../i18n.js';
 
 const WORD_POOL = [
   'CORE', 'FLUX', 'NODE', 'SYNC', 'BIOS', 'LOCK',
@@ -280,8 +281,14 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
     vBanner.className = 'ovr-variant-banner';
     vBanner.textContent =
       variant === 'sequence'
-        ? '⚡ VARIANTE: ORDINE OBBLIGATORIO — Tocca da sinistra a destra!'
-        : '⚡ VARIANTE: OMONIMI — Occhio alle esche quasi identiche!';
+        ? t(
+            '⚡ VARIANT: STRICT ORDER — Tap targets left to right!',
+            '⚡ VARIANTE: ORDINE OBBLIGATORIO — Tocca da sinistra a destra!'
+          )
+        : t(
+            '⚡ VARIANT: MIMICS — Watch out for near-identical decoys!',
+            '⚡ VARIANTE: OMONIMI — Occhio alle esche quasi identiche!'
+          );
     root.appendChild(vBanner);
   }
 
@@ -290,10 +297,12 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
   const titleEl = document.createElement('span');
   titleEl.className = 'ovr-fh-title';
   titleEl.textContent =
-    variant === 'sequence' ? 'TERMINALE // IN ORDINE →' : 'TERMINALE // TARGET';
+    variant === 'sequence'
+      ? t('TERMINAL // IN ORDER →', 'TERMINALE // IN ORDINE →')
+      : t('TERMINAL // TARGET', 'TERMINALE // TARGET');
   const countEl = document.createElement('span');
   countEl.className = 'ovr-fh-count';
-  countEl.textContent = 'TROVATI: 0/5';
+  countEl.textContent = t('FOUND: 0/5', 'TROVATI: 0/5');
   head.append(titleEl, countEl);
 
   const targetsBar = document.createElement('div');
@@ -359,7 +368,7 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
             const nextChip = chipMap.get(targets[foundSet.size]);
             if (nextChip) nextChip.classList.add('is-next');
           }
-          countEl.textContent = `TROVATI: ${foundSet.size}/5`;
+          countEl.textContent = t(`FOUND: ${foundSet.size}/5`, `TROVATI: ${foundSet.size}/5`);
           if (foundSet.size >= 5) {
             solved = true;
             onWin?.();

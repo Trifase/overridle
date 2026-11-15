@@ -1,11 +1,12 @@
 import { randInt, pick, shuffle } from '../prng.js';
+import { t } from '../i18n.js';
 
 const COLORS = [
-  { name: 'ROSSO', hex: '#ff3b3b' },
-  { name: 'BLU', hex: '#2997ff' },
-  { name: 'GIALLO', hex: '#ffd426' },
-  { name: 'VERDE', hex: '#00e676' },
-  { name: 'BIANCO', hex: '#eef7f2' },
+  { id: 'ROSSO', en: 'RED', it: 'ROSSO', hex: '#ff3b3b' },
+  { id: 'BLU', en: 'BLUE', it: 'BLU', hex: '#2997ff' },
+  { id: 'GIALLO', en: 'YELLOW', it: 'GIALLO', hex: '#ffd426' },
+  { id: 'VERDE', en: 'GREEN', it: 'VERDE', hex: '#00e676' },
+  { id: 'BIANCO', en: 'WHITE', it: 'BIANCO', hex: '#eef7f2' },
 ];
 
 function pickDistinctInts(rng, count, min, max, predicate = () => true) {
@@ -37,7 +38,7 @@ function generatePuzzle(rng) {
         value: i === targetIdx ? evenVal : oddVals[o++],
       });
     }
-    ruleText = "Taglia l'unico cavo con valore PARI.";
+    ruleText = t("Cut the only wire with an EVEN value.", "Taglia l'unico cavo con valore PARI.");
     verify = (list) => {
       const matches = list.filter((w) => w.value % 2 === 0);
       return matches.length === 1 ? matches[0].index : -1;
@@ -55,7 +56,7 @@ function generatePuzzle(rng) {
         value: i === targetIdx ? oddVal : evenVals[e++],
       });
     }
-    ruleText = "Taglia l'unico cavo con valore DISPARI.";
+    ruleText = t("Cut the only wire with an ODD value.", "Taglia l'unico cavo con valore DISPARI.");
     verify = (list) => {
       const matches = list.filter((w) => w.value % 2 !== 0);
       return matches.length === 1 ? matches[0].index : -1;
@@ -66,7 +67,7 @@ function generatePuzzle(rng) {
     for (let i = 0; i < count; i++) {
       wires.push({ index: i, color: pick(rng, COLORS), value: vals[i] });
     }
-    ruleText = 'Taglia il cavo con il valore MASSIMO.';
+    ruleText = t('Cut the wire with the HIGHEST value.', 'Taglia il cavo con il valore MASSIMO.');
     verify = (list) => {
       const maxVal = Math.max(...list.map((w) => w.value));
       const matches = list.filter((w) => w.value === maxVal);
@@ -78,7 +79,7 @@ function generatePuzzle(rng) {
     for (let i = 0; i < count; i++) {
       wires.push({ index: i, color: pick(rng, COLORS), value: vals[i] });
     }
-    ruleText = 'Taglia il cavo con il valore MINIMO.';
+    ruleText = t('Cut the wire with the LOWEST value.', 'Taglia il cavo con il valore MINIMO.');
     verify = (list) => {
       const minVal = Math.min(...list.map((w) => w.value));
       const matches = list.filter((w) => w.value === minVal);
@@ -101,16 +102,18 @@ function generatePuzzle(rng) {
         value: vals[i],
       });
     }
-    ruleText =
-      "Taglia il PRIMO cavo ROSSO se ci sono almeno 2 cavi ROSSI; altrimenti taglia l'ULTIMO cavo.";
+    ruleText = t(
+      'Cut the FIRST RED wire if there are at least 2 RED wires; otherwise cut the LAST wire.',
+      "Taglia il PRIMO cavo ROSSO se ci sono almeno 2 cavi ROSSI; altrimenti taglia l'ULTIMO cavo."
+    );
     verify = (list) => {
-      const reds = list.filter((w) => w.color.name === 'ROSSO');
+      const reds = list.filter((w) => w.color.id === 'ROSSO');
       return reds.length >= 2 ? reds[0].index : list.length - 1;
     };
   } else if (family === 5) {
     // At most 1 BLUE wire; if in even 1-based position (2° or 4°) cut it, else cut 1° wire
     const blueColor = COLORS[1];
-    const nonBlueColors = COLORS.filter((c) => c.name !== 'BLU');
+    const nonBlueColors = COLORS.filter((c) => c.id !== 'BLU');
     const mode = randInt(rng, 0, 2); // 0: no blue, 1: blue at even pos, 2: blue at odd pos
     let blueIdx = -1;
     if (mode === 1) {
@@ -132,10 +135,12 @@ function generatePuzzle(rng) {
         value: vals[i],
       });
     }
-    ruleText =
-      "Se c'è un cavo BLU in posizione PARI (2° o 4°), taglialo; altrimenti taglia il PRIMO cavo.";
+    ruleText = t(
+      'If there is a BLUE wire in an EVEN position (2nd or 4th), cut it; otherwise cut the FIRST wire.',
+      "Se c'è un cavo BLU in posizione PARI (2° o 4°), taglialo; altrimenti taglia il PRIMO cavo."
+    );
     verify = (list) => {
-      const blues = list.filter((w) => w.color.name === 'BLU');
+      const blues = list.filter((w) => w.color.id === 'BLU');
       if (blues.length > 1) return -1;
       if (blues.length === 1 && (blues[0].index + 1) % 2 === 0) {
         return blues[0].index;
@@ -155,7 +160,10 @@ function generatePuzzle(rng) {
         value: i === targetIdx ? mult5 : nonMult5[m++],
       });
     }
-    ruleText = "Taglia l'unico cavo il cui numero è multiplo di 5.";
+    ruleText = t(
+      'Cut the only wire whose number is a multiple of 5.',
+      "Taglia l'unico cavo il cui numero è multiplo di 5."
+    );
     verify = (list) => {
       const matches = list.filter((w) => w.value % 5 === 0);
       return matches.length === 1 ? matches[0].index : -1;
@@ -163,7 +171,7 @@ function generatePuzzle(rng) {
   } else {
     // Exactly 1 YELLOW wire, no value equals 50: if YELLOW > 50 cut YELLOW, else cut MIN
     const yellowColor = COLORS[2];
-    const nonYellowColors = COLORS.filter((c) => c.name !== 'GIALLO');
+    const nonYellowColors = COLORS.filter((c) => c.id !== 'GIALLO');
     const yellowIdx = randInt(rng, 0, count - 1);
     const wantGt50 = rng() < 0.5;
     const yellowPool = pickDistinctInts(rng, 1, 11, 99, (n) =>
@@ -185,10 +193,12 @@ function generatePuzzle(rng) {
         value: i === yellowIdx ? yellowVal : otherVals[o++],
       });
     }
-    ruleText =
-      "Se l'unico cavo GIALLO ha valore maggiore di 50, taglialo; altrimenti taglia il cavo con il valore MINIMO.";
+    ruleText = t(
+      'If the only YELLOW wire has a value greater than 50, cut it; otherwise cut the wire with the LOWEST value.',
+      "Se l'unico cavo GIALLO ha valore maggiore di 50, taglialo; altrimenti taglia il cavo con il valore MINIMO."
+    );
     verify = (list) => {
-      const yellows = list.filter((w) => w.color.name === 'GIALLO');
+      const yellows = list.filter((w) => w.color.id === 'GIALLO');
       if (yellows.length !== 1 || yellows[0].value === 50) return -1;
       if (yellows[0].value > 50) return yellows[0].index;
       const minVal = Math.min(...list.map((w) => w.value));
@@ -395,7 +405,7 @@ export function mount(container, rng, callbacks = {}) {
 
   const ruleBox = document.createElement('div');
   ruleBox.className = 'ovr-wires-rule';
-  ruleBox.innerHTML = `<div class="ovr-wires-tag">PROTOCOLLO TAGLIO // ${wires.length} CAVI</div>`;
+  ruleBox.innerHTML = `<div class="ovr-wires-tag">${t(`CUT PROTOCOL // ${wires.length} WIRES`, `PROTOCOLLO TAGLIO // ${wires.length} CAVI`)}</div>`;
   const ruleP = document.createElement('div');
   ruleP.className = 'ovr-wires-rule-text';
   ruleP.textContent = ruleText;
@@ -406,19 +416,23 @@ export function mount(container, rng, callbacks = {}) {
 
   const statusEl = document.createElement('div');
   statusEl.className = 'ovr-wires-status';
-  statusEl.textContent = 'TOCCA IL CAVO CORRETTO PER RECIDERLO';
+  statusEl.textContent = t('TAP THE CORRECT WIRE TO CUT IT', 'TOCCA IL CAVO CORRETTO PER RECIDERLO');
 
   const wireButtons = wires.map((w) => {
+    const colorLabel = t(w.color.en, w.color.it);
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'ovr-wire-btn';
     btn.style.setProperty('--wire-color', w.color.hex);
     btn.dataset.wireIndex = String(w.index);
     btn.dataset.correct = String(w.index === correctIndex);
-    btn.setAttribute('aria-label', `Cavo ${w.index + 1} ${w.color.name} codice ${w.value}`);
+    btn.setAttribute(
+      'aria-label',
+      t(`Wire ${w.index + 1} ${colorLabel} code ${w.value}`, `Cavo ${w.index + 1} ${colorLabel} codice ${w.value}`)
+    );
 
     btn.innerHTML = `
-      <span class="ovr-wire-pos">${w.index + 1}°</span>
+      <span class="ovr-wire-pos">${t(`#${w.index + 1}`, `${w.index + 1}°`)}</span>
       <span class="ovr-wire-cable" aria-hidden="true">
         <span class="ovr-wire-pin"></span>
         <span class="ovr-wire-span ovr-wire-span-l"></span>
@@ -426,7 +440,7 @@ export function mount(container, rng, callbacks = {}) {
         <span class="ovr-wire-span ovr-wire-span-r"></span>
         <span class="ovr-wire-pin"></span>
       </span>
-      <span class="ovr-wire-label">[${w.color.name}] // ${w.value}</span>
+      <span class="ovr-wire-label">[${colorLabel}] // ${w.value}</span>
     `;
 
     btn.addEventListener(
@@ -441,14 +455,20 @@ export function mount(container, rng, callbacks = {}) {
             b.disabled = true;
           });
           statusEl.className = 'ovr-wires-status is-ok';
-          statusEl.textContent = `CAVO ${w.index + 1}° [${w.color.name}] RECISO // OK`;
+          statusEl.textContent = t(
+            `WIRE #${w.index + 1} [${colorLabel}] CUT // OK`,
+            `CAVO ${w.index + 1}° [${colorLabel}] RECISO // OK`
+          );
           if (typeof onWin === 'function') onWin();
         } else {
           btn.classList.remove('is-error');
           void btn.offsetWidth;
           btn.classList.add('is-error');
           statusEl.className = 'ovr-wires-status is-err';
-          statusEl.textContent = `CAVO ERRATO [${w.color.name} // ${w.value}] — CORTOCIRCUITO!`;
+          statusEl.textContent = t(
+            `WRONG WIRE [${colorLabel} // ${w.value}] — SHORT CIRCUIT!`,
+            `CAVO ERRATO [${colorLabel} // ${w.value}] — CORTOCIRCUITO!`
+          );
           scheduleTimer(() => {
             btn.classList.remove('is-error');
           }, 380);

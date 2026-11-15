@@ -1,4 +1,5 @@
 import { randInt, shuffle } from '../prng.js';
+import { t } from '../i18n.js';
 
 const LETTERS = ['A', 'B', 'C', 'D', 'E'];
 const NUMBERS = ['1', '2', '3', '4', '5'];
@@ -17,18 +18,27 @@ export function mount(container, rng, callbacks = {}) {
   if (mode === 0) {
     colLabels = LETTERS.slice();
     rowLabels = NUMBERS.slice();
-    ruleText = 'ASSI STANDARD: INCROCIA COLONNA (A–E) E RIGA (1–5)';
+    ruleText = t(
+      'STANDARD AXES: CROSS COLUMN (A–E) AND ROW (1–5)',
+      'ASSI STANDARD: INCROCIA COLONNA (A–E) E RIGA (1–5)'
+    );
   } else if (mode === 1) {
     colLabels = shuffle(rng, LETTERS);
     rowLabels = shuffle(rng, NUMBERS);
     if (colLabels.join('') === 'ABCDE' && rowLabels.join('') === '12345') {
       colLabels.reverse();
     }
-    ruleText = 'ASSI IN DISORDINE: CONTROLLA LE ETICHETTE SULLA CORNICE';
+    ruleText = t(
+      'SCRAMBLED AXES: CHECK LABELS ON THE BORDER',
+      'ASSI IN DISORDINE: CONTROLLA LE ETICHETTE SULLA CORNICE'
+    );
   } else {
     colLabels = shuffle(rng, SYMBOLS);
     rowLabels = NUMBERS.slice();
-    ruleText = 'ASSI SIMBOLICI: INCROCIA SIMBOLO COLONNA E NUMERO RIGA';
+    ruleText = t(
+      'SYMBOL AXES: CROSS COLUMN SYMBOL AND ROW NUMBER',
+      'ASSI SIMBOLICI: INCROCIA SIMBOLO COLONNA E NUMERO RIGA'
+    );
   }
 
   const allCoords = [];
@@ -229,7 +239,7 @@ export function mount(container, rng, callbacks = {}) {
 
   const statusEl = document.createElement('div');
   statusEl.className = 'ovr-tm-status';
-  statusEl.textContent = 'TOCCA I 3 SETTORI BERSAGLIO (0/3)';
+  statusEl.textContent = t('TAP THE 3 TARGET SECTORS (0/3)', 'TOCCA I 3 SETTORI BERSAGLIO (0/3)');
 
   const cellButtons = [];
 
@@ -249,7 +259,7 @@ export function mount(container, rng, callbacks = {}) {
       const coordLabel = `${colLabels[c]}${separator}${rowLabels[r]}`;
       btn.dataset.coord = coordLabel;
       btn.dataset.target = targetIdx >= 0 ? '1' : '0';
-      btn.setAttribute('aria-label', `Settore ${coordLabel}`);
+      btn.setAttribute('aria-label', t(`Sector ${coordLabel}`, `Settore ${coordLabel}`));
       btn.textContent = terrain;
 
       let cellHit = false;
@@ -275,18 +285,18 @@ export function mount(container, rng, callbacks = {}) {
                 b.disabled = true;
               });
               statusEl.className = 'ovr-tm-status is-ok';
-              statusEl.textContent = 'SETTORI ACQUISITI (3/3)';
+              statusEl.textContent = t('SECTORS ACQUIRED (3/3)', 'SETTORI ACQUISITI (3/3)');
               if (typeof onWin === 'function') onWin();
             } else {
               statusEl.className = 'ovr-tm-status';
-              statusEl.textContent = `SETTORE CONFERMATO (${hits}/3)`;
+              statusEl.textContent = t(`SECTOR CONFIRMED (${hits}/3)`, `SETTORE CONFERMATO (${hits}/3)`);
             }
           } else {
             btn.classList.remove('is-err');
             void btn.offsetWidth;
             btn.classList.add('is-err');
             statusEl.className = 'ovr-tm-status is-err';
-            statusEl.textContent = `COORDINATA ERRATA: ${coordLabel}`;
+            statusEl.textContent = t(`WRONG COORDINATE: ${coordLabel}`, `COORDINATA ERRATA: ${coordLabel}`);
             scheduleTimer(() => {
               btn.classList.remove('is-err');
             }, 340);
