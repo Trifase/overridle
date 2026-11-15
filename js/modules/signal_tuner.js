@@ -1,18 +1,21 @@
 import { randInt, shuffle } from '../prng.js';
 
+const SYM_A = '●';
+const SYM_B = '▲';
+
 const CODE_PATTERNS = [
-  '• • ━━',
-  '• ━━ •',
-  '━━ • •',
-  '• ━━ ━━',
-  '━━ • ━━',
-  '━━ ━━ •',
+  `${SYM_A} ${SYM_A} ${SYM_B}`,
+  `${SYM_A} ${SYM_B} ${SYM_A}`,
+  `${SYM_B} ${SYM_A} ${SYM_A}`,
+  `${SYM_A} ${SYM_B} ${SYM_B}`,
+  `${SYM_B} ${SYM_A} ${SYM_B}`,
+  `${SYM_B} ${SYM_B} ${SYM_A}`,
 ];
 
 function invertPattern(pattern) {
   return pattern
     .split(' ')
-    .map((tok) => (tok === '•' ? '━━' : '•'))
+    .map((tok) => (tok === SYM_A ? SYM_B : SYM_A))
     .join(' ');
 }
 
@@ -27,7 +30,7 @@ export function mount(container, rng, callbacks = {}) {
   const ruleText =
     mode === 0
       ? 'SEGNALE DIRETTO: PREMI IL CANALE CHE CORRISPONDE AL PATTERN TRASMESSO'
-      : 'SEGNALE INVERTITO (• ↔ ━━): SCAMBIA PUNTI E LINEE E PREMI IL CANALE';
+      : `SEGNALE INVERTITO (${SYM_A} ↔ ${SYM_B}): SCAMBIA I SIMBOLI E PREMI IL CANALE`;
 
   let solved = false;
   let disposed = false;
@@ -100,27 +103,33 @@ export function mount(container, rng, callbacks = {}) {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
+      gap: 16px;
       min-height: 28px;
+      color: var(--crt-green, #00ff66);
     }
     .ovr-st-dot {
-      width: 16px;
-      height: 16px;
+      width: 18px;
+      height: 18px;
       border-radius: 50%;
-      background: var(--crt-green, #00ff66);
+      background: currentColor;
       box-shadow: 0 0 10px rgba(0, 255, 102, 0.7);
     }
-    .ovr-st-dash {
-      width: 44px;
-      height: 14px;
-      border-radius: 3px;
-      background: var(--crt-green, #00ff66);
-      box-shadow: 0 0 10px rgba(0, 255, 102, 0.7);
+    .ovr-st-tri {
+      width: 20px;
+      height: 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      filter: drop-shadow(0 0 7px rgba(0, 255, 102, 0.7));
     }
-    .ovr-st-transmitter.is-inv .ovr-st-dot,
-    .ovr-st-transmitter.is-inv .ovr-st-dash {
-      background: var(--crt-amber, #ffb000);
+    .ovr-st-transmitter.is-inv .ovr-st-pulses {
+      color: var(--crt-amber, #ffb000);
+    }
+    .ovr-st-transmitter.is-inv .ovr-st-dot {
       box-shadow: 0 0 10px rgba(255, 176, 0, 0.7);
+    }
+    .ovr-st-transmitter.is-inv .ovr-st-tri {
+      filter: drop-shadow(0 0 7px rgba(255, 176, 0, 0.7));
     }
     .ovr-st-tx-text {
       font-size: 16px;
@@ -175,9 +184,9 @@ export function mount(container, rng, callbacks = {}) {
       color: var(--crt-cyan, #00e5ff);
     }
     .ovr-st-ch-pat {
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 800;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.14em;
     }
     .ovr-st-status {
       font-size: 11px;
@@ -215,7 +224,13 @@ export function mount(container, rng, callbacks = {}) {
   pulsesEl.className = 'ovr-st-pulses';
   for (const tok of transmittedPattern.split(' ')) {
     const seg = document.createElement('span');
-    seg.className = tok === '•' ? 'ovr-st-dot' : 'ovr-st-dash';
+    if (tok === SYM_A) {
+      seg.className = 'ovr-st-dot';
+    } else {
+      seg.className = 'ovr-st-tri';
+      seg.innerHTML =
+        '<svg viewBox="0 0 20 18" width="20" height="18" aria-hidden="true"><polygon points="10,1 19,17 1,17" fill="currentColor"/></svg>';
+    }
     pulsesEl.appendChild(seg);
   }
 
