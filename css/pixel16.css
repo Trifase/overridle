@@ -42,6 +42,7 @@ body.theme-pixel16 *::before,
 body.theme-pixel16 *::after {
   scrollbar-width: none;
   -ms-overflow-style: none;
+  font-weight: 400 !important;
 }
 
 body.theme-pixel16 *::-webkit-scrollbar {
@@ -116,12 +117,36 @@ body.theme-pixel16 .seed-badge.is-practice {
   border-color: var(--px-outline);
 }
 
+body.theme-pixel16,
+body.theme-pixel16 button,
+body.theme-pixel16 input {
+  font-weight: 400 !important;
+  -webkit-font-smoothing: none;
+}
+
 body.theme-pixel16 .hud-mute-btn,
 body.theme-pixel16 .hud-pause-btn {
-  min-height: 22px;
-  min-width: auto;
-  padding: 2px 7px;
-  font-size: 0.62rem;
+  min-height: 22px !important;
+  min-width: 0 !important;
+  width: auto !important;
+  padding: 2px 8px !important;
+  font-size: 0.65rem !important;
+  line-height: 1.2 !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+body.theme-pixel16 .hud-pause-btn.is-paused {
+  background: linear-gradient(180deg, #ffcf56 0%, #e88d00 100%) !important;
+  color: #1c1000 !important;
+  text-shadow: none !important;
+  box-shadow: inset 1px 1px 0 #fff0b3, 0 2px 0 var(--px-outline) !important;
+}
+
+body.theme-pixel16 .hud-mute-btn.is-muted {
+  background: linear-gradient(180deg, #ff5c82 0%, #b51237 100%) !important;
+  color: #ffffff !important;
+  box-shadow: inset 1px 1px 0 #ffa6ba, 0 2px 0 var(--px-outline) !important;
 }
 
 body.theme-pixel16 .hud-bottom {
@@ -184,13 +209,13 @@ body.theme-pixel16 .timer-display.is-critical {
   text-shadow: 0 0 10px rgba(255, 42, 85, 0.75);
 }
 
-/* Right bezel box: 5 circular glowing LEDs + numbers below */
+/* Right bezel box: 5 blocky pixel-art LEDs + numbers below */
 body.theme-pixel16 .round-indicators {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 5px;
-  padding: 4px 8px 10px;
+  padding: 6px 8px 11px;
   background: #2f3354;
   border: 2px solid var(--px-outline);
   border-radius: 3px;
@@ -201,15 +226,40 @@ body.theme-pixel16 .round-indicators {
 
 body.theme-pixel16 .round-led {
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: 0 !important;
+}
+
+body.theme-pixel16 .round-led .pixel-led {
+  display: block;
   width: 16px;
   height: 16px;
-  min-width: 16px;
-  padding: 0;
-  border-radius: 50%;
-  border: 2px solid var(--px-outline);
-  background: radial-gradient(circle at 35% 35%, #555980 0%, #2b2e47 75%);
-  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.15);
-  font-size: 0;
+  image-rendering: pixelated;
+}
+
+body.theme-pixel16 .round-led .pixel-led-arrow {
+  display: none;
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 6px;
+  image-rendering: pixelated;
+}
+
+body.theme-pixel16 .round-led.is-active .pixel-led-arrow {
+  display: block;
 }
 
 body.theme-pixel16 .round-led::after {
@@ -220,40 +270,41 @@ body.theme-pixel16 .round-led::after {
   transform: translateX(-50%);
   font-family: var(--font-ui);
   font-size: 9px;
-  font-weight: 700;
+  font-weight: 400 !important;
   line-height: 1;
   color: #c2c8f2;
   text-shadow: 1px 1px 0 var(--px-outline);
 }
 
+body.theme-pixel16 .round-led.is-active .led-body,
+body.theme-pixel16 .round-led.is-won .led-body {
+  fill: #2ce8a2;
+}
+
+body.theme-pixel16 .round-led.is-active .led-shade,
+body.theme-pixel16 .round-led.is-won .led-shade {
+  fill: #139666;
+}
+
+body.theme-pixel16 .round-led.is-active .led-hi,
+body.theme-pixel16 .round-led.is-won .led-hi {
+  fill: #b8ffe4;
+}
+
 body.theme-pixel16 .round-led.is-active {
-  background: radial-gradient(circle at 35% 35%, #9effda 0%, #2ce8a2 55%, #127a53 100%);
-  border-color: var(--px-outline);
-  box-shadow: 0 0 8px rgba(44, 232, 162, 0.8);
+  filter: drop-shadow(0 0 4px rgba(44, 232, 162, 0.7));
 }
 
-body.theme-pixel16 .round-led.is-active::before {
-  content: '▼';
-  position: absolute;
-  top: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 8px;
-  line-height: 1;
-  color: #00f0ff;
-  text-shadow: 0 1px 0 var(--px-outline);
+body.theme-pixel16 .round-led.is-lost .led-body {
+  fill: #ff2a55;
 }
 
-body.theme-pixel16 .round-led.is-won {
-  background: radial-gradient(circle at 35% 35%, #9effda 0%, #2ce8a2 65%, #127a53 100%);
-  border-color: var(--px-outline);
-  box-shadow: 0 0 6px rgba(44, 232, 162, 0.65);
+body.theme-pixel16 .round-led.is-lost .led-shade {
+  fill: #9e102e;
 }
 
-body.theme-pixel16 .round-led.is-lost {
-  background: radial-gradient(circle at 35% 35%, #ff9ebb 0%, #ff2a55 65%, #8f102b 100%);
-  border-color: var(--px-outline);
-  box-shadow: 0 0 6px rgba(255, 42, 85, 0.65);
+body.theme-pixel16 .round-led.is-lost .led-hi {
+  fill: #ff9ebb;
 }
 
 /* ==========================================================================
@@ -362,7 +413,8 @@ body.theme-pixel16 .crt-btn {
   border: 2px solid var(--px-outline);
   border-radius: 4px;
   font-family: var(--font-ui);
-  font-weight: 700;
+  font-weight: 400 !important;
+  letter-spacing: 0.05em;
   color: var(--crt-text);
   background: linear-gradient(180deg, #565d91 0%, #3d426b 100%);
   text-shadow: 1px 1px 0 var(--px-outline);
@@ -382,6 +434,43 @@ body.theme-pixel16 .crt-btn:active:not(:disabled) {
   box-shadow:
     inset 2px 2px 0 rgba(0, 0, 0, 0.3),
     0 1px 0 var(--px-outline);
+}
+
+/* Pressed / selected state for toggle buttons (Practice format, Language, etc.) */
+body.theme-pixel16 .crt-btn.is-active,
+body.theme-pixel16 .crt-btn[aria-pressed='true'],
+body.theme-pixel16 .practice-mode-btn.is-active,
+body.theme-pixel16 .lang-btn.is-active {
+  background: linear-gradient(180deg, #1b5247 0%, #123630 100%) !important;
+  color: #9effda !important;
+  border-color: #2ce8a2 !important;
+  text-shadow: 1px 1px 0 var(--px-outline) !important;
+  transform: translateY(1px);
+  box-shadow:
+    inset 2px 2px 0 #0a211d,
+    inset -1px -1px 0 #2ce8a2,
+    0 2px 0 var(--px-outline),
+    0 0 10px rgba(44, 232, 162, 0.3) !important;
+}
+
+body.theme-pixel16 .practice-mode-btn::before,
+body.theme-pixel16 .lang-btn::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border: 1px solid var(--px-outline);
+  background: #22243d;
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+body.theme-pixel16 .practice-mode-btn.is-active::before,
+body.theme-pixel16 .practice-mode-btn[aria-pressed='true']::before,
+body.theme-pixel16 .lang-btn.is-active::before,
+body.theme-pixel16 .lang-btn[aria-pressed='true']::before {
+  background: #2ce8a2;
+  box-shadow: inset 1px 1px 0 #b8ffe4, 0 0 6px #2ce8a2;
 }
 
 /* Warm Trivmount gold-amber primary CTA */
@@ -456,13 +545,7 @@ body.theme-pixel16 .lang-selector {
 
 body.theme-pixel16 .lang-label {
   font-size: 0.68rem;
-}
-
-body.theme-pixel16 .lang-btn.is-active {
-  background: linear-gradient(180deg, #52f7ba 0%, #1bb87e 100%);
-  color: #082419;
-  text-shadow: none;
-  border-color: var(--px-outline);
+  font-weight: 400 !important;
 }
 
 /* Practice grid compact zero-scroll */
@@ -549,13 +632,47 @@ body.theme-pixel16 .module-container {
 body.theme-pixel16 .pause-overlay {
   background: #161529;
   border: 3px solid var(--crt-cyan);
-  padding: 12px;
-  gap: 8px;
+  padding: 10px 12px !important;
+  gap: 8px !important;
+  justify-content: space-between;
+}
+
+body.theme-pixel16 .pause-instructions {
+  gap: 6px !important;
+  min-height: 0;
+}
+
+body.theme-pixel16 .pause-resume-btn {
+  min-height: 42px !important;
+  font-size: 0.82rem !important;
 }
 
 body.theme-pixel16 .pause-title {
   font-family: var(--font-pixel);
-  font-size: 0.9rem;
+  font-weight: 400 !important;
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  text-shadow: 2px 2px 0 var(--px-outline);
+}
+
+body.theme-pixel16 .pause-sub,
+body.theme-pixel16 .pause-section-label {
+  font-weight: 400 !important;
+  letter-spacing: 0.06em;
+}
+
+body.theme-pixel16 .pause-mod-desc,
+body.theme-pixel16 .pause-mod-rule {
+  font-weight: 400 !important;
+  font-size: 0.78rem !important;
+  line-height: 1.4 !important;
+  letter-spacing: 0.03em;
+  padding: 8px 10px !important;
+  text-shadow: 1px 1px 0 #090814;
+}
+
+body.theme-pixel16 .pause-mod-rule {
+  color: #ffe07d !important;
 }
 
 /* ==========================================================================
@@ -565,6 +682,7 @@ body.theme-pixel16 .pause-title {
 /* Shared overrides across every module shell */
 body.theme-pixel16 .crt-shell [class^='ovr-'] {
   font-family: var(--font-ui) !important;
+  font-weight: 400 !important;
 }
 
 body.theme-pixel16 .crt-shell .ovr-wires,

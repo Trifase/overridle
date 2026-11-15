@@ -226,11 +226,24 @@ function enhanceLivesDisplay() {
   obs.observe(el, { childList: true, characterData: true, subtree: true });
 }
 
+function renderPixelLedSvg() {
+  return `<svg class="pixel-led-arrow" viewBox="0 0 7 4" width="10" height="6" aria-hidden="true">
+    <path fill="#0d0d1a" d="M0 0h7v1H6v1H5v1H4v1H3V3H2V2H1V1H0V0z"/>
+    <path fill="#00f0ff" d="M1 0h5v1H5v1H4v1H3V2H2V1H1V0z"/>
+  </svg><svg class="pixel-led" viewBox="0 0 11 11" width="16" height="16" aria-hidden="true">
+    <path class="led-outline" fill="#0d0d1a" d="M3 0h5v1h2v2h1v5h-1v2H8v1H3v-1H1V8H0V3h1V1h2V0z"/>
+    <path class="led-bezel" fill="#4d5380" d="M3 1h5v1h1v1h1v5H9v1H8v1H3V9H2V8H1V3h1V2h1V1z"/>
+    <path class="led-body" fill="#2b2e47" d="M3 2h5v1h1v5H8v1H3V8H2V3h1V2z"/>
+    <path class="led-shade" fill="#1d1f33" d="M8 3h1v5H8v1H3V8h4V7h1V3z"/>
+    <rect class="led-hi" fill="#6e75ab" x="3" y="3" width="2" height="2"/>
+  </svg>`;
+}
+
 function enhanceRoundIndicators() {
   const leds = document.querySelectorAll('#round-indicators .round-led');
   leds.forEach((led, idx) => {
     led.dataset.num = String(idx + 1);
-    led.textContent = '';
+    led.innerHTML = renderPixelLedSvg();
   });
 }
 
