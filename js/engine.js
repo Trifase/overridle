@@ -25,6 +25,13 @@ import {
   msg,
   applyDomTranslations,
 } from './i18n.js';
+import {
+  initContainmentScene,
+  setContainmentVisibility,
+  updateContainmentState,
+  triggerContainmentHit,
+  triggerContainmentUnlock,
+} from './containment.js';
 
 import * as wires from './modules/wires.js';
 import * as binary_switches from './modules/binary_switches.js';
@@ -451,6 +458,8 @@ function setActiveScreen(screenName) {
   if (dom.pauseBtn) {
     dom.pauseBtn.hidden = screenName !== 'PLAYING';
   }
+  setContainmentVisibility(screenName !== 'PRACTICE');
+  syncContainmentScene();
 }
 
 function updateMuteButton() {
@@ -478,9 +487,50 @@ function updateSeedBadge() {
   }
 }
 
+function renderPixelHeartSvg(filled) {
+  const fill = filled ? '#ff3366' : '#2d2952';
+  const hi = filled ? '#ff85a3' : '#3d386b';
+  const border = '#0b0917';
+  return `<svg class="pixel-heart ${filled ? 'is-full' : 'is-empty'}" viewBox="0 0 9 8" width="18" height="16" aria-hidden="true">
+    <path fill="${border}" d="M1 0h2v1h1v1h1V1h1V0h2v1h1v3H8v1H7v1H6v1H5v1H4V7H3V6H2V5H1V4H0V1h1V0z"/>
+    <path fill="${fill}" d="M1 1h2v1h1v1h1V2h1V1h2v3H7v1H6v1H5v1H4V6H3V5H2V4H1V1z"/>
+    <rect fill="${hi}" x="2" y="2" width="1" height="1"/>
+  </svg>`;
+}
+
+function syncContainmentScene(remainingOverride = null) {
+  const totalRounds = selectedModules.length || ROUNDS_COUNT;
+  const roundResults = [];
+  for (let i = 0; i < totalRounds; i++) {
+    if (squares[i] === '🟩') roundResults.push('won');
+    else if (squares[i] === '🟥') roundResults.push('lost');
+    else roundResults.push('pending');
+  }
+  let progress = 0;
+  if (state === 'PLAYING' && currentTimeLimit > 0) {
+    const rem = remainingOverride !== null ? remainingOverride : Math.max(0, currentTimeLimit - elapsed);
+    progress = Math.max(0, Math.min(1, 1 - rem / currentTimeLimit));
+  } else if (state === 'LOSE') {
+    progress = 1;
+  }
+  updateContainmentState({
+    mode: state,
+    paused: isPaused,
+    progress,
+    totalRounds,
+    currentRound: roundIndex,
+    roundResults,
+  });
+}
+
 function updateLivesDisplay() {
   if (!dom.livesDisplay) return;
-  dom.livesDisplay.textContent = formatHearts(lives);
+  const safeLives = Math.max(0, Math.min(MAX_LIVES, lives));
+  let html = '';
+  for (let i = 0; i < MAX_LIVES; i++) {
+    html += renderPixelHeartSvg(i < safeLives);
+  }
+  dom.livesDisplay.innerHTML = html;
 }
 
 function updateRoundIndicators() {
@@ -499,6 +549,7 @@ function updateRoundIndicators() {
       led.classList.add('is-active');
     }
   }
+  syncContainmentScene();
 }
 
 function updateTimerDisplay(remaining) {
@@ -507,6 +558,7 @@ function updateTimerDisplay(remaining) {
   dom.timerDisplay.textContent = `${clamped.toFixed(1)}s`;
   dom.timerDisplay.classList.toggle('is-amber', clamped < 10 && clamped > 5);
   dom.timerDisplay.classList.toggle('is-critical', clamped <= 5);
+  syncContainmentScene(clamped);
 }
 
 function triggerErrorFlash() {
@@ -563,6 +615,8 @@ function setPausedState(activePaused) {
   }
   if (dom.pauseOverlay) {
     dom.pauseOverlay.hidden = !activePaused;
+  }
+  syncContainmentScene();
   }
   if (dom.pauseBtn) {
     dom.pauseBtn.classList.toggle('is-paused', activePaused);
@@ -692,6 +746,7 @@ function handleMistake() {
   lives = Math.max(0, lives - 1);
   updateLivesDisplay();
   triggerErrorFlash();
+  triggerContainmentHit();
   playError();
 
   if (lives <= 0) {
@@ -704,6 +759,7 @@ function handleRoundWin() {
 
   if (roundIndex < selectedModules.length - 1) {
     playSuccess();
+    triggerContainmentUnlock();
     runCleanup();
     roundIndex += 1;
     mountCurrentRound();
@@ -1244,6 +1300,7 @@ function applyLanguage(lang, { persist = true } = {}) {
 function init() {
   initLang();
   queryDom();
+  initContainmentScene();
   setAutoPause(autoPause, { persist: false });
   updateLangButtons();
   applyDomTranslations(document);
@@ -1251,6 +1308,7 @@ function init() {
   setPracticeRepeatCount(1);
   bindEvents();
   renderInitialStandby();
+  syncContainmentScene();
   exposeReadOnlyDebug();
 }
 
