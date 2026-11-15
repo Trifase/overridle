@@ -25,6 +25,13 @@ import {
   msg,
   applyDomTranslations,
 } from './i18n.js';
+import {
+  trackSessionStart,
+  trackRunStart,
+  trackRoundEnd,
+  trackRunEnd,
+  trackShareClick,
+} from './telemetry.js';
 
 import * as wires from './modules/wires.js';
 import * as binary_switches from './modules/binary_switches.js';
@@ -304,8 +311,37 @@ let rafId = null;
 let lastTickAt = null;
 let currentCleanup = null;
 let roundActive = false;
+let currentRunId = null;
+let roundStartTime = 0;
+let roundMistakes = 0;
+let currentRoundVariant = 'classic';
 let currentShareText = '';
 let standbyShareText = '';
+
+function getRunModeName() {
+  if (!isPractice) return 'daily';
+  return practiceModuleId ? 'practice_single' : 'practice_random';
+}
+
+function detectActiveVariant(container) {
+  const rootEl = container?.querySelector('[data-variant], [data-mode], [data-order]');
+  if (!rootEl) return 'classic';
+  if (rootEl.dataset.variant) return rootEl.dataset.variant;
+  if (rootEl.dataset.mode !== undefined) return `mode_${rootEl.dataset.mode}`;
+  if (rootEl.dataset.order) return rootEl.dataset.order;
+  return 'classic';
+}
+
+function getRoundBudgetMs(modId, variant) {
+  const cfg = MODULE_TIME_BUDGET[modId] || { base: 7.0, variant: 0 };
+  const isVariant =
+    Boolean(variant) &&
+    variant !== 'classic' &&
+    variant !== 'mode_0' &&
+    variant !== 'asc' &&
+    variant !== 'desc';
+  return Math.round((cfg.base + (isVariant ? cfg.variant : 0)) * 1000);
+}
 
 if (typeof window !== 'undefined') {
   window.__OVERRIDLE_PAUSED__ = false;
@@ -627,6 +663,7 @@ function resumeGame() {
   if (state !== 'PLAYING' || !isPaused) return;
   const pauseDuration = pausedAt !== null ? Math.max(0, performance.now() - pausedAt) : 0;
   startTime += pauseDuration;
+  roundStartTime += pauseDuration;
   if (lastTickAt !== null) {
     lastTickAt += pauseDuration;
   }
@@ -662,6 +699,8 @@ function mountCurrentRound() {
 
   const roundRng = mulberry32(getSubSeed(seed, roundIndex));
   roundActive = true;
+  roundStartTime = performance.now();
+  roundMistakes = 0;
 
   const cleanupFn = entry.mod.mount(dom.moduleContainer, roundRng, {
     onWin: () => {
@@ -674,6 +713,8 @@ function mountCurrentRound() {
       handleMistake();
     },
   });
+
+  currentRoundVariant = detectActiveVariant(dom.moduleContainer);
 
   if (typeof cleanupFn === 'function') {
     if (!roundActive || state !== 'PLAYING') {
@@ -689,6 +730,7 @@ function mountCurrentRound() {
 }
 
 function handleMistake() {
+  roundMistakes += 1;
   lives = Math.max(0, lives - 1);
   updateLivesDisplay();
   triggerErrorFlash();
@@ -700,6 +742,21 @@ function handleMistake() {
 }
 
 function handleRoundWin() {
+  const wonModId = selectedModules[roundIndex];
+  const roundDurationMs = Math.max(0, Math.round(performance.now() - roundStartTime));
+  trackRoundEnd({
+    runId: currentRunId,
+    mode: getRunModeName(),
+    roundIndex: roundIndex + 1,
+    moduleId: wonModId,
+    variant: currentRoundVariant,
+    outcome: 'win',
+    durationMs: roundDurationMs,
+    budgetMs: getRoundBudgetMs(wonModId, currentRoundVariant),
+    mistakes: roundMistakes,
+    enabled: !isTestMode,
+  });
+
   squares[roundIndex] = '🟩';
 
   if (roundIndex < selectedModules.length - 1) {
@@ -727,6 +784,39 @@ function endGame(won) {
   const rawElapsed = (effectiveNow - startTime) / 1000;
   elapsed = Math.max(0, Math.min(currentTimeLimit, rawElapsed));
   state = won ? 'WIN' : 'LOSE';
+
+  const failModId = won ? null : selectedModules[roundIndex];
+  const failVariant = won ? null : currentRoundVariant;
+  const runOutcome = won ? 'win' : lives <= 0 ? 'no_lives' : 'timeout';
+
+  if (!won && failModId) {
+    const failDurationMs = Math.max(0, Math.round(effectiveNow - roundStartTime));
+    trackRoundEnd({
+      runId: currentRunId,
+      mode: getRunModeName(),
+      roundIndex: roundIndex + 1,
+      moduleId: failModId,
+      variant: failVariant,
+      outcome: runOutcome,
+      durationMs: failDurationMs,
+      budgetMs: getRoundBudgetMs(failModId, failVariant),
+      mistakes: roundMistakes,
+      enabled: !isTestMode,
+    });
+  }
+
+  trackRunEnd({
+    runId: currentRunId,
+    mode: getRunModeName(),
+    seed,
+    outcome: runOutcome,
+    elapsedMs: Math.round(elapsed * 1000),
+    timeLimitMs: Math.round(currentTimeLimit * 1000),
+    livesLeft: lives,
+    failedModuleId: failModId,
+    failedVariant: failVariant,
+    enabled: !isTestMode,
+  });
 
   if (won) {
     squares = Array(selectedModules.length).fill('🟩');
@@ -932,6 +1022,14 @@ function startGame({ practice = false, moduleId = null, roundsCount = ROUNDS_COU
   lastTickAt = null;
   state = 'PLAYING';
   startTime = performance.now();
+  currentRunId = trackRunStart({
+    mode: getRunModeName(),
+    seed,
+    timeLimit: currentTimeLimit,
+    autoPause,
+    modules: selectedModules,
+    enabled: !isTestMode,
+  });
 
   updateSeedBadge();
   updateLivesDisplay();
@@ -1072,6 +1170,7 @@ function bindEvents() {
 
   dom.copyStandbyBtn.addEventListener('click', () => {
     copyToClipboard(standbyShareText, dom.copyStandbyBtn);
+    trackShareClick({ runId: null, mode: 'daily', screen: 'standby', enabled: !isTestMode });
   });
 
   dom.practiceStandbyBtn.addEventListener('click', () => {
@@ -1105,6 +1204,7 @@ function bindEvents() {
 
   dom.copyShareBtn.addEventListener('click', () => {
     copyToClipboard(currentShareText, dom.copyShareBtn);
+    trackShareClick({ runId: currentRunId, mode: getRunModeName(), screen: 'end', enabled: !isTestMode });
   });
 
   if (dom.retryPracticeBtn) {
@@ -1160,6 +1260,39 @@ function bindEvents() {
 
   dom.flashOverlay.addEventListener('animationend', () => {
     dom.flashOverlay.classList.remove('active');
+  });
+
+  window.addEventListener('pagehide', () => {
+    if (state !== 'PLAYING' || !currentRunId || isTestMode) return;
+    const now = isPaused && pausedAt !== null ? pausedAt : performance.now();
+    const activeModId = selectedModules[roundIndex];
+    if (activeModId) {
+      trackRoundEnd({
+        runId: currentRunId,
+        mode: getRunModeName(),
+        roundIndex: roundIndex + 1,
+        moduleId: activeModId,
+        variant: currentRoundVariant,
+        outcome: 'abandoned',
+        durationMs: Math.max(0, Math.round(now - roundStartTime)),
+        budgetMs: getRoundBudgetMs(activeModId, currentRoundVariant),
+        mistakes: roundMistakes,
+        enabled: true,
+      });
+    }
+    trackRunEnd({
+      runId: currentRunId,
+      mode: getRunModeName(),
+      seed,
+      outcome: 'abandoned',
+      elapsedMs: Math.max(0, Math.min(currentTimeLimit * 1000, Math.round(now - startTime))),
+      timeLimitMs: Math.round(currentTimeLimit * 1000),
+      livesLeft: lives,
+      failedModuleId: activeModId || null,
+      failedVariant: currentRoundVariant || null,
+      enabled: true,
+    });
+    currentRunId = null;
   });
 }
 
@@ -1252,6 +1385,7 @@ function init() {
   bindEvents();
   renderInitialStandby();
   exposeReadOnlyDebug();
+  trackSessionStart({ seed: localTodaySeed, lang: getLang(), enabled: !isTestMode });
 }
 
 if (typeof document !== 'undefined') {

@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OVERRIDLE // TELEMETRY CONSOLE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #120e24;
+      --panel: #242642;
+      --panel-dark: #151428;
+      --outline: #090914;
+      --border: #5a6096;
+      --cyan: #00e5ff;
+      --green: #2ce8a2;
+      --amber: #ffbe0b;
+      --red: #ff3b5c;
+      --text: #eef1ff;
+      --muted: #9aa2cf;
+      --font-pixel: 'Press Start 2P', monospace;
+      --font-ui: 'Silkscreen', ui-monospace, monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 18px 16px 40px;
+      background: radial-gradient(circle at 50% 0%, #1f1a3d 0%, #120e24 65%);
+      color: var(--text);
+      font-family: var(--font-ui);
+      min-height: 100vh;
+    }
+
+    .wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: linear-gradient(180deg, #343860 0%, #222440 100%);
+      border: 3px solid var(--outline);
+      border-radius: 6px;
+      box-shadow: inset 2px 2px 0 #666ca3, inset -2px -2px 0 #181930, 0 5px 0 var(--outline);
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .brand-title {
+      font-family: var(--font-pixel);
+      font-size: 16px;
+      color: var(--amber);
+      text-shadow: 2px 2px 0 var(--outline);
+      margin: 0;
+    }
+
+    .brand-sub {
+      font-size: 12px;
+      color: var(--cyan);
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-group {
+      display: inline-flex;
+      gap: 4px;
+      background: var(--panel-dark);
+      padding: 4px;
+      border: 2px solid var(--outline);
+      border-radius: 4px;
+    }
+
+    button {
+      font-family: var(--font-ui);
+      font-size: 12px;
+      color: var(--text);
+      background: linear-gradient(180deg, #4b5082 0%, #313559 100%);
+      border: 2px solid var(--outline);
+      border-radius: 3px;
+      padding: 6px 10px;
+      cursor: pointer;
+      box-shadow: inset 1px 1px 0 #7e85bd, 0 2px 0 var(--outline);
+    }
+
+    button:active {
+      transform: translateY(1px);
+      box-shadow: inset 1px 1px 0 #1b1d36, 0 1px 0 var(--outline);
+    }
+
+    button.is-active {
+      background: linear-gradient(180deg, #1b6982 0%, #0d4154 100%);
+      border-color: var(--cyan);
+      color: #8bf4ff;
+      box-shadow: inset 1px 1px 0 #5bf0ff, 0 0 8px rgba(0, 229, 255, 0.45);
+    }
+
+    button.btn-gold {
+      background: linear-gradient(180deg, #ffe07d 0%, #f09c00 100%);
+      color: #241200;
+      box-shadow: inset 1px 1px 0 #fff3ba, 0 2px 0 var(--outline);
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+      gap: 10px;
+    }
+
+    .panel {
+      background: linear-gradient(180deg, #2b2e4f 0%, #1e2038 100%);
+      border: 3px solid var(--outline);
+      border-radius: 6px;
+      padding: 12px 14px;
+      box-shadow: inset 2px 2px 0 #4f5485, inset -2px -2px 0 #141529, 0 4px 0 var(--outline);
+    }
+
+    .kpi-lbl {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      letter-spacing: 0.04em;
+    }
+
+    .kpi-val {
+      font-family: var(--font-pixel);
+      font-size: 19px;
+      color: var(--cyan);
+      text-shadow: 2px 2px 0 var(--outline);
+    }
+
+    .kpi-sub {
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--green);
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 12px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      border-bottom: 2px solid #3c4070;
+      padding-bottom: 6px;
+    }
+
+    .section-title {
+      font-family: var(--font-pixel);
+      font-size: 11px;
+      color: var(--amber);
+      margin: 0;
+    }
+
+    .bar-list {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .bar-item {
+      display: grid;
+      grid-template-columns: 140px 1fr 78px;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+    }
+
+    .bar-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--text);
+    }
+
+    .bar-track {
+      height: 12px;
+      background: var(--panel-dark);
+      border: 1px solid #4c5285;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00c4de, var(--green));
+    }
+
+    .bar-num {
+      text-align: right;
+      color: var(--cyan);
+      white-space: nowrap;
+    }
+
+    .daily-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      height: 110px;
+      padding: 10px 6px 4px;
+      background: var(--panel-dark);
+      border: 2px solid #3e4375;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+
+    .day-col {
+      flex: 1 0 26px;
+      max-width: 44px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      height: 100%;
+      justify-content: flex-end;
+    }
+
+    .day-bars {
+      width: 100%;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 2px;
+      height: 76px;
+    }
+
+    .day-bar-vis {
+      width: 45%;
+      background: var(--cyan);
+      min-height: 2px;
+      border-radius: 1px 1px 0 0;
+    }
+
+    .day-bar-run {
+      width: 45%;
+      background: var(--amber);
+      min-height: 2px;
+      border-radius: 1px 1px 0 0;
+    }
+
+    .day-lbl {
+      font-size: 9px;
+      color: var(--muted);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    th, td {
+      padding: 8px 8px;
+      text-align: left;
+      border-bottom: 1px solid #393d6b;
+      white-space: nowrap;
+    }
+
+    th {
+      color: var(--amber);
+      font-size: 11px;
+      cursor: pointer;
+      user-select: none;
+      background: var(--panel-dark);
+    }
+
+    th:hover {
+      color: var(--cyan);
+    }
+
+    th.num, td.num {
+      text-align: right;
+    }
+
+    tr.mod-row:hover {
+      background: rgba(0, 229, 255, 0.07);
+    }
+
+    tr.var-row {
+      background: rgba(12, 11, 26, 0.6);
+      font-size: 11px;
+      color: #c5cbe8;
+    }
+
+    tr.var-row td:first-child {
+      padding-left: 24px;
+      color: var(--cyan);
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 10px;
+      border: 1px solid var(--outline);
+    }
+
+    .tag-good { background: #144d38; color: var(--green); border-color: var(--green); }
+    .tag-warn { background: #5c4305; color: var(--amber); border-color: var(--amber); }
+    .tag-bad { background: #691423; color: #ff8a9b; border-color: var(--red); }
+    .tag-neutral { background: #1e2140; color: var(--cyan); border-color: #4f5694; }
+
+    .mini-btn {
+      padding: 2px 6px;
+      font-size: 10px;
+      margin-left: 6px;
+    }
+
+    .empty {
+      color: var(--muted);
+      font-size: 12px;
+      padding: 12px 0;
+      text-align: center;
+    }
+
+    .foot-note {
+      font-size: 11px;
+      color: var(--muted);
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <div class="brand">
+        <h1 class="brand-title">OVERRIDLE // TELEMETRY CONSOLE</h1>
+        <div class="brand-sub">Sorgente eventi: https://overridle.com → https://overridle.trifase.online/api/event</div>
+      </div>
+      <div class="controls">
+        <div class="btn-group" id="period-group">
+          <button type="button" data-period="today">OGGI</button>
+          <button type="button" data-period="7d">7G</button>
+          <button type="button" data-period="30d" class="is-active">30G</button>
+          <button type="button" data-period="all">TUTTO</button>
+        </div>
+        <div class="btn-group" id="mode-group">
+          <button type="button" data-mode="all" class="is-active">TUTTE</button>
+          <button type="button" data-mode="daily">DAILY</button>
+          <button type="button" data-mode="practice">PRACTICE</button>
+        </div>
+        <button type="button" id="refresh-btn" class="btn-gold">[ ↻ AGGIORNA ]</button>
+      </div>
+    </header>
+
+    <section class="kpi-grid" id="kpi-grid"></section>
+
+    <section class="panel">
+      <div class="section-head">
+        <h2 class="section-title">ANDAMENTO GIORNALIERO (CIANO = VISITATORI UNICI · AMBRA = PARTITE)</h2>
+        <span id="series-hint" class="kpi-lbl" style="margin:0;"></span>
+      </div>
+      <div class="daily-chart" id="daily-chart"></div>
+    </section>
+
+    <section class="two-col">
+      <div class="panel">
+        <div class="section-head">
+          <h2 class="section-title">PROVENIENZA (REFERRER / UTM)</h2>
+        </div>
+        <div class="bar-list" id="referrer-list"></div>
+      </div>
+      <div class="panel">
+        <div class="section-head">
+          <h2 class="section-title">PAESI (CF-IPCOUNTRY) &amp; LINGUE</h2>
+        </div>
+        <div class="bar-list" id="country-list"></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <h2 class="section-title">BILANCIAMENTO 15 MINIGIOCHI &amp; VARIANTI (CLICCA INTESTAZIONI PER ORDINARE)</h2>
+        <button type="button" id="toggle-variants-btn" class="mini-btn">[ MOSTRA TUTTE LE VARIANTI ]</button>
+      </div>
+      <div class="table-wrap">
+        <table id="modules-table">
+          <thead>
+            <tr>
+              <th data-sort="title">MINIGIOCO</th>
+              <th class="num" data-sort="plays">GIOCATE</th>
+              <th class="num" data-sort="win_rate">% WIN</th>
+              <th class="num" data-sort="avg_mistakes">ERRORI MEDI (VITE)</th>
+              <th class="num" data-sort="total_mistakes">VITE PERSE TOT</th>
+              <th class="num" data-sort="timeout_rate">% TIMEOUT</th>
+              <th class="num" data-sort="avg_duration_ms">TEMPO MEDIO</th>
+              <th class="num" data-sort="budget_ms">BUDGET</th>
+              <th>STATO</th>
+            </tr>
+          </thead>
+          <tbody id="modules-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <h2 class="section-title">ULTIME 25 PARTITE</h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>DATA (UTC)</th>
+              <th>PAESE</th>
+              <th>MODO</th>
+              <th>SEED</th>
+              <th>ESITO</th>
+              <th class="num">TEMPO</th>
+              <th class="num">VITE</th>
+              <th>FALLITO SU</th>
+            </tr>
+          </thead>
+          <tbody id="recent-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="foot-note" id="foot-note">Caricamento...</div>
+  </div>
+
+  <script>
+    const state = {
+      period: '30d',
+      mode: 'all',
+      sortKey: 'avg_mistakes',
+      sortDir: -1,
+      showAllVariants: false,
+      expandedModules: new Set(),
+      data: null,
+    };
+
+    function esc(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function fmtSec(ms) {
+      if (!ms) return '0.0s';
+      return (ms / 1000).toFixed(1) + 's';
+    }
+
+    function flagCode(code) {
+      if (!code || code === 'XX' || code.length !== 2) return '??';
+      return code.toUpperCase();
+    }
+
+    function renderKpis(ov) {
+      const cards = [
+        {
+          lbl: 'VISITATORI UNICI',
+          val: ov.unique_visitors,
+          sub: `${ov.total_sessions} sessioni · ${ov.returning_pct}% ritornanti`,
+        },
+        {
+          lbl: 'MOBILE VS DESKTOP',
+          val: `${ov.mobile_pct}%`,
+          sub: `${(100 - ov.mobile_pct).toFixed(1)}% desktop`,
+        },
+        {
+          lbl: 'PARTITE GIOCATE',
+          val: ov.total_runs,
+          sub: `${ov.finished_runs} finite · ${ov.abandoned_runs} abbandonate`,
+        },
+        {
+          lbl: 'WIN RATE TOTALE',
+          val: `${ov.win_rate}%`,
+          sub: `${ov.wins} vinte · ${ov.no_lives} 0-vite · ${ov.timeouts} timeout`,
+        },
+        {
+          lbl: 'DAILY PROTOCOL',
+          val: `${ov.daily_win_rate}%`,
+          sub: `${ov.daily_runs} run Daily · tempo medio win ${fmtSec(ov.avg_win_ms)}`,
+        },
+        {
+          lbl: 'CONDIVISIONI',
+          val: ov.share_clicks,
+          sub: `${ov.share_rate}% delle partite concluse`,
+        },
+      ];
+      document.getElementById('kpi-grid').innerHTML = cards
+        .map(
+          (c) => `
+        <div class="panel">
+          <div class="kpi-lbl">${esc(c.lbl)}</div>
+          <div class="kpi-val">${esc(c.val)}</div>
+          <div class="kpi-sub">${esc(c.sub)}</div>
+        </div>`
+        )
+        .join('');
+    }
+
+    function renderBars(elId, rows, valueKey = 'sessions', extraKey = 'visitors') {
+      const el = document.getElementById(elId);
+      if (!rows || rows.length === 0) {
+        el.innerHTML = '<div class="empty">Nessun dato nel periodo</div>';
+        return;
+      }
+      const maxVal = Math.max(1, ...rows.map((r) => r[valueKey] || 0));
+      el.innerHTML = rows
+        .map((r) => {
+          const pct = Math.round(((r[valueKey] || 0) / maxVal) * 100);
+          return `
+          <div class="bar-item">
+            <span class="bar-label" title="${esc(r.label)}">${esc(r.label)}</span>
+            <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+            <span class="bar-num">${esc(r[valueKey])} (${esc(r[extraKey])}u)</span>
+          </div>`;
+        })
+        .join('');
+    }
+
+    function renderDailyChart(series) {
+      const el = document.getElementById('daily-chart');
+      if (!series || series.length === 0) {
+        el.innerHTML = '<div class="empty" style="width:100%;">Nessuna attività registrata nel periodo</div>';
+        document.getElementById('series-hint').textContent = '';
+        return;
+      }
+      const maxVal = Math.max(1, ...series.map((d) => Math.max(d.visitors || 0, d.runs || 0)));
+      document.getElementById('series-hint').textContent = `Picco max: ${maxVal}`;
+      el.innerHTML = series
+        .map((d) => {
+          const vh = Math.round(((d.visitors || 0) / maxVal) * 72);
+          const rh = Math.round(((d.runs || 0) / maxVal) * 72);
+          const label = d.day.slice(5);
+          return `
+          <div class="day-col" title="${esc(d.day)}: ${d.visitors} visitatori, ${d.runs} partite (${d.wins} vinte)">
+            <div class="day-bars">
+              <div class="day-bar-vis" style="height:${Math.max(2, vh)}px"></div>
+              <div class="day-bar-run" style="height:${Math.max(2, rh)}px"></div>
+            </div>
+            <span class="day-lbl">${esc(label)}</span>
+          </div>`;
+        })
+        .join('');
+    }
+
+    function statusTag(row) {
+      if (!row.plays) return '<span class="tag tag-neutral">NO DATI</span>';
+      if (row.avg_mistakes >= 0.7 || row.win_rate < 55) {
+        return '<span class="tag tag-bad">DIFFICILE</span>';
+      }
+      if ((row.budget_ms && row.avg_duration_ms > row.budget_ms) || row.timeout_rate >= 18) {
+        return '<span class="tag tag-warn">LENTO</span>';
+      }
+      if (row.win_rate >= 95 && row.avg_mistakes <= 0.05 && row.plays >= 5) {
+        return '<span class="tag tag-good">FACILE</span>';
+      }
+      return '<span class="tag tag-good">BILANCIATO</span>';
+    }
+
+    function renderModulesTable(modules) {
+      const sorted = [...modules].sort((a, b) => {
+        const va = a[state.sortKey];
+        const vb = b[state.sortKey];
+        if (typeof va === 'string') return va.localeCompare(vb) * state.sortDir;
+        return ((va || 0) - (vb || 0)) * state.sortDir;
+      });
+
+      const tbody = document.getElementById('modules-tbody');
+      let html = '';
+      for (const m of sorted) {
+        const hasVars = m.variants && m.variants.length > 0;
+        const expanded = state.showAllVariants || state.expandedModules.has(m.module_id);
+        html += `
+          <tr class="mod-row">
+            <td>
+              <strong>${esc(m.title)}</strong>
+              <span style="color:var(--muted);font-size:10px;"> (${esc(m.module_id)})</span>
+              ${
+                hasVars
+                  ? `<button type="button" class="mini-btn js-var-toggle" data-mod="${esc(m.module_id)}">${
+                      expanded ? '−' : '+'
+                    } ${m.variants.length}</button>`
+                  : ''
+              }
+            </td>
+            <td class="num">${m.plays}</td>
+            <td class="num">${m.plays ? m.win_rate + '%' : '—'}</td>
+            <td class="num">${m.plays ? m.avg_mistakes.toFixed(2) : '—'}</td>
+            <td class="num">${m.total_mistakes}</td>
+            <td class="num">${m.plays ? m.timeout_rate + '%' : '—'}</td>
+            <td class="num">${m.plays ? fmtSec(m.avg_duration_ms) : '—'}</td>
+            <td class="num">${fmtSec(m.budget_ms)}</td>
+            <td>${statusTag(m)}</td>
+          </tr>`;
+
+        if (expanded && hasVars) {
+          for (const v of m.variants) {
+            html += `
+              <tr class="var-row">
+                <td>↳ variante: ${esc(v.variant)}</td>
+                <td class="num">${v.plays}</td>
+                <td class="num">${v.win_rate}%</td>
+                <td class="num">${v.avg_mistakes.toFixed(2)}</td>
+                <td class="num">${v.total_mistakes}</td>
+                <td class="num">${v.timeout_rate}%</td>
+                <td class="num">${fmtSec(v.avg_duration_ms)}</td>
+                <td class="num">${fmtSec(v.budget_ms)}</td>
+                <td>${statusTag(v)}</td>
+              </tr>`;
+          }
+        }
+      }
+      tbody.innerHTML = html;
+
+      tbody.querySelectorAll('.js-var-toggle').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.mod;
+          if (state.expandedModules.has(id)) state.expandedModules.delete(id);
+          else state.expandedModules.add(id);
+          renderModulesTable(state.data.modules);
+        });
+      });
+    }
+
+    function renderRecentRuns(runs) {
+      const tbody = document.getElementById('recent-tbody');
+      if (!runs || runs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="empty">Nessuna partita registrata finora</td></tr>';
+        return;
+      }
+      tbody.innerHTML = runs
+        .map((r) => {
+          const badge =
+            r.outcome === 'win'
+              ? '<span class="tag tag-good">WIN</span>'
+              : r.outcome === 'no_lives'
+                ? '<span class="tag tag-bad">0 VITE</span>'
+                : r.outcome === 'timeout'
+                  ? '<span class="tag tag-warn">TIMEOUT</span>'
+                  : `<span class="tag tag-neutral">${esc(r.outcome.toUpperCase())}</span>`;
+          const failInfo = r.failed_module_id
+            ? `${esc(r.failed_module_id)}${r.failed_variant ? ' [' + esc(r.failed_variant) + ']' : ''}`
+            : '—';
+          return `
+          <tr>
+            <td>${esc((r.ts || '').replace('T', ' ').replace('Z', ''))}</td>
+            <td>${esc(flagCode(r.country))}</td>
+            <td>${esc(r.mode)}</td>
+            <td>#${esc(r.seed)}</td>
+            <td>${badge}</td>
+            <td class="num">${fmtSec(r.elapsed_ms)} / ${fmtSec(r.time_limit_ms)}</td>
+            <td class="num">${r.lives_left}</td>
+            <td>${failInfo}</td>
+          </tr>`;
+        })
+        .join('');
+    }
+
+    async function loadStats() {
+      const res = await fetch(`/api/stats?period=${encodeURIComponent(state.period)}&mode=${encodeURIComponent(state.mode)}`, {
+        cache: 'no-store',
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      state.data = data;
+
+      renderKpis(data.overview);
+      renderDailyChart(data.daily_series);
+      renderBars('referrer-list', data.referrers);
+      const langs = (data.languages || []).map((l) => `Lingua ${l.label}: ${l.sessions}`).join(' · ');
+      renderBars('country-list', data.countries);
+      if (langs) {
+        document.getElementById('country-list').insertAdjacentHTML(
+          'beforeend',
+          `<div class="kpi-lbl" style="margin-top:6px;">${esc(langs)}</div>`
+        );
+      }
+      renderModulesTable(data.modules);
+      renderRecentRuns(data.recent_runs);
+      document.getElementById('foot-note').textContent = `Ultimo aggiornamento: ${data.generated_at}`;
+    }
+
+    document.querySelectorAll('#period-group button').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        state.period = btn.dataset.period;
+        document.querySelectorAll('#period-group button').forEach((b) => b.classList.toggle('is-active', b === btn));
+        loadStats().catch(console.error);
+      });
+    });
+
+    document.querySelectorAll('#mode-group button').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        state.mode = btn.dataset.mode;
+        document.querySelectorAll('#mode-group button').forEach((b) => b.classList.toggle('is-active', b === btn));
+        loadStats().catch(console.error);
+      });
+    });
+
+    document.querySelectorAll('#modules-table thead th[data-sort]').forEach((th) => {
+      th.addEventListener('click', () => {
+        const key = th.dataset.sort;
+        if (state.sortKey === key) state.sortDir *= -1;
+        else {
+          state.sortKey = key;
+          state.sortDir = key === 'title' ? 1 : -1;
+        }
+        if (state.data) renderModulesTable(state.data.modules);
+      });
+    });
+
+    document.getElementById('toggle-variants-btn').addEventListener('click', (e) => {
+      state.showAllVariants = !state.showAllVariants;
+      e.currentTarget.textContent = state.showAllVariants
+        ? '[ NASCONDI VARIANTI ]'
+        : '[ MOSTRA TUTTE LE VARIANTI ]';
+      if (state.data) renderModulesTable(state.data.modules);
+    });
+
+    document.getElementById('refresh-btn').addEventListener('click', () => {
+      loadStats().catch(console.error);
+    });
+
+    loadStats().catch((err) => {
+      document.getElementById('foot-note').textContent = `Errore caricamento: ${err.message}`;
+    });
+  </script>
+</body>
+</html>

@@ -3,5 +3,10 @@ services:
     build: .
     container_name: overridle
     restart: unless-stopped
+    environment:
+      - TZ=Europe/Rome
+      - DB_PATH=/data/telemetry.db
+    volumes:
+      - ./data:/data
     ports:
       - "8060:80"
