@@ -1062,6 +1062,71 @@ body.theme-pixel16 .crt-shell .ovr-fh-tok.is-found {
   box-shadow: inset 1px 1px 0 #2ce8a2 !important;
 }
 
+/* Keycard Flash (.ovr-mf) lit & feedback states */
+body.theme-pixel16 .crt-shell .ovr-mf-grid {
+  grid-template-columns: repeat(3, 76px) !important;
+  grid-template-rows: repeat(3, 76px) !important;
+  gap: 8px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-mf-cell {
+  width: 76px !important;
+  height: 76px !important;
+  color: #9aa2cc !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-mf-cell.is-flash {
+  background: linear-gradient(180deg, #1b6982 0%, #0d4154 100%) !important;
+  border-color: #36e8ff !important;
+  color: #7df4ff !important;
+  box-shadow:
+    inset 2px 2px 0 #5bf0ff,
+    inset -2px -2px 0 #082936,
+    0 0 14px rgba(54, 232, 255, 0.75),
+    0 3px 0 var(--px-outline) !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-mf-cell.is-flash-amber {
+  background: linear-gradient(180deg, #945706 0%, #593102 100%) !important;
+  border-color: #ffbe3b !important;
+  color: #ffe680 !important;
+  box-shadow:
+    inset 2px 2px 0 #ffd86b,
+    inset -2px -2px 0 #381e00,
+    0 0 14px rgba(255, 190, 59, 0.75),
+    0 3px 0 var(--px-outline) !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-mf-cell.is-flash-green {
+  background: linear-gradient(180deg, #166e46 0%, #0b4229 100%) !important;
+  border-color: #38ff8e !important;
+  color: #8affbd !important;
+  box-shadow:
+    inset 2px 2px 0 #6bffa8,
+    inset -2px -2px 0 #062617,
+    0 0 14px rgba(56, 255, 142, 0.75),
+    0 3px 0 var(--px-outline) !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-mf-cell.is-correct {
+  background: linear-gradient(180deg, #1b5c3e 0%, #103825 100%) !important;
+  border-color: var(--crt-green) !important;
+  color: var(--crt-green) !important;
+  box-shadow:
+    inset 2px 2px 0 #38ff8e,
+    0 2px 0 var(--px-outline) !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-mf-cell.is-wrong {
+  background: linear-gradient(180deg, #7a1c29 0%, #4a0e17 100%) !important;
+  border-color: var(--crt-red) !important;
+  color: #ff8a9b !important;
+  box-shadow:
+    inset 2px 2px 0 #ff5268,
+    0 0 12px rgba(255, 59, 92, 0.7),
+    0 2px 0 var(--px-outline) !important;
+}
+
 /* Primary action buttons inside Pressure Purge, Rotor Lock, Reactor Balance */
 body.theme-pixel16 .crt-shell .ovr-pp-btn,
 body.theme-pixel16 .crt-shell .ovr-rl-btn,
