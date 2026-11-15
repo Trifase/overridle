@@ -273,7 +273,7 @@ input {
   display: block;
   width: 100%;
   height: auto;
-  max-height: 120px;
+  max-height: 108px;
   object-fit: contain;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
@@ -282,9 +282,9 @@ input {
   background: #131129;
 }
 
-@media (max-height: 700px) {
+@media (max-height: 760px) {
   .containment-canvas {
-    max-height: 88px;
+    max-height: 84px;
   }
 }
 
@@ -334,8 +334,10 @@ input {
 
 /* Standby screen */
 #screen-standby {
-  justify-content: center;
-  gap: 14px;
+  justify-content: flex-start;
+  gap: 10px;
+  overflow-y: auto;
+  padding-bottom: 4px;
 }
 
 .standby-hero {
@@ -344,25 +346,25 @@ input {
 }
 
 .terminal-tag {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   letter-spacing: 0.14em;
   color: var(--crt-green-dim);
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .terminal-title {
   margin: 0;
-  font-size: 2rem;
+  font-size: 1.75rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   color: var(--crt-green);
-  text-shadow: 0 0 14px rgba(44, 232, 162, 0.35);
+  text-shadow: 2px 2px 0 var(--crt-shadow), 0 0 14px rgba(44, 232, 162, 0.35);
 }
 
 .standby-card {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .briefing-text {

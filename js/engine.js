@@ -617,7 +617,6 @@ function setPausedState(activePaused) {
     dom.pauseOverlay.hidden = !activePaused;
   }
   syncContainmentScene();
-  }
   if (dom.pauseBtn) {
     dom.pauseBtn.classList.toggle('is-paused', activePaused);
     dom.pauseBtn.setAttribute('aria-pressed', activePaused ? 'true' : 'false');
