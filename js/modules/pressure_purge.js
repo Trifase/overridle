@@ -18,9 +18,15 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
     return id;
   }
 
-  const zoneWidth = 22 + rng() * 4;
+  const variantIdx = Math.floor(rng() * 3); // 0 = classic, 1 = two_stage, 2 = precision
+  const variant = variantIdx === 1 ? 'two_stage' : variantIdx === 2 ? 'precision' : 'classic';
+  const totalStages = variant === 'two_stage' ? 2 : 1;
+  let stage = 1;
+
+  const zoneWidth = variant === 'precision' ? 13 + rng() * 2 : 22 + rng() * 4;
+  const fixedCenter = 45 + rng() * 30;
   const period = 2.2 + rng() * 0.6;
-  const phase0 = rng() * Math.PI * 2;
+  let phase0 = rng() * Math.PI * 2;
   const fillRate = 58 + rng() * 6;
 
   let pressure = 0;
@@ -31,7 +37,10 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
   let lastFrameTime = null;
 
   function getZoneBounds(elapsedSec) {
-    const center = 50 + 22 * Math.sin((2 * Math.PI * elapsedSec) / period + phase0);
+    const center =
+      variant === 'precision'
+        ? fixedCenter
+        : 50 + 22 * Math.sin((2 * Math.PI * elapsedSec) / period + phase0);
     return {
       min: center - zoneWidth / 2,
       max: center + zoneWidth / 2
@@ -259,13 +268,24 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
   `;
 
   const root = document.createElement('div');
-  root.className = 'ovr-pp';
+  root.className = variant === 'classic' ? 'ovr-pp' : 'ovr-pp ovr-variant-mode';
+  root.dataset.variant = variant;
+
+  if (variant !== 'classic') {
+    const vBanner = document.createElement('div');
+    vBanner.className = 'ovr-variant-banner';
+    vBanner.textContent =
+      variant === 'two_stage'
+        ? '⚡ VARIANTE: 2 STADI — Completa 2 spurghi di fila!'
+        : '⚡ VARIANTE: PRECISIONE — Fascia verde fissa e stretta!';
+    root.appendChild(vBanner);
+  }
 
   const head = document.createElement('div');
   head.className = 'ovr-pp-head';
   const titleEl = document.createElement('span');
   titleEl.className = 'ovr-pp-title';
-  titleEl.textContent = 'SPURGO PRESSIONE';
+  titleEl.textContent = variant === 'two_stage' ? 'SPURGO (1/2)' : 'SPURGO PRESSIONE';
   const badgeEl = document.createElement('span');
   badgeEl.className = 'ovr-pp-badge';
   badgeEl.textContent = 'PRONTO';
@@ -456,6 +476,18 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
 
     const zone = getZoneBounds(getElapsedSec(now));
     if (pressure >= zone.min && pressure <= zone.max) {
+      if (stage < totalStages) {
+        stage += 1;
+        pressure = 0;
+        phase0 = (phase0 + Math.PI * 0.85) % (Math.PI * 2);
+        titleEl.textContent = `SPURGO (${stage}/${totalStages})`;
+        badgeEl.className = 'ovr-pp-badge is-zone';
+        badgeEl.textContent = 'STADIO 1 OK';
+        ledEl.className = 'ovr-pp-led is-zone';
+        ledEl.textContent = 'RIPETI PER STADIO 2!';
+        render(now);
+        return;
+      }
       solved = true;
       badgeEl.className = 'ovr-pp-badge is-zone';
       badgeEl.textContent = 'SPURGO OK';

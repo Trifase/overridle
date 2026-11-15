@@ -17,6 +17,55 @@ function makeNoise(rng, len) {
   return out;
 }
 
+const MIMIC_SUBS = {
+  A: ['4', 'E', 'X'],
+  B: ['8', 'P', 'R'],
+  C: ['G', 'O', 'K'],
+  D: ['0', 'O', 'B'],
+  E: ['3', 'F', 'A'],
+  F: ['P', 'E', 'T'],
+  G: ['C', '6', 'Q'],
+  H: ['N', 'M', 'K'],
+  I: ['1', 'L', 'T'],
+  K: ['X', 'R', 'H'],
+  L: ['1', 'I', 'T'],
+  M: ['N', 'W', 'H'],
+  N: ['M', 'H', 'Z'],
+  O: ['0', 'Q', 'D'],
+  P: ['R', 'B', 'F'],
+  R: ['P', 'K', 'B'],
+  S: ['5', 'Z', '2'],
+  T: ['7', 'I', 'L'],
+  U: ['V', 'Y', 'O'],
+  V: ['U', 'Y', 'W'],
+  W: ['V', 'M', 'X'],
+  X: ['K', 'Z', 'Y'],
+  Y: ['V', 'T', 'X'],
+  Z: ['2', 'S', '7'],
+  '7': ['T', '1', 'Z'],
+};
+
+function makeMimicWords(rng, targets, count) {
+  const used = new Set(targets);
+  const decoys = [];
+  const shuffledTargets = shuffle(rng, targets);
+  let guard = 0;
+  while (decoys.length < count && guard < 200) {
+    guard++;
+    const base = shuffledTargets[guard % shuffledTargets.length];
+    const pos = randInt(rng, 0, base.length - 1);
+    const ch = base[pos];
+    const alts = MIMIC_SUBS[ch] || ['X', '0', '3', 'Q'];
+    const rep = pick(rng, alts);
+    const candidate = base.slice(0, pos) + rep + base.slice(pos + 1);
+    if (!used.has(candidate)) {
+      used.add(candidate);
+      decoys.push(candidate);
+    }
+  }
+  return decoys;
+}
+
 /**
  * Terminale Fallout (fallout_hack)
  * Trova e tocca i 5 codici target nel dump esadecimale evitando le esche.
@@ -36,9 +85,13 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
     return id;
   }
 
+  const variantIdx = randInt(rng, 0, 2); // 0 = classic, 1 = sequence, 2 = mimic
+  const variant = variantIdx === 1 ? 'sequence' : variantIdx === 2 ? 'mimic' : 'classic';
+
   const poolShuffled = shuffle(rng, WORD_POOL);
   const targets = poolShuffled.slice(0, 5);
-  const decoys = poolShuffled.slice(5, 14);
+  const decoys =
+    variant === 'mimic' ? makeMimicWords(rng, targets, 9) : poolShuffled.slice(5, 14);
   const targetSet = new Set(targets);
   const foundSet = new Set();
 
@@ -210,16 +263,34 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
       color: #ff2a2a;
       box-shadow: 0 0 10px rgba(255, 42, 42, 0.55);
     }
+    .ovr-fh-chip.is-next {
+      border-color: #ffb000;
+      color: #ffb000;
+      background: rgba(255, 176, 0, 0.16);
+      box-shadow: 0 0 8px rgba(255, 176, 0, 0.4);
+    }
   `;
 
   const root = document.createElement('div');
-  root.className = 'ovr-fh';
+  root.className = variant === 'classic' ? 'ovr-fh' : 'ovr-fh ovr-variant-mode';
+  root.dataset.variant = variant;
+
+  if (variant !== 'classic') {
+    const vBanner = document.createElement('div');
+    vBanner.className = 'ovr-variant-banner';
+    vBanner.textContent =
+      variant === 'sequence'
+        ? '⚡ VARIANTE: ORDINE OBBLIGATORIO — Tocca da sinistra a destra!'
+        : '⚡ VARIANTE: OMONIMI — Occhio alle esche quasi identiche!';
+    root.appendChild(vBanner);
+  }
 
   const head = document.createElement('div');
   head.className = 'ovr-fh-head';
   const titleEl = document.createElement('span');
   titleEl.className = 'ovr-fh-title';
-  titleEl.textContent = 'TERMINALE // TARGET';
+  titleEl.textContent =
+    variant === 'sequence' ? 'TERMINALE // IN ORDINE →' : 'TERMINALE // TARGET';
   const countEl = document.createElement('span');
   countEl.className = 'ovr-fh-count';
   countEl.textContent = 'TROVATI: 0/5';
@@ -228,13 +299,13 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
   const targetsBar = document.createElement('div');
   targetsBar.className = 'ovr-fh-targets';
   const chipMap = new Map();
-  for (const word of targets) {
+  targets.forEach((word, idx) => {
     const chip = document.createElement('div');
-    chip.className = 'ovr-fh-chip';
+    chip.className = variant === 'sequence' && idx === 0 ? 'ovr-fh-chip is-next' : 'ovr-fh-chip';
     chip.textContent = word;
     targetsBar.appendChild(chip);
     chipMap.set(word, chip);
-  }
+  });
 
   const dump = document.createElement('div');
   dump.className = 'ovr-fh-dump';
@@ -268,20 +339,35 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
 
       btn.addEventListener('click', () => {
         if (destroyed || solved) return;
-        if (tokObj.isTarget) {
+        if (typeof window !== 'undefined' && window.__OVERRIDLE_PAUSED__) return;
+        const expectedNext = targets[foundSet.size];
+        const isCorrectTap =
+          tokObj.isTarget && (variant !== 'sequence' || tokObj.word === expectedNext);
+
+        if (isCorrectTap) {
           if (foundSet.has(tokObj.word)) {
             return;
           }
           foundSet.add(tokObj.word);
           btn.classList.add('is-found');
           const chip = chipMap.get(tokObj.word);
-          if (chip) chip.classList.add('is-found');
+          if (chip) {
+            chip.classList.remove('is-next');
+            chip.classList.add('is-found');
+          }
+          if (variant === 'sequence' && foundSet.size < 5) {
+            const nextChip = chipMap.get(targets[foundSet.size]);
+            if (nextChip) nextChip.classList.add('is-next');
+          }
           countEl.textContent = `TROVATI: ${foundSet.size}/5`;
           if (foundSet.size >= 5) {
             solved = true;
             onWin?.();
           }
         } else {
+          if (tokObj.isTarget && foundSet.has(tokObj.word)) {
+            return;
+          }
           btn.classList.add('is-error');
           onMistake?.();
           if (!destroyed && !solved) {

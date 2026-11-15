@@ -1,10 +1,11 @@
 import { shuffle } from '../prng.js';
 
 const FLASH_DURATION_MS = 1500;
+const SIMON_STEP_MS = 450;
 
 /**
  * Keycard Flash (memory_flash)
- * Osserva le 4 celle illuminate per 1.5s, poi selezionale sulla griglia 3x3.
+ * Osserva i nodi illuminati e seleziona quelli richiesti dalla modalità attiva.
  */
 export function mount(container, rng, { onWin, onMistake } = {}) {
   let destroyed = false;
@@ -23,9 +24,25 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
     return id;
   }
 
-  const targets = shuffle(rng, [0, 1, 2, 3, 4, 5, 6, 7, 8]).slice(0, 4);
-  const targetSet = new Set(targets);
+  const variantIdx = Math.floor(rng() * 4); // 0 = classic, 1 = simon, 2 = negative, 3 = priority
+  const variant =
+    variantIdx === 1
+      ? 'simon'
+      : variantIdx === 2
+        ? 'negative'
+        : variantIdx === 3
+          ? 'priority'
+          : 'classic';
+
+  const perm = shuffle(rng, [0, 1, 2, 3, 4, 5, 6, 7, 8]);
+  const flashOrder = variant === 'negative' ? perm.slice(0, 5) : perm.slice(0, 4);
+  const flashSet = new Set(flashOrder);
+  const targetOrder = variant === 'negative' ? perm.slice(5) : flashOrder;
+  const targetSet = new Set(targetOrder);
+  const amberSet = variant === 'priority' ? new Set(flashOrder.slice(0, 2)) : new Set();
+  const greenSet = variant === 'priority' ? new Set(flashOrder.slice(2, 4)) : new Set();
   const foundSet = new Set();
+  const totalFlashMs = variant === 'simon' ? SIMON_STEP_MS * 4 : FLASH_DURATION_MS;
 
   container.innerHTML = '';
 
@@ -140,6 +157,18 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
       color: #00e5ff;
       box-shadow: 0 0 18px rgba(0, 229, 255, 0.65), inset 0 0 12px rgba(0, 229, 255, 0.35);
     }
+    .ovr-mf-cell.is-flash-amber {
+      background: rgba(255, 176, 0, 0.28);
+      border-color: #ffb000;
+      color: #ffb000;
+      box-shadow: 0 0 18px rgba(255, 176, 0, 0.65), inset 0 0 12px rgba(255, 176, 0, 0.35);
+    }
+    .ovr-mf-cell.is-flash-green {
+      background: rgba(0, 255, 102, 0.28);
+      border-color: #00ff66;
+      color: #00ff66;
+      box-shadow: 0 0 18px rgba(0, 255, 102, 0.65), inset 0 0 12px rgba(0, 255, 102, 0.35);
+    }
     .ovr-mf-cell.is-correct {
       background: rgba(0, 255, 102, 0.25);
       border-color: #00ff66;
@@ -167,7 +196,20 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
   `;
 
   const root = document.createElement('div');
-  root.className = 'ovr-mf';
+  root.className = variant === 'classic' ? 'ovr-mf' : 'ovr-mf ovr-variant-mode';
+  root.dataset.variant = variant;
+
+  if (variant !== 'classic') {
+    const vBanner = document.createElement('div');
+    vBanner.className = 'ovr-variant-banner';
+    vBanner.textContent =
+      variant === 'simon'
+        ? '⚡ VARIANTE: SEQUENZA SIMON — Ripeti nello stesso ordine!'
+        : variant === 'negative'
+          ? '⚡ VARIANTE: NEGATIVO — Seleziona i 4 nodi SPENTI!'
+          : '⚡ VARIANTE: PRIORITÀ — Prima i 2 AMBRA, poi i 2 VERDI!';
+    root.appendChild(vBanner);
+  }
 
   const head = document.createElement('div');
   head.className = 'ovr-mf-head';
@@ -201,7 +243,24 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
     const glyph = document.createElement('span');
     glyph.className = 'ovr-mf-cell-glyph';
 
-    if (targetSet.has(i)) {
+    if (variant === 'simon') {
+      if (i === flashOrder[0]) {
+        cell.classList.add('is-flash');
+        glyph.textContent = '1';
+      } else {
+        glyph.textContent = '·';
+      }
+    } else if (variant === 'priority') {
+      if (amberSet.has(i)) {
+        cell.classList.add('is-flash-amber');
+        glyph.textContent = '▲';
+      } else if (greenSet.has(i)) {
+        cell.classList.add('is-flash-green');
+        glyph.textContent = '◈';
+      } else {
+        glyph.textContent = '·';
+      }
+    } else if (flashSet.has(i)) {
       cell.classList.add('is-flash');
       glyph.textContent = '◈';
     } else {
@@ -212,8 +271,20 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
 
     cell.addEventListener('click', () => {
       if (destroyed || solved || phase !== 'input') return;
-      if (targetSet.has(i)) {
-        if (foundSet.has(i)) return;
+      if (typeof window !== 'undefined' && window.__OVERRIDLE_PAUSED__) return;
+      if (foundSet.has(i)) return;
+
+      let validTap = targetSet.has(i);
+      if (validTap && variant === 'simon') {
+        validTap = i === targetOrder[foundSet.size];
+      } else if (validTap && variant === 'priority') {
+        const ambersDone = [...amberSet].every((id) => foundSet.has(id));
+        if (!ambersDone && greenSet.has(i)) {
+          validTap = false;
+        }
+      }
+
+      if (validTap) {
         foundSet.add(i);
         cell.classList.add('is-correct');
         glyph.textContent = '✓';
@@ -263,11 +334,18 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
     barTrack.style.visibility = 'hidden';
     grid.classList.remove('is-locked');
     statusEl.className = 'ovr-mf-status is-input';
-    statusEl.textContent = 'INSERISCI I 4 NODI';
+    statusEl.textContent =
+      variant === 'simon'
+        ? 'RIPETI LA SEQUENZA (1→4)'
+        : variant === 'negative'
+          ? 'TOCCA I 4 NODI SPENTI'
+          : variant === 'priority'
+            ? 'PRIMA I 2 AMBRA, POI I 2 VERDI'
+            : 'INSERISCI I 4 NODI';
 
     for (let i = 0; i < cells.length; i++) {
       const { cell, glyph } = cells[i];
-      cell.classList.remove('is-flash');
+      cell.classList.remove('is-flash', 'is-flash-amber', 'is-flash-green');
       cell.classList.add('is-clickable');
       cell.disabled = false;
       glyph.textContent = '·';
@@ -276,15 +354,30 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
 
   let flashElapsedMs = 0;
   let lastFlashFrame = performance.now();
+  let lastSimonStep = 0;
   function animateBar(now) {
     if (destroyed || solved || phase !== 'flash') return;
     const paused = typeof window !== 'undefined' && Boolean(window.__OVERRIDLE_PAUSED__);
     const dtMs = paused ? 0 : Math.min(50, Math.max(0, now - lastFlashFrame));
     lastFlashFrame = now;
     flashElapsedMs += dtMs;
-    const rem = Math.max(0, 1 - flashElapsedMs / FLASH_DURATION_MS);
+
+    if (variant === 'simon') {
+      const step = Math.min(3, Math.floor(flashElapsedMs / SIMON_STEP_MS));
+      if (step !== lastSimonStep) {
+        const prevIdx = flashOrder[lastSimonStep];
+        cells[prevIdx].cell.classList.remove('is-flash');
+        cells[prevIdx].glyph.textContent = '·';
+        const nextIdx = flashOrder[step];
+        cells[nextIdx].cell.classList.add('is-flash');
+        cells[nextIdx].glyph.textContent = String(step + 1);
+        lastSimonStep = step;
+      }
+    }
+
+    const rem = Math.max(0, 1 - flashElapsedMs / totalFlashMs);
     barFill.style.width = `${(rem * 100).toFixed(1)}%`;
-    if (flashElapsedMs < FLASH_DURATION_MS) {
+    if (flashElapsedMs < totalFlashMs) {
       rafId = requestAnimationFrame(animateBar);
     } else {
       rafId = null;

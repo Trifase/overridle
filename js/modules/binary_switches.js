@@ -4,8 +4,10 @@ const WEIGHTS = [32, 16, 8, 4, 2, 1];
 
 export function mount(container, rng, callbacks = {}) {
   const { onWin, onMistake } = callbacks;
-  const target = randInt(rng, 10, 63);
-  const bits = [0, 0, 0, 0, 0, 0];
+  const variantIdx = randInt(rng, 0, 2); // 0 = classic, 1 = inverted, 2 = blind
+  const variant = variantIdx === 1 ? 'inverted' : variantIdx === 2 ? 'blind' : 'classic';
+  const target = variant === 'inverted' ? randInt(rng, 10, 53) : randInt(rng, 10, 63);
+  const bits = variant === 'inverted' ? [1, 1, 1, 1, 1, 1] : [0, 0, 0, 0, 0, 0];
 
   let solved = false;
   let disposed = false;
@@ -231,8 +233,19 @@ export function mount(container, rng, callbacks = {}) {
   `;
 
   const root = document.createElement('div');
-  root.className = 'ovr-bin';
+  root.className = variant === 'classic' ? 'ovr-bin' : 'ovr-bin ovr-variant-mode';
   root.dataset.target = String(target);
+  root.dataset.variant = variant;
+
+  if (variant !== 'classic') {
+    const vBanner = document.createElement('div');
+    vBanner.className = 'ovr-variant-banner';
+    vBanner.textContent =
+      variant === 'inverted'
+        ? '⚡ VARIANTE: BIT INVERTITI — Partono ON, spegni fino al target!'
+        : '⚡ VARIANTE: SOMMA MASCHERATA — Somma a mente e premi EXEC!';
+    root.appendChild(vBanner);
+  }
 
   const header = document.createElement('div');
   header.className = 'ovr-bin-header';
@@ -248,11 +261,12 @@ export function mount(container, rng, callbacks = {}) {
     <div class="ovr-bin-box-val">${String(target).padStart(2, '0')}</div>
   `;
 
+  const initialSum = getSum();
   const currentBox = document.createElement('div');
   currentBox.className = 'ovr-bin-box';
   const currentValEl = document.createElement('div');
   currentValEl.className = 'ovr-bin-box-val';
-  currentValEl.textContent = '00';
+  currentValEl.textContent = variant === 'blind' ? '??' : String(initialSum).padStart(2, '0');
   currentBox.innerHTML = `<div class="ovr-bin-box-lbl">ATTUALE</div>`;
   currentBox.appendChild(currentValEl);
 
@@ -263,14 +277,15 @@ export function mount(container, rng, callbacks = {}) {
   grid.className = 'ovr-bin-grid';
 
   const switchButtons = WEIGHTS.map((weight, i) => {
+    const startOn = bits[i] === 1;
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.className = 'ovr-bin-sw';
+    btn.className = startOn ? 'ovr-bin-sw is-on' : 'ovr-bin-sw';
     btn.dataset.bitIndex = String(i);
     btn.dataset.weight = String(weight);
-    btn.dataset.state = '0';
-    btn.setAttribute('aria-pressed', 'false');
-    btn.setAttribute('aria-label', `Switch peso ${weight}, stato OFF`);
+    btn.dataset.state = startOn ? '1' : '0';
+    btn.setAttribute('aria-pressed', String(startOn));
+    btn.setAttribute('aria-label', `Switch peso ${weight}, stato ${startOn ? 'ON' : 'OFF'}`);
 
     const weightEl = document.createElement('span');
     weightEl.className = 'ovr-bin-weight';
@@ -289,7 +304,7 @@ export function mount(container, rng, callbacks = {}) {
 
     const stateEl = document.createElement('span');
     stateEl.className = 'ovr-bin-state';
-    stateEl.textContent = 'OFF';
+    stateEl.textContent = startOn ? 'ON' : 'OFF';
 
     btn.append(weightEl, ledEl, trackEl, stateEl);
 
@@ -297,6 +312,7 @@ export function mount(container, rng, callbacks = {}) {
       'click',
       () => {
         if (solved || disposed) return;
+        if (typeof window !== 'undefined' && window.__OVERRIDLE_PAUSED__) return;
         bits[i] = bits[i] ? 0 : 1;
         const isOn = bits[i] === 1;
         btn.classList.toggle('is-on', isOn);
@@ -307,8 +323,13 @@ export function mount(container, rng, callbacks = {}) {
 
         const sum = getSum();
         root.dataset.current = String(sum);
-        currentValEl.textContent = String(sum).padStart(2, '0');
-        currentBox.classList.toggle('is-match', sum === target);
+        if (variant === 'blind') {
+          currentValEl.textContent = '??';
+          currentBox.classList.remove('is-match');
+        } else {
+          currentValEl.textContent = String(sum).padStart(2, '0');
+          currentBox.classList.toggle('is-match', sum === target);
+        }
       },
       { signal: ac.signal }
     );
@@ -361,7 +382,7 @@ export function mount(container, rng, callbacks = {}) {
     { signal: ac.signal }
   );
 
-  root.dataset.current = '0';
+  root.dataset.current = String(initialSum);
   root.append(header, grid, execBtn, statusEl);
   container.append(style, root);
 

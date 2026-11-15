@@ -71,6 +71,7 @@ const MODULE_META = {
     mod: binary_switches,
     instructions:
       'Attiva gli switch binari per sommare esattamente il valore decimale target e premi EXEC.',
+    ruleSelector: '.ovr-variant-banner',
   },
   math_order: {
     id: 'math_order',
@@ -85,14 +86,16 @@ const MODULE_META = {
     title: 'TERMINALE FALLOUT',
     mod: fallout_hack,
     instructions:
-      'Individua la password corretta: LIKENESS indica quante lettere combaciano nella stessa posizione.',
+      'Trova e tocca i 5 codici target nel dump esadecimale evitando le esche.',
+    ruleSelector: '.ovr-variant-banner',
   },
   memory_flash: {
     id: 'memory_flash',
     title: 'KEYCARD FLASH',
     mod: memory_flash,
     instructions:
-      'Memorizza i 4 nodi illuminati durante il flash iniziale e toccali nello stesso identico ordine.',
+      'Memorizza i nodi illuminati durante il flash iniziale e seleziona quelli richiesti.',
+    ruleSelector: '.ovr-variant-banner',
   },
   glyph_rules: {
     id: 'glyph_rules',
@@ -108,13 +111,15 @@ const MODULE_META = {
     mod: freq_align,
     instructions:
       'Regola lo slider della frequenza finché la tua onda si sovrappone al target e mantieni l’aggancio.',
+    ruleSelector: '.ovr-variant-banner',
   },
   pressure_purge: {
     id: 'pressure_purge',
     title: 'SPURGO PRESSIONE',
     mod: pressure_purge,
     instructions:
-      'Tieni premuto PURGE per far salire la pressione e rilascia esattamente dentro la fascia verde mobile.',
+      'Tieni premuto PURGE per far salire la pressione e rilascia esattamente dentro la fascia verde.',
+    ruleSelector: '.ovr-variant-banner',
   },
   rotor_lock: {
     id: 'rotor_lock',
@@ -122,13 +127,15 @@ const MODULE_META = {
     mod: rotor_lock,
     instructions:
       'Premi LOCK due volte quando la lancetta rotante passa dentro la zona verde per agganciare entrambi i perni.',
+    ruleSelector: '.ovr-variant-banner',
   },
   valve_sequence: {
     id: 'valve_sequence',
-    title: 'BYPASS VALVOLE',
+    title: 'RESET VALVOLE',
     mod: valve_sequence,
     instructions:
-      'Tocca le 3 valvole critiche nell’ordine esatto in cui superano la soglia della zona rossa (≥ 75%).',
+      'Quando una valvola arriva al 100%, toccala per resettarla entro 2 secondi. Toccare prima del 100% o superare i 2s è errore.',
+    ruleSelector: '.ovr-variant-banner',
   },
   tactical_map: {
     id: 'tactical_map',

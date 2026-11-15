@@ -1,28 +1,35 @@
 import { pick } from '../prng.js';
 
 const TOLERANCE = 0.04;
-const LOCK_DURATION_SEC = 0.35;
+const LOCK_DURATION_CLASSIC = 0.35;
+const LOCK_DURATION_DUAL = 0.25;
 
 /**
  * Allinea Frequenza (freq_align)
  * Allinea l'onda utente (verde) all'onda target tratteggiata (ambra)
- * e mantieni la tolleranza per 0.35s continui.
+ * e mantieni la tolleranza continua.
  */
 export function mount(container, rng, { onWin, onMistake: _onMistake } = {}) {
   let destroyed = false;
   let solved = false;
   let rafId = null;
 
-  const targetNorm = 0.12 + rng() * 0.76;
-  const intervals = [];
-  if (targetNorm - 0.24 >= 0.08) {
-    intervals.push([0.08, targetNorm - 0.24]);
+  const variantIdx = Math.floor(rng() * 3); // 0 = classic, 1 = inverted, 2 = dual
+  const variant = variantIdx === 1 ? 'inverted' : variantIdx === 2 ? 'dual' : 'classic';
+  const lockRequiredSec = variant === 'dual' ? LOCK_DURATION_DUAL : LOCK_DURATION_CLASSIC;
+  let stage = 1;
+  const totalStages = variant === 'dual' ? 2 : 1;
+
+  function pickFarNorm(fromNorm) {
+    const intervals = [];
+    if (fromNorm - 0.24 >= 0.08) intervals.push([0.08, fromNorm - 0.24]);
+    if (fromNorm + 0.24 <= 0.92) intervals.push([fromNorm + 0.24, 0.92]);
+    const chosen = pick(rng, intervals) || [0.08, 0.2];
+    return chosen[0] + rng() * (chosen[1] - chosen[0]);
   }
-  if (targetNorm + 0.24 <= 0.92) {
-    intervals.push([targetNorm + 0.24, 0.92]);
-  }
-  const chosenInterval = pick(rng, intervals) || [0.08, 0.2];
-  const initNorm = chosenInterval[0] + rng() * (chosenInterval[1] - chosenInterval[0]);
+
+  let targetNorm = 0.12 + rng() * 0.76;
+  const initNorm = pickFarNorm(targetNorm);
   const phase0 = rng() * Math.PI * 2;
   const harmonicWeight = 0.14 + rng() * 0.12;
 
@@ -182,13 +189,24 @@ export function mount(container, rng, { onWin, onMistake: _onMistake } = {}) {
   `;
 
   const root = document.createElement('div');
-  root.className = 'ovr-fa';
+  root.className = variant === 'classic' ? 'ovr-fa' : 'ovr-fa ovr-variant-mode';
+  root.dataset.variant = variant;
+
+  if (variant !== 'classic') {
+    const vBanner = document.createElement('div');
+    vBanner.className = 'ovr-variant-banner';
+    vBanner.textContent =
+      variant === 'inverted'
+        ? '⚡ VARIANTE: FASE INVERSA — Lo slider muove al contrario!'
+        : '⚡ VARIANTE: DUAL LOCK — Aggancia 2 frequenze consecutive!';
+    root.appendChild(vBanner);
+  }
 
   const head = document.createElement('div');
   head.className = 'ovr-fa-head';
   const titleEl = document.createElement('span');
   titleEl.className = 'ovr-fa-title';
-  titleEl.textContent = 'OSCILLOSCOPIO';
+  titleEl.textContent = variant === 'dual' ? 'OSCILLOSCOPIO (1/2)' : 'OSCILLOSCOPIO';
   const freqEl = document.createElement('span');
   freqEl.className = 'ovr-fa-freq';
   head.append(titleEl, freqEl);
@@ -226,7 +244,7 @@ export function mount(container, rng, { onWin, onMistake: _onMistake } = {}) {
   slider.min = '0';
   slider.max = '1000';
   slider.step = '1';
-  slider.value = String(Math.round(initNorm * 1000));
+  slider.value = String(Math.round((variant === 'inverted' ? 1 - initNorm : initNorm) * 1000));
   slider.setAttribute('aria-label', 'Frequenza onda');
 
   const scale = document.createElement('div');
@@ -270,9 +288,14 @@ export function mount(container, rng, { onWin, onMistake: _onMistake } = {}) {
   }
   updateReadout();
 
+  function readSliderNorm() {
+    const raw = Math.max(0, Math.min(1, Number(slider.value) / 1000));
+    return variant === 'inverted' ? 1 - raw : raw;
+  }
+
   function onSliderChange() {
     if (destroyed || solved) return;
-    currentNorm = Math.max(0, Math.min(1, Number(slider.value) / 1000));
+    currentNorm = readSliderNorm();
     updateReadout();
   }
 
@@ -377,7 +400,7 @@ export function mount(container, rng, { onWin, onMistake: _onMistake } = {}) {
       return;
     }
 
-    currentNorm = Math.max(0, Math.min(1, Number(slider.value) / 1000));
+    currentNorm = readSliderNorm();
     updateReadout();
 
     const inTol = Math.abs(currentNorm - targetNorm) <= TOLERANCE;
@@ -388,24 +411,36 @@ export function mount(container, rng, { onWin, onMistake: _onMistake } = {}) {
     } else {
       lockSeconds = 0;
       stateEl.className = 'ovr-fa-state';
-      stateEl.textContent = 'ALLINEA AL TARGET';
+      stateEl.textContent =
+        variant === 'dual' ? `ALLINEA TARGET (${stage}/${totalStages})` : 'ALLINEA AL TARGET';
     }
 
-    const pct = Math.min(100, Math.round((lockSeconds / LOCK_DURATION_SEC) * 100));
+    const pct = Math.min(100, Math.round((lockSeconds / lockRequiredSec) * 100));
     barFill.style.width = `${pct}%`;
     lockPctEl.textContent = `LOCK: ${pct}%`;
 
     drawScope(activeTimeSec, inTol);
 
-    if (lockSeconds >= LOCK_DURATION_SEC) {
-      solved = true;
-      barFill.style.width = '100%';
-      lockPctEl.textContent = 'LOCK: 100%';
-      stateEl.className = 'ovr-fa-state is-win';
-      stateEl.textContent = 'FREQUENZA AGGANCIATA';
-      rafId = null;
-      onWin?.();
-      return;
+    if (lockSeconds >= lockRequiredSec) {
+      if (stage < totalStages) {
+        stage += 1;
+        lockSeconds = 0;
+        targetNorm = pickFarNorm(currentNorm);
+        titleEl.textContent = `OSCILLOSCOPIO (${stage}/${totalStages})`;
+        barFill.style.width = '0%';
+        lockPctEl.textContent = 'LOCK: 0%';
+        stateEl.className = 'ovr-fa-state';
+        stateEl.textContent = 'STAGE 1 OK — NUOVO TARGET!';
+      } else {
+        solved = true;
+        barFill.style.width = '100%';
+        lockPctEl.textContent = 'LOCK: 100%';
+        stateEl.className = 'ovr-fa-state is-win';
+        stateEl.textContent = 'FREQUENZA AGGANCIATA';
+        rafId = null;
+        onWin?.();
+        return;
+      }
     }
 
     rafId = requestAnimationFrame(frame);

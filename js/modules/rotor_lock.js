@@ -18,10 +18,16 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
     return id;
   }
 
-  const zoneWidth = 54 + rng() * 8;
+  const variantIdx = Math.floor(rng() * 3); // 0 = classic, 1 = drift, 2 = pulse
+  const variant = variantIdx === 1 ? 'drift' : variantIdx === 2 ? 'pulse' : 'classic';
+
+  const baseZoneWidth = 54 + rng() * 8;
   let zoneCenter = rng() * 360;
   let dir = rng() < 0.5 ? 1 : -1;
   let speed = 150 + rng() * 30;
+  let zoneDriftSpeed = variant === 'drift' ? -dir * (48 + rng() * 20) : 0;
+  let pulseElapsed = 0;
+  const pulsePhase = rng() * Math.PI * 2;
   let needleAngle = (zoneCenter + dir * (130 + rng() * 100) + 360) % 360;
 
   let pinsLocked = 0;
@@ -34,9 +40,15 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
     return ((deg % 360) + 360) % 360;
   }
 
+  function getZoneWidth() {
+    if (variant !== 'pulse') return baseZoneWidth;
+    const t = (Math.sin(pulseElapsed * 2.6 + pulsePhase) + 1) / 2;
+    return 24 + t * (baseZoneWidth - 24);
+  }
+
   function isNeedleInZone() {
     const diff = ((needleAngle - zoneCenter + 540) % 360) - 180;
-    return Math.abs(diff) <= zoneWidth / 2;
+    return Math.abs(diff) <= getZoneWidth() / 2;
   }
 
   container.innerHTML = '';
@@ -159,7 +171,18 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
   `;
 
   const root = document.createElement('div');
-  root.className = 'ovr-rl';
+  root.className = variant === 'classic' ? 'ovr-rl' : 'ovr-rl ovr-variant-mode';
+  root.dataset.variant = variant;
+
+  if (variant !== 'classic') {
+    const vBanner = document.createElement('div');
+    vBanner.className = 'ovr-variant-banner';
+    vBanner.textContent =
+      variant === 'drift'
+        ? '⚡ VARIANTE: ZONA MOBILE — La zona verde si sposta!'
+        : '⚡ VARIANTE: ZONA PULSANTE — La zona si restringe e riapre!';
+    root.appendChild(vBanner);
+  }
 
   const head = document.createElement('div');
   head.className = 'ovr-rl-head';
@@ -266,8 +289,9 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
     ctx.stroke();
 
     // Zona verde
-    const startRad = degToRad(zoneCenter - zoneWidth / 2);
-    const endRad = degToRad(zoneCenter + zoneWidth / 2);
+    const activeZoneWidth = getZoneWidth();
+    const startRad = degToRad(zoneCenter - activeZoneWidth / 2);
+    const endRad = degToRad(zoneCenter + activeZoneWidth / 2);
     ctx.save();
     ctx.beginPath();
     ctx.arc(cx, cy, radius, startRad, endRad);
@@ -332,6 +356,11 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
     const dt = Math.min(0.05, Math.max(0, (now - lastFrameTime) / 1000));
     lastFrameTime = now;
     needleAngle = normAngle(needleAngle + dir * speed * dt);
+    if (variant === 'drift') {
+      zoneCenter = normAngle(zoneCenter + zoneDriftSpeed * dt);
+    } else if (variant === 'pulse') {
+      pulseElapsed += dt;
+    }
   }
 
   function handleLock() {
@@ -351,6 +380,9 @@ export function mount(container, rng, { onWin, onMistake } = {}) {
 
         dir *= -1;
         speed *= 1.08;
+        if (variant === 'drift') {
+          zoneDriftSpeed = -dir * (54 + rng() * 22);
+        }
         zoneCenter = normAngle(needleAngle + dir * (135 + rng() * 85));
 
         trackTimeout(() => {
