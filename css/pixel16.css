@@ -1127,6 +1127,71 @@ body.theme-pixel16 .crt-shell .ovr-mf-cell.is-wrong {
     0 2px 0 var(--px-outline) !important;
 }
 
+/* Glyph Grid (.ovr-glyph) compact vertical metrics & win/err states */
+body.theme-pixel16 .crt-shell .ovr-glyph {
+  gap: 6px !important;
+  padding: 4px 6px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-glyph-rule {
+  padding: 6px 10px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-glyph-tag {
+  font-size: 10px !important;
+  margin-bottom: 2px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-glyph-text {
+  font-size: 13px !important;
+  line-height: 1.3 !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-glyph-grid {
+  gap: 8px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-glyph-cell {
+  min-height: 68px !important;
+  height: 68px !important;
+  padding: 4px !important;
+  gap: 3px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-glyph-sym {
+  font-size: 26px !important;
+  line-height: 1 !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-glyph-id {
+  font-size: 10px !important;
+  line-height: 1 !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-glyph-status {
+  font-size: 11px !important;
+  min-height: 14px !important;
+  line-height: 1.2 !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-glyph-cell.is-win {
+  background: linear-gradient(180deg, #1b5c3e 0%, #103825 100%) !important;
+  border-color: var(--crt-green) !important;
+  color: var(--crt-green) !important;
+  box-shadow:
+    inset 2px 2px 0 #38ff8e,
+    0 2px 0 var(--px-outline) !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-glyph-cell.is-err {
+  background: linear-gradient(180deg, #7a1c29 0%, #4a0e17 100%) !important;
+  border-color: var(--crt-red) !important;
+  color: #ff8a9b !important;
+  box-shadow:
+    inset 2px 2px 0 #ff5268,
+    0 2px 0 var(--px-outline) !important;
+}
+
 /* Primary action buttons inside Pressure Purge, Rotor Lock, Reactor Balance */
 body.theme-pixel16 .crt-shell .ovr-pp-btn,
 body.theme-pixel16 .crt-shell .ovr-rl-btn,
