@@ -1014,6 +1014,54 @@ body.theme-pixel16 .crt-shell .ovr-math-btn.is-locked {
   box-shadow: inset 2px 2px 0 #2ce8a2, 0 2px 0 var(--px-outline) !important;
 }
 
+/* Compact Fallout Terminal rows & tokens so all 7 rows fit without clipping */
+body.theme-pixel16 .crt-shell .ovr-fh {
+  gap: 5px !important;
+  padding: 4px 6px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-fh-head {
+  padding: 3px 6px !important;
+  font-size: 11px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-fh-chip {
+  height: 26px !important;
+  font-size: 11px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-fh-dump {
+  padding: 5px 6px !important;
+  gap: 3px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-fh-row {
+  min-height: 30px !important;
+  height: 30px !important;
+  gap: 6px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-fh-addr,
+body.theme-pixel16 .crt-shell .ovr-fh-noise {
+  font-size: 11px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-fh-tok {
+  min-height: 28px !important;
+  height: 28px !important;
+  min-width: 58px !important;
+  padding: 0 8px !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-fh-tok.is-found {
+  background: linear-gradient(180deg, #1b4d3e 0%, #113328 100%) !important;
+  border-color: var(--crt-green) !important;
+  color: var(--crt-green) !important;
+  box-shadow: inset 1px 1px 0 #2ce8a2 !important;
+}
+
 /* Primary action buttons inside Pressure Purge, Rotor Lock, Reactor Balance */
 body.theme-pixel16 .crt-shell .ovr-pp-btn,
 body.theme-pixel16 .crt-shell .ovr-rl-btn,
