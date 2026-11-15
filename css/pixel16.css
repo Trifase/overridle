@@ -1192,6 +1192,53 @@ body.theme-pixel16 .crt-shell .ovr-glyph-cell.is-err {
     0 2px 0 var(--px-outline) !important;
 }
 
+/* Pressure Purge (.ovr-pp): 2-stage variant yellow (stage 1) -> green (stage 2) zone */
+body.theme-pixel16 .crt-shell .ovr-pp-body {
+  height: 172px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-pp[data-variant="two_stage"]:not(.is-stage-2) .ovr-pp-zone {
+  background: rgba(255, 214, 10, 0.28) !important;
+  border-top: 2px dashed #ffd60a !important;
+  border-bottom: 2px dashed #ffd60a !important;
+  box-shadow: inset 0 0 12px rgba(255, 214, 10, 0.38) !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-pp[data-variant="two_stage"]:not(.is-stage-2) .ovr-pp-range {
+  color: #ffd60a !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-pp[data-variant="two_stage"].is-stage-2 .ovr-pp-zone {
+  background: rgba(56, 255, 142, 0.26) !important;
+  border-top: 2px dashed var(--crt-green) !important;
+  border-bottom: 2px dashed var(--crt-green) !important;
+  box-shadow: inset 0 0 12px rgba(56, 255, 142, 0.35) !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-pp[data-variant="two_stage"].is-stage-2 .ovr-pp-range {
+  color: var(--crt-green) !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-pp-btn.is-holding {
+  background: linear-gradient(180deg, #6ef7ff 0%, #00b8d4 100%) !important;
+  border-color: var(--crt-cyan) !important;
+  color: #062129 !important;
+  transform: translateY(2px) !important;
+  box-shadow:
+    inset 2px 2px 0 #c9fcff,
+    0 2px 0 var(--px-outline) !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-pp-btn.is-zone {
+  background: linear-gradient(180deg, #5cff9e 0%, #1cc964 100%) !important;
+  border-color: var(--crt-green) !important;
+  color: #042110 !important;
+  box-shadow:
+    inset 2px 2px 0 #b3ffd1,
+    0 0 14px rgba(56, 255, 142, 0.7),
+    0 2px 0 var(--px-outline) !important;
+}
+
 /* Primary action buttons inside Pressure Purge, Rotor Lock, Reactor Balance */
 body.theme-pixel16 .crt-shell .ovr-pp-btn,
 body.theme-pixel16 .crt-shell .ovr-rl-btn,

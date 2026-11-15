@@ -706,11 +706,47 @@ function enhanceWiresLabels() {
   obs.observe(container, { childList: true, subtree: true });
 }
 
+function enhancePressurePurgeStages() {
+  const container = document.getElementById('module-container');
+  if (!container) return;
+
+  const syncStage = () => {
+    const pp = container.querySelector('.ovr-pp[data-variant="two_stage"]');
+    if (!pp) return;
+    const titleEl = pp.querySelector('.ovr-pp-title');
+    const isStage2 = Boolean(titleEl && titleEl.textContent && titleEl.textContent.includes('2/2'));
+
+    if (pp.classList.contains('is-stage-2') !== isStage2) {
+      pp.classList.toggle('is-stage-2', isStage2);
+    }
+    if (pp.classList.contains('is-stage-1') !== !isStage2) {
+      pp.classList.toggle('is-stage-1', !isStage2);
+    }
+
+    const zLbl = pp.querySelector('.ovr-pp-info .ovr-pp-card:nth-child(2) .ovr-pp-lbl');
+    if (zLbl) {
+      const txt = (zLbl.textContent || '').trim();
+      if (!isStage2) {
+        if (txt === 'GREEN ZONE') zLbl.textContent = 'YELLOW ZONE';
+        else if (txt === 'FASCIA VERDE') zLbl.textContent = 'FASCIA GIALLA';
+      } else {
+        if (txt === 'YELLOW ZONE') zLbl.textContent = 'GREEN ZONE';
+        else if (txt === 'FASCIA GIALLA') zLbl.textContent = 'FASCIA VERDE';
+      }
+    }
+  };
+
+  syncStage();
+  const obs = new MutationObserver(syncStage);
+  obs.observe(container, { childList: true, subtree: true, characterData: true });
+}
+
 function initPreviewFx() {
   enhanceLivesDisplay();
   enhanceRoundIndicators();
   enhanceModuleMeta();
   enhanceWiresLabels();
+  enhancePressurePurgeStages();
   initContainmentAnimator();
 }
 
