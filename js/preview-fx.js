@@ -3,9 +3,12 @@
  * Runs alongside untouched js/engine.js via DOM observers and window.__OVERRIDLE_DEBUG__.
  */
 
-const W = 320;
+const W = 440;
 const H = 88;
 const FLOOR_Y = 74;
+const POD_REST_X = 115;
+const DOOR_ANCHOR_X = 284;
+const SEGMENT_LEN = 224; // Exact 2x tunnel tile width (112px)
 
 function renderPixelHeartSvg(filled) {
   const fill = filled ? '#ff2a55' : '#3a3d5c';
@@ -95,6 +98,11 @@ function loadPixelAsset(src, onLoad) {
   return asset;
 }
 
+function smoothstep(t) {
+  const c = Math.max(0, Math.min(1, t));
+  return c * c * (3 - 2 * c);
+}
+
 function initContainmentAnimator() {
   const stage = document.getElementById('containment-stage');
   const canvas = document.getElementById('containment-canvas');
@@ -126,10 +134,11 @@ function initContainmentAnimator() {
 
   let animTime = 0;
   let lastTs = 0;
-  let scrollX = 0;
-  let scrollSpeed = 30;
-  let podX = 76;
-  let podY = 37;
+  let cameraX = 0;
+  let prevCameraX = 0;
+  let cameraSpeed = 0;
+  let podX = POD_REST_X;
+  let podY = 33;
 
   let prevMode = 'STANDBY';
   let prevLives = 3;
@@ -138,13 +147,30 @@ function initContainmentAnimator() {
   let hitTimer = 0;
   let smokeSpawnAccum = 0;
   let stateTimer = 0;
-
-  // Passing unlocked blast door & upcoming locked blast door
-  let doorX = 360;
-  let passingDoor = null; // { x, openFrac, slideSpeed }
   let shakeTimer = 0;
+  let explosionFired = false;
+
+  let doorOpenFracs = [0, 0, 0, 0, 0];
+  let transit = null; // { fromCam, toCam, elapsed, duration, doorIdx }
+  let winFromCam = 0;
+  let winTargetCam = 176;
+  let winStartPodX = POD_REST_X;
 
   const particles = [];
+
+  function resetWorldState() {
+    cameraX = 0;
+    prevCameraX = 0;
+    cameraSpeed = 0;
+    podX = POD_REST_X;
+    podY = 33;
+    hitTimer = 0;
+    shakeTimer = 0;
+    explosionFired = false;
+    doorOpenFracs = [0, 0, 0, 0, 0];
+    transit = null;
+    particles.length = 0;
+  }
 
   function spawnSpark(x, y, vx, vy, color, life = 0.45, size = 1) {
     if (particles.length >= 64) particles.shift();
@@ -157,8 +183,8 @@ function initContainmentAnimator() {
   }
 
   function spawnExplosion(cx, cy) {
-    for (let i = 0; i < 16; i++) {
-      const ang = (Math.PI * 2 * i) / 16 + (Math.random() - 0.5) * 0.3;
+    for (let i = 0; i < 18; i++) {
+      const ang = (Math.PI * 2 * i) / 18 + (Math.random() - 0.5) * 0.3;
       const spd = 28 + Math.random() * 68;
       const col = i % 3 === 0 ? '#fff7b2' : i % 3 === 1 ? '#ff8c1a' : '#7b87a8';
       spawnSpark(cx, cy, Math.cos(ang) * spd, Math.sin(ang) * spd - 22, col, 0.55 + Math.random() * 0.4, i % 4 === 0 ? 2 : 1);
@@ -170,33 +196,43 @@ function initContainmentAnimator() {
 
   function drawBlastDoor(dx, openFrac, status, t) {
     const x = Math.round(dx);
-    if (!assets.door.ready) {
-      const h = Math.max(0, 72 - Math.round(openFrac * 58));
-      if (h > 4) {
-        ctx.fillStyle = '#38465e';
-        ctx.fillRect(x, 4, 24, h);
-        ctx.fillStyle = status === 'open' ? '#2ce8a2' : '#ff2a55';
-        ctx.fillRect(x + 11, Math.min(40, h - 4), 2, 6);
-      }
-      return;
-    }
+    const dw = assets.door.ready ? assets.door.img.naturalWidth || 38 : 38;
+    const dh = assets.door.ready ? assets.door.img.naturalHeight || 78 : 78;
 
-    const img = assets.door.img;
-    const dw = img.naturalWidth || 26;
-    const dh = img.naturalHeight || 72;
-    const slideY = Math.round(openFrac * 58);
-    const ceilingY = 4;
-    const dstY = 77 - dh - slideY;
+    // Flush steel guide rails & floor threshold anchoring door solidly into tunnel
+    for (const jx of [x - 1, x + dw - 2]) {
+      ctx.fillStyle = '#121622';
+      ctx.fillRect(jx, 0, 3, 79);
+      ctx.fillStyle = '#414e6b';
+      ctx.fillRect(jx + 1, 1, 1, 77);
+      ctx.fillStyle = '#7384ab';
+      for (let ry = 7; ry < 76; ry += 14) {
+        ctx.fillRect(jx + 1, ry, 1, 1);
+      }
+    }
+    ctx.fillStyle = '#161b29';
+    ctx.fillRect(x - 1, 77, dw + 2, 3);
+    ctx.fillStyle = '#3b4761';
+    ctx.fillRect(x, 78, dw, 1);
+
+    const slideY = Math.round(openFrac * 64);
+    const ceilingY = 0;
+    const dstY = 78 - dh - slideY;
     const clipTop = Math.max(0, ceilingY - dstY);
     const drawY = Math.max(ceilingY, dstY);
     const visH = Math.min(dh - clipTop, 78 - drawY);
 
     if (visH > 0) {
-      ctx.drawImage(img, 0, clipTop, dw, visH, x, drawY, dw, visH);
+      if (assets.door.ready) {
+        ctx.drawImage(assets.door.img, 0, clipTop, dw, visH, x, drawY, dw, visH);
+      } else {
+        ctx.fillStyle = '#38465e';
+        ctx.fillRect(x, drawY, dw, visH);
+      }
 
       // Dynamic lock core beacon overlay on central spine
-      const ledY = dstY + Math.round(dh * 0.44);
-      if (ledY >= ceilingY + 3 && ledY <= 68) {
+      const ledY = dstY + Math.round(dh * 0.45);
+      if (ledY >= 5 && ledY <= 68) {
         let col = '#ff2a55';
         let core = '#ff9ebb';
         if (status === 'open') {
@@ -212,22 +248,22 @@ function initContainmentAnimator() {
         }
         const lx = x + Math.floor(dw / 2);
         ctx.fillStyle = col;
-        ctx.fillRect(lx - 1, ledY - 3, 2, 7);
+        ctx.fillRect(lx - 1, ledY - 4, 3, 9);
         ctx.fillStyle = core;
-        ctx.fillRect(lx, ledY - 1, 1, 2);
+        ctx.fillRect(lx, ledY - 1, 1, 3);
       }
     }
 
-    // Ceiling bulkhead slot cap where door retracts
-    ctx.fillStyle = '#141926';
-    ctx.fillRect(x - 1, 1, dw + 2, 4);
-    ctx.fillStyle = '#3b4863';
-    ctx.fillRect(x, 2, dw, 2);
+    // Overhead steel bulkhead housing cap where door retracts
+    ctx.fillStyle = '#121622';
+    ctx.fillRect(x - 2, 0, dw + 4, 5);
+    ctx.fillStyle = '#3d4b66';
+    ctx.fillRect(x - 1, 1, dw + 2, 2);
   }
 
   function drawThruster(px, py, turbo, speed, t) {
     const jitter = Math.floor(t * 28) % 3;
-    const baseLen = turbo ? 18 : speed > 60 ? 11 : 7;
+    const baseLen = turbo ? 18 : speed > 40 ? 11 : 7;
     const len = baseLen + jitter * (turbo ? 3 : 2);
     const tx = Math.round(px) + 1;
     const ty = Math.round(py) + 13;
@@ -235,7 +271,6 @@ function initContainmentAnimator() {
     const outer = turbo ? '#00e5ff' : '#ff5e1a';
     const mid = turbo ? '#88fff3' : '#ffbe0b';
 
-    // Stepped 16-bit pixel flame cone
     ctx.fillStyle = outer;
     ctx.fillRect(tx - Math.floor(len * 0.45), ty - 3, Math.floor(len * 0.45), 7);
     ctx.fillRect(tx - Math.floor(len * 0.8), ty - 2, Math.floor(len * 0.8), 5);
@@ -338,38 +373,57 @@ function initContainmentAnimator() {
     const paused = dbg ? Boolean(dbg.isPaused) : false;
     const roundIdx = dbg ? dbg.roundIndex : 0;
     const lives = dbg ? dbg.lives : 3;
+    const totalRounds = dbg && dbg.selectedModules && dbg.selectedModules.length ? dbg.selectedModules.length : 5;
+    const lastIdx = Math.max(0, totalRounds - 1);
 
-    // Detect state transitions cleanly
+    // State transition handling
     if (mode !== prevMode) {
       stateTimer = 0;
       if (mode === 'STANDBY') {
-        doorX = 360;
-        passingDoor = null;
-        hitTimer = 0;
-        shakeTimer = 0;
-        particles.length = 0;
-      } else if (mode === 'PLAYING' && prevMode === 'STANDBY') {
-        doorX = 278;
-        passingDoor = null;
+        resetWorldState();
+      } else if (mode === 'PLAYING') {
+        resetWorldState();
+        prevRound = roundIdx;
+        cameraX = roundIdx * SEGMENT_LEN;
+        prevCameraX = cameraX;
+        for (let i = 0; i < roundIdx; i++) doorOpenFracs[i] = 1;
       } else if (mode === 'LOSE') {
-        doorX = Math.max(198, Math.min(238, doorX));
-        passingDoor = null;
+        transit = null;
+        cameraX = roundIdx * SEGMENT_LEN;
+        prevCameraX = cameraX;
+        cameraSpeed = 0;
+        doorOpenFracs[roundIdx] = 0;
+        explosionFired = false;
         shakeTimer = 0.45;
       } else if (mode === 'WIN') {
-        passingDoor = { x: Math.min(220, Math.max(176, doorX)), openFrac: 0.05, isExit: true };
-        doorX = 400;
+        transit = null;
+        for (let i = 0; i < lastIdx; i++) doorOpenFracs[i] = 1;
+        winFromCam = cameraX;
+        winTargetCam = lastIdx * SEGMENT_LEN + 176;
+        winStartPodX = podX;
       }
       prevMode = mode;
     }
 
-    // Round unlocked: launch current blast door opening & turbo surge!
+    // Round solved: launch door open + smooth advance to next door
     if (mode === 'PLAYING' && roundIdx > prevRound) {
-      passingDoor = { x: Math.max(145, Math.min(250, doorX)), openFrac: 0.05, isExit: false };
-      doorX = 355;
+      for (let i = 0; i < roundIdx - 1; i++) doorOpenFracs[i] = 1;
+      transit = {
+        fromCam: cameraX,
+        toCam: roundIdx * SEGMENT_LEN,
+        elapsed: 0,
+        duration: 0.95,
+        doorIdx: roundIdx - 1,
+      };
       hitTimer = 0;
+    } else if (mode === 'PLAYING' && roundIdx < prevRound) {
+      resetWorldState();
+      cameraX = roundIdx * SEGMENT_LEN;
+      prevCameraX = cameraX;
+      for (let i = 0; i < roundIdx; i++) doorOpenFracs[i] = 1;
     }
 
-    // Mistake hurt feedback: sparks, smoke & shake
+    // Mistake hurt feedback: sparks, smoke & shake (door & tunnel remain stationary)
     if (mode === 'PLAYING' && lives < prevLives) {
       hitTimer = 0.55;
       shakeTimer = 0.22;
@@ -398,75 +452,74 @@ function initContainmentAnimator() {
     if (hitTimer > 0) hitTimer = Math.max(0, hitTimer - dt);
     if (shakeTimer > 0) shakeTimer = Math.max(0, shakeTimer - dt);
 
-    // Update target kinematics per mode
-    let targetSpeed = 30;
-    let targetPodX = 76;
-    let targetPodY = 37 + Math.sin(animTime * 3.0) * 2.2;
+    // Update unified camera & pod kinematics
     let turbo = false;
-    let exitSplitX = W + 20;
 
     if (mode === 'STANDBY') {
-      targetSpeed = 30;
-      targetPodX = 76;
+      cameraX = 0;
+      cameraSpeed = 0;
+      podX = POD_REST_X;
+      podY = 33 + Math.sin(animTime * 3.0) * 2.0;
     } else if (mode === 'PLAYING') {
       if (paused) {
-        targetSpeed = 0;
-        targetPodY = 37;
-      } else {
-        turbo = Boolean(passingDoor && passingDoor.x > -10);
-        targetSpeed = turbo ? 195 : 88;
-        targetPodY = 36 + Math.sin(animTime * 6.5) * 1.8;
+        cameraSpeed = 0;
+        podY = 33;
+      } else if (transit) {
+        transit.elapsed += dt;
+        const dIdx = transit.doorIdx;
+        doorOpenFracs[dIdx] = Math.min(1, transit.elapsed / 0.28);
 
-        if (passingDoor) {
-          passingDoor.openFrac = Math.min(1, passingDoor.openFrac + dt * 4.4);
-          passingDoor.x -= (turbo ? 195 : 110) * dt;
-          if (passingDoor.x < -36) passingDoor = null;
-        }
-
-        // Bring upcoming round door smoothly into view ahead of pod
-        const restDoorX = 244;
-        if (doorX > restDoorX) {
-          doorX = Math.max(restDoorX, doorX - 105 * dt);
+        if (transit.elapsed >= transit.duration) {
+          cameraX = transit.toCam;
+          doorOpenFracs[dIdx] = 1;
+          transit = null;
+          podX = POD_REST_X;
+          podY = 33 + Math.sin(animTime * 3.5) * 2.0;
+        } else if (transit.elapsed >= 0.22) {
+          const moveP = smoothstep((transit.elapsed - 0.22) / (transit.duration - 0.22));
+          cameraX = transit.fromCam + (transit.toCam - transit.fromCam) * moveP;
+          podX = POD_REST_X + Math.sin(moveP * Math.PI) * 16;
+          podY = 33 + Math.sin(animTime * 6.0) * 1.4;
+          turbo = true;
         } else {
-          doorX = Math.max(204, doorX - dt * 2.2);
+          cameraX = transit.fromCam;
+          podX = POD_REST_X;
+          podY = 33 + Math.sin(animTime * 3.5) * 2.0;
         }
-
+      } else {
+        cameraX = roundIdx * SEGMENT_LEN;
+        podY = 33 + Math.sin(animTime * 3.5) * 2.0;
         if (hitTimer > 0) {
-          targetPodX = 76 - Math.sin((hitTimer / 0.55) * Math.PI) * 9;
-          targetPodY += Math.sin(animTime * 48) * 1.6;
-        } else if (turbo) {
-          targetPodX = 94;
+          podX = POD_REST_X - Math.sin((hitTimer / 0.55) * Math.PI) * 8;
+          podY += Math.sin(animTime * 48) * 1.6;
+        } else {
+          podX = POD_REST_X;
         }
+      }
 
-        // Light engine damage smoke trail when injured
-        if (lives < 3) {
-          smokeSpawnAccum += dt * (lives === 1 ? 7 : 3);
-          while (smokeSpawnAccum >= 1) {
-            smokeSpawnAccum -= 1;
-            spawnSmoke(podX + 14, podY + 8, -32, -8 - Math.random() * 10, lives === 1 ? 3 : 2, 0.7);
-          }
+      if (!paused && lives < 3) {
+        smokeSpawnAccum += dt * (lives === 1 ? 6 : 2.5);
+        while (smokeSpawnAccum >= 1) {
+          smokeSpawnAccum -= 1;
+          spawnSmoke(podX + 14, podY + 8, -20, -10 - Math.random() * 10, lives === 1 ? 3 : 2, 0.7);
         }
       }
     } else if (mode === 'LOSE') {
-      if (stateTimer < 0.16) {
-        const p = stateTimer / 0.16;
-        targetSpeed = 95 * (1 - p);
-        targetPodX = 76 + p * (doorX - 122);
-        podX = targetPodX;
-        podY = 37;
+      cameraX = roundIdx * SEGMENT_LEN;
+      if (stateTimer < 0.18) {
+        const p = stateTimer / 0.18;
+        podX = POD_REST_X + p * (DOOR_ANCHOR_X - 58 - POD_REST_X);
+        podY = 33;
       } else {
-        if (stateTimer - dt < 0.16) {
-          spawnExplosion(doorX - 10, 50);
+        if (!explosionFired) {
+          explosionFired = true;
+          spawnExplosion(DOOR_ANCHOR_X - 8, 48);
         }
-        const crashAge = stateTimer - 0.16;
-        targetSpeed = Math.max(0, 32 * (1 - Math.min(1, crashAge * 2.4)));
-        // Bounce onto floor track and settle nose-down against door
-        const settleX = Math.max(120, doorX - 54);
-        targetPodX = settleX;
-        const bounce = Math.abs(Math.sin(Math.min(1, crashAge * 1.8) * Math.PI * 2)) * Math.max(0, 1 - crashAge * 1.5) * 6;
-        targetPodY = 46 - bounce;
+        const crashAge = stateTimer - 0.18;
+        podX = DOOR_ANCHOR_X - 62;
+        const bounce = Math.abs(Math.sin(Math.min(1, crashAge * 2.2) * Math.PI * 2)) * Math.max(0, 1 - crashAge * 2.4) * 6;
+        podY = 45 - bounce;
 
-        // Continuous smoldering wreck smoke & sparks
         smokeSpawnAccum += dt * 6.5;
         while (smokeSpawnAccum >= 1) {
           smokeSpawnAccum -= 1;
@@ -477,29 +530,33 @@ function initContainmentAnimator() {
         }
       }
     } else if (mode === 'WIN') {
-      turbo = true;
-      targetSpeed = 120;
-      if (passingDoor) {
-        passingDoor.openFrac = Math.min(1, passingDoor.openFrac + dt * 4.5);
-        if (passingDoor.x > 64) {
-          passingDoor.x = Math.max(64, passingDoor.x - 135 * dt);
-        }
-        exitSplitX = Math.round(passingDoor.x + 15);
+      if (stateTimer < 0.28) {
+        doorOpenFracs[lastIdx] = Math.min(1, stateTimer / 0.28);
       } else {
-        exitSplitX = 79;
+        doorOpenFracs[lastIdx] = 1;
       }
-      targetPodX = stateTimer < 0.5 ? 76 + (stateTimer / 0.5) * 112 : 188 + Math.sin(animTime * 2.4) * 8;
-      targetPodY = 34 + Math.sin(animTime * 4.2) * 2.4;
+
+      if (stateTimer < 0.20) {
+        cameraX = winFromCam;
+        podX = winStartPodX;
+        podY = 33 + Math.sin(animTime * 3.5) * 2.0;
+      } else if (stateTimer < 0.95) {
+        const p = smoothstep((stateTimer - 0.20) / 0.75);
+        cameraX = winFromCam + (winTargetCam - winFromCam) * p;
+        podX = winStartPodX + (270 - winStartPodX) * p;
+        podY = 32 + Math.sin(animTime * 5.0) * 1.6;
+        turbo = true;
+      } else {
+        cameraX = winTargetCam;
+        podX = 270;
+        podY = 32 + Math.sin(animTime * 3.2) * 2.0;
+        turbo = false;
+      }
     }
 
-    scrollSpeed += (targetSpeed - scrollSpeed) * Math.min(1, dt * 10);
-    podX += (targetPodX - podX) * Math.min(1, dt * (mode === 'LOSE' ? 14 : 9));
-    podY += (targetPodY - podY) * Math.min(1, dt * 12);
+    cameraSpeed = dt > 0 ? Math.abs(cameraX - prevCameraX) / dt : 0;
+    prevCameraX = cameraX;
 
-    const tileW = assets.tunnel.ready ? assets.tunnel.img.naturalWidth || 112 : 112;
-    if (!paused) {
-      scrollX = (scrollX + scrollSpeed * dt) % tileW;
-    }
     updateParticles(dt);
 
     // Clear & apply brief camera shake during crash/mistakes
@@ -510,9 +567,10 @@ function initContainmentAnimator() {
       ctx.translate(Math.round((Math.random() - 0.5) * mag * 2), Math.round((Math.random() - 0.5) * mag * 2));
     }
 
-    // 1. Seamless scrolling tunnel backdrop
+    // 1. Unified tunnel backdrop locked to cameraX
+    const tileW = assets.tunnel.ready ? assets.tunnel.img.naturalWidth || 112 : 112;
     if (assets.tunnel.ready) {
-      const off = Math.round(scrollX);
+      const off = ((Math.round(cameraX) % tileW) + tileW) % tileW;
       for (let x = -off; x < W; x += tileW) {
         ctx.drawImage(assets.tunnel.img, x, 0);
       }
@@ -523,63 +581,75 @@ function initContainmentAnimator() {
       for (let x = 0; x < W; x += 12) ctx.fillRect(x, 69, 6, 4);
     }
 
-    // 2. WIN exterior Trivmount twilight portal on right of exit gate
-    if (mode === 'WIN' && exitSplitX < W) {
+    // 2. WIN exterior Trivmount twilight portal fixed at right edge of final exit door
+    const dw = assets.door.ready ? assets.door.img.naturalWidth || 38 : 38;
+    const exitWorldX = DOOR_ANCHOR_X + lastIdx * SEGMENT_LEN + dw;
+    const exitScreenX = Math.round(exitWorldX - cameraX);
+    if (mode === 'WIN' && exitScreenX < W) {
+      const splitX = Math.max(0, exitScreenX);
       if (assets.trivmount.ready) {
         const ti = assets.trivmount.img;
-        const sx = 0;
         const sw = Math.round(ti.naturalWidth * 0.72);
         const sy = Math.round(ti.naturalHeight * 0.08);
         const sh = Math.round(ti.naturalHeight * 0.76);
-        const destW = W - exitSplitX;
-        const srcSubX = Math.max(0, sx + Math.round((exitSplitX / W) * sw));
+        const destW = W - splitX;
+        const srcSubX = Math.max(0, Math.round((splitX / W) * sw));
         const srcSubW = Math.max(1, Math.min(ti.naturalWidth - srcSubX, Math.round((destW / W) * sw)));
-        ctx.drawImage(ti, srcSubX, sy, srcSubW, sh, exitSplitX, 0, destW, H);
+        ctx.drawImage(ti, srcSubX, sy, srcSubW, sh, splitX, 0, destW, H);
       } else {
         ctx.fillStyle = '#251a40';
-        ctx.fillRect(exitSplitX, 0, W - exitSplitX, H);
+        ctx.fillRect(splitX, 0, W - splitX, H);
       }
-      // Heavy exit portal pillar & emerald guide strip
-      ctx.fillStyle = '#161c2b';
-      ctx.fillRect(exitSplitX - 3, 0, 6, H);
+      ctx.fillStyle = '#1b2232';
+      ctx.fillRect(splitX - 2, 0, 4, H);
       ctx.fillStyle = '#4a5875';
-      ctx.fillRect(exitSplitX - 1, 0, 3, H);
+      ctx.fillRect(splitX - 1, 0, 2, H);
       ctx.fillStyle = '#2ce8a2';
-      ctx.fillRect(exitSplitX + 2, 4, 1, 72);
+      ctx.fillRect(splitX + 1, 4, 1, 72);
       ctx.fillStyle = '#101522';
-      ctx.fillRect(exitSplitX, 0, W - exitSplitX, 3);
+      ctx.fillRect(splitX, 0, W - splitX, 3);
     }
 
-    // 3. Speed motion streaks when boosting
-    if (scrollSpeed > 75 && !paused && mode !== 'LOSE') {
+    // 3. Speed motion streaks ONLY while camera is advancing
+    if (cameraSpeed > 40 && !paused && mode !== 'LOSE') {
       ctx.fillStyle = turbo ? '#33d6ff' : '#3a556a';
       const count = turbo ? 6 : 3;
       for (let i = 0; i < count; i++) {
-        const sx = Math.round(W - ((animTime * scrollSpeed * 1.65 + i * 67) % (W + 24)));
+        const sx = Math.round(W - ((animTime * cameraSpeed * 1.4 + i * 79) % (W + 24)));
         const sy = 16 + ((i * 19) % 48);
         ctx.fillRect(sx, sy, turbo ? 14 : 7, 1);
       }
     }
 
-    // 4. Upcoming / passing Blast Doors
-    if (passingDoor && passingDoor.x > -34 && passingDoor.x < W + 10) {
-      drawBlastDoor(passingDoor.x, passingDoor.openFrac, 'open', animTime);
-    }
-    if ((mode === 'PLAYING' || mode === 'LOSE') && doorX < W + 6 && doorX > -34) {
-      drawBlastDoor(doorX, 0, mode === 'LOSE' ? 'locked' : paused ? 'standby' : 'active', animTime);
+    // 4. All Blast Doors rendered in world coordinates
+    for (let i = 0; i < totalRounds; i++) {
+      const doorWorldX = DOOR_ANCHOR_X + i * SEGMENT_LEN;
+      const doorScreenX = doorWorldX - cameraX;
+      if (doorScreenX > -46 && doorScreenX < W + 16) {
+        const oFrac = doorOpenFracs[i] || 0;
+        let status = 'locked';
+        if (oFrac > 0.15) {
+          status = 'open';
+        } else if (mode === 'STANDBY' || paused) {
+          status = 'standby';
+        } else if (mode === 'PLAYING' && i === roundIdx) {
+          status = 'active';
+        }
+        drawBlastDoor(doorScreenX, oFrac, status, animTime);
+      }
     }
 
-    // 5. Track shadow ONLY when inside tunnel floor (not outside in Trivmount sky!)
-    const overTunnelFloor = mode !== 'WIN' || podX + 12 < exitSplitX;
+    // 5. Track shadow ONLY when inside tunnel floor
+    const overTunnelFloor = mode !== 'WIN' || podX + 12 < exitScreenX;
     if (overTunnelFloor) {
       ctx.fillStyle = 'rgba(8, 10, 18, 0.72)';
       ctx.fillRect(Math.round(podX + 10), FLOOR_Y, mode === 'LOSE' ? 30 : 34, 2);
     }
 
     // 6. Thruster & Pod / Wreck sprite
-    const crashed = mode === 'LOSE' && stateTimer >= 0.16;
+    const crashed = mode === 'LOSE' && stateTimer >= 0.18;
     if (!crashed) {
-      drawThruster(podX, podY, turbo, scrollSpeed, animTime);
+      drawThruster(podX, podY, turbo, cameraSpeed, animTime);
     }
 
     const rx = Math.round(podX);
@@ -597,8 +667,8 @@ function initContainmentAnimator() {
 
     // 7. Particles & Crash explosion overlay
     renderParticles();
-    if (crashed && stateTimer < 0.75) {
-      drawPixelExplosionBurst(Math.round(podX + 34), Math.round(podY + 12), (stateTimer - 0.16) / 0.59);
+    if (crashed && stateTimer < 0.77) {
+      drawPixelExplosionBurst(Math.round(podX + 36), Math.round(podY + 12), (stateTimer - 0.18) / 0.59);
     }
 
     if (hitTimer > 0) {
