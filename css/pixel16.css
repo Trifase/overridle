@@ -1239,6 +1239,82 @@ body.theme-pixel16 .crt-shell .ovr-pp-btn.is-zone {
     0 2px 0 var(--px-outline) !important;
 }
 
+/* Valve Reset (.ovr-vs): compact height for 4 valves + variant banner & red alarm button at 100% */
+body.theme-pixel16 .crt-shell .ovr-vs {
+  padding: 4px 6px !important;
+  gap: 5px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-vs .ovr-variant-banner {
+  padding: 4px 8px !important;
+  font-size: 11px !important;
+  line-height: 1.25 !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-vs-head {
+  padding: 4px 8px !important;
+  gap: 2px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-vs-head-top {
+  font-size: 12px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-vs-sub {
+  font-size: 10.5px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-vs-list {
+  gap: 6px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-vs-card {
+  min-height: 54px !important;
+  padding: 6px 10px !important;
+  gap: 5px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-vs-top {
+  font-size: 12px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-vs-status {
+  font-size: 11px !important;
+  padding: 1px 4px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-vs-track {
+  height: 13px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-vs-card.is-at100,
+body.theme-pixel16 .crt-shell .ovr-vs-card.is-error {
+  background: linear-gradient(180deg, #9e1b2e 0%, #5e0d19 100%) !important;
+  border-color: #ff3b5c !important;
+  box-shadow:
+    inset 2px 2px 0 #ff6b84,
+    inset -2px -2px 0 #38050d,
+    0 0 14px rgba(255, 59, 92, 0.7),
+    0 3px 0 var(--px-outline) !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-vs-card.is-at100 .ovr-vs-name {
+  color: #ffffff !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-vs-card.is-at100 .ovr-vs-status,
+body.theme-pixel16 .crt-shell .ovr-vs-card.is-at100 .ovr-vs-pct {
+  color: #ffe680 !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-vs-card.is-done {
+  background: linear-gradient(180deg, #1b4d3e 0%, #102e24 100%) !important;
+  border-color: var(--crt-green) !important;
+  box-shadow:
+    inset 2px 2px 0 #2ce8a2,
+    0 2px 0 var(--px-outline) !important;
+}
+
 /* Primary action buttons inside Pressure Purge, Rotor Lock, Reactor Balance */
 body.theme-pixel16 .crt-shell .ovr-pp-btn,
 body.theme-pixel16 .crt-shell .ovr-rl-btn,
