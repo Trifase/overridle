@@ -745,11 +745,22 @@ body.theme-pixel16 .crt-shell .ovr-wire-span {
   border-bottom: 3px solid rgba(0, 0, 0, 0.55) !important;
 }
 
+body.theme-pixel16 .crt-shell .ovr-wire-pos {
+  flex: 0 0 28px !important;
+  width: 28px !important;
+}
+
 body.theme-pixel16 .crt-shell .ovr-wire-label {
+  flex: 0 0 46px !important;
+  width: 46px !important;
+  min-width: 46px !important;
+  padding: 4px 0 !important;
+  text-align: center !important;
+  color: var(--wire-color) !important;
   background: #121124 !important;
   border: 2px solid #565c8c !important;
   font-family: var(--font-pixel) !important;
-  font-size: 9px !important;
+  font-size: 10px !important;
 }
 
 /* 2. BINARY SWITCHES: Mockup-exact TARGET box + 3D cyan/slate toggle levers */

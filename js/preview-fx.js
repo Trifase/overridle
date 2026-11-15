@@ -683,10 +683,34 @@ function initContainmentAnimator() {
   requestAnimationFrame(frame);
 }
 
+function enhanceWiresLabels() {
+  const container = document.getElementById('module-container');
+  if (!container) return;
+
+  const stripColorNames = () => {
+    const labels = container.querySelectorAll('.ovr-wire-label');
+    labels.forEach((lbl) => {
+      const raw = (lbl.textContent || '').trim();
+      const sep = raw.indexOf('//');
+      if (sep !== -1) {
+        const num = raw.slice(sep + 2).trim();
+        if (num && lbl.textContent !== num) {
+          lbl.textContent = num;
+        }
+      }
+    });
+  };
+
+  stripColorNames();
+  const obs = new MutationObserver(stripColorNames);
+  obs.observe(container, { childList: true, subtree: true });
+}
+
 function initPreviewFx() {
   enhanceLivesDisplay();
   enhanceRoundIndicators();
   enhanceModuleMeta();
+  enhanceWiresLabels();
   initContainmentAnimator();
 }
 
