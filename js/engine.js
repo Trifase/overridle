@@ -42,9 +42,44 @@ import * as stroop_override from './modules/stroop_override.js';
 import * as signal_tuner from './modules/signal_tuner.js';
 import * as reactor_balance from './modules/reactor_balance.js';
 
-export const TOTAL_TIME = 60.0;
+export const TOTAL_TIME = 36.0;
 export const MAX_LIVES = 3;
 export const ROUNDS_COUNT = 5;
+
+const MODULE_TIME_BUDGET = {
+  wires: { base: 5.5, variant: 0, variantChoices: 0 },
+  rotor_lock: { base: 5.5, variant: 1.5, variantChoices: 3 },
+  stroop_override: { base: 6.0, variant: 0, variantChoices: 0 },
+  signal_tuner: { base: 6.0, variant: 1.0, variantChoices: 2 },
+  glyph_rules: { base: 6.5, variant: 0, variantChoices: 0 },
+  tactical_map: { base: 6.5, variant: 1.5, variantChoices: 3 },
+  binary_switches: { base: 7.0, variant: 1.5, variantChoices: 3 },
+  magnetic_scale: { base: 7.0, variant: 0.5, variantChoices: 2 },
+  freq_align: { base: 7.0, variant: 1.5, variantChoices: 3 },
+  math_order: { base: 7.5, variant: 0, variantChoices: 0 },
+  fallout_hack: { base: 8.0, variant: 1.5, variantChoices: 3 },
+  reactor_balance: { base: 8.0, variant: 1.0, variantChoices: 2 },
+  pressure_purge: { base: 8.0, variant: 1.5, variantChoices: 3 },
+  memory_flash: { base: 8.5, variant: 1.5, variantChoices: 4 },
+  valve_sequence: { base: 9.0, variant: 1.5, variantChoices: 3 },
+};
+
+export function computeRunTimeLimit(runSeed, modules) {
+  if (!Array.isArray(modules) || modules.length === 0) return TOTAL_TIME;
+  let total = 0;
+  for (let i = 0; i < modules.length; i += 1) {
+    const cfg = MODULE_TIME_BUDGET[modules[i]] || { base: 7.0, variant: 0, variantChoices: 0 };
+    total += cfg.base;
+    if (cfg.variantChoices > 1 && cfg.variant > 0) {
+      const peekRng = mulberry32(getSubSeed(runSeed, i));
+      const variantIdx = Math.floor(peekRng() * cfg.variantChoices);
+      if (variantIdx > 0) {
+        total += cfg.variant;
+      }
+    }
+  }
+  return Math.round(total);
+}
 
 export const MODULE_POOL = [
   'wires',
@@ -259,6 +294,7 @@ let practiceReturnState = 'STANDBY';
 let isPaused = false;
 let pausedAt = null;
 let selectedModules = shuffle(mulberry32(seed), MODULE_POOL).slice(0, ROUNDS_COUNT);
+let currentTimeLimit = computeRunTimeLimit(seed, selectedModules);
 let roundIndex = 0;
 let lives = MAX_LIVES;
 let squares = Array(ROUNDS_COUNT).fill('⬛');
@@ -351,7 +387,9 @@ function loadDailyRecord(targetSeed) {
     if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.squares)) {
       return null;
     }
-    if (parsed.timeLimit !== TOTAL_TIME) {
+    const dailyModules = shuffle(mulberry32(targetSeed), MODULE_POOL).slice(0, ROUNDS_COUNT);
+    const expectedTimeLimit = computeRunTimeLimit(targetSeed, dailyModules);
+    if (parsed.timeLimit !== expectedTimeLimit) {
       return null;
     }
     return parsed;
@@ -579,7 +617,7 @@ function pauseGame() {
   if (state !== 'PLAYING' || isPaused) return;
   pausedAt = performance.now();
   stopTimerLoop();
-  const remaining = Math.max(0, TOTAL_TIME - (pausedAt - startTime) / 1000);
+  const remaining = Math.max(0, currentTimeLimit - (pausedAt - startTime) / 1000);
   updateTimerDisplay(remaining);
   populatePauseInstructions();
   setPausedState(true);
@@ -687,7 +725,7 @@ function endGame(won) {
   dom.moduleContainer.innerHTML = '';
 
   const rawElapsed = (effectiveNow - startTime) / 1000;
-  elapsed = Math.max(0, Math.min(TOTAL_TIME, rawElapsed));
+  elapsed = Math.max(0, Math.min(currentTimeLimit, rawElapsed));
   state = won ? 'WIN' : 'LOSE';
 
   if (won) {
@@ -698,7 +736,7 @@ function endGame(won) {
     for (let i = roundIndex + 1; i < selectedModules.length; i++) {
       squares[i] = '⬛';
     }
-    updateTimerDisplay(Math.max(0, TOTAL_TIME - elapsed));
+    updateTimerDisplay(Math.max(0, currentTimeLimit - elapsed));
     playExplode();
   }
 
@@ -718,7 +756,7 @@ function endGame(won) {
   if (!isPractice && !isTestMode && seed === localTodaySeed) {
     saveDailyRecord(localTodaySeed, {
       seed,
-      timeLimit: TOTAL_TIME,
+      timeLimit: currentTimeLimit,
       won,
       elapsed: Number(elapsed.toFixed(1)),
       lives,
@@ -785,7 +823,7 @@ function tickLoop(now) {
   }
 
   const currentElapsed = (now - startTime) / 1000;
-  const remaining = Math.max(0, TOTAL_TIME - currentElapsed);
+  const remaining = Math.max(0, currentTimeLimit - currentElapsed);
   updateTimerDisplay(remaining);
 
   if (remaining <= 0) {
@@ -886,6 +924,7 @@ function startGame({ practice = false, moduleId = null, roundsCount = ROUNDS_COU
   selectedModules = hasSpecificModule
     ? Array(totalRounds).fill(practiceModuleId)
     : shuffle(mulberry32(seed), MODULE_POOL).slice(0, ROUNDS_COUNT);
+  currentTimeLimit = computeRunTimeLimit(seed, selectedModules);
   roundIndex = 0;
   lives = MAX_LIVES;
   squares = Array(totalRounds).fill('⬛');
@@ -896,7 +935,7 @@ function startGame({ practice = false, moduleId = null, roundsCount = ROUNDS_COU
 
   updateSeedBadge();
   updateLivesDisplay();
-  updateTimerDisplay(TOTAL_TIME);
+  updateTimerDisplay(currentTimeLimit);
   updateRoundIndicators();
   setActiveScreen('PLAYING');
   setPausedState(false);
@@ -971,6 +1010,7 @@ function renderInitialStandby() {
     savedDaily && Array.isArray(savedDaily.selectedModuleIds) && savedDaily.selectedModuleIds.length === ROUNDS_COUNT
       ? savedDaily.selectedModuleIds.slice()
       : shuffle(mulberry32(seed), MODULE_POOL).slice(0, ROUNDS_COUNT);
+  currentTimeLimit = computeRunTimeLimit(seed, selectedModules);
 
   updateSeedBadge();
   updateMuteButton();
@@ -989,7 +1029,7 @@ function renderInitialStandby() {
 
     updateLivesDisplay();
     updateRoundIndicators();
-    updateTimerDisplay(savedDaily.won ? Math.max(0, TOTAL_TIME - Number(savedDaily.elapsed || 0)) : 0);
+    updateTimerDisplay(savedDaily.won ? Math.max(0, currentTimeLimit - Number(savedDaily.elapsed || 0)) : 0);
 
     dom.standbyFresh.hidden = true;
     dom.standbyCompleted.hidden = false;
@@ -1005,7 +1045,7 @@ function renderInitialStandby() {
     squares = Array(ROUNDS_COUNT).fill('⬛');
     updateLivesDisplay();
     updateRoundIndicators();
-    updateTimerDisplay(TOTAL_TIME);
+    updateTimerDisplay(currentTimeLimit);
 
     dom.standbyFresh.hidden = false;
     dom.standbyCompleted.hidden = true;
@@ -1166,7 +1206,7 @@ function exposeReadOnlyDebug() {
     get elapsed() {
       if (state === 'PLAYING') {
         const now = isPaused && pausedAt !== null ? pausedAt : performance.now();
-        return Number(Math.min(TOTAL_TIME, (now - startTime) / 1000).toFixed(1));
+        return Number(Math.min(currentTimeLimit, (now - startTime) / 1000).toFixed(1));
       }
       return Number(elapsed.toFixed(1));
     },
