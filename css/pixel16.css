@@ -974,6 +974,46 @@ body.theme-pixel16 .crt-shell .ovr-rb-step-btn:active:not(:disabled) {
   box-shadow: inset 2px 2px 0 rgba(0, 0, 0, 0.35), 0 1px 0 var(--px-outline) !important;
 }
 
+/* Center expressions inside Discharge Order arcade keycaps */
+body.theme-pixel16 .crt-shell .ovr-math-btn {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0 !important;
+  padding: 8px 10px !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-math-expr {
+  display: block !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  margin: 0 !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-math-badge {
+  position: absolute !important;
+  bottom: 3px !important;
+  left: 0 !important;
+  right: 0 !important;
+  min-height: 0 !important;
+  font-size: 9px !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  pointer-events: none !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-math-badge:empty {
+  display: none !important;
+}
+
+body.theme-pixel16 .crt-shell .ovr-math-btn.is-locked {
+  background: linear-gradient(180deg, #1b4d3e 0%, #113328 100%) !important;
+  border-color: var(--crt-green) !important;
+  color: var(--crt-green) !important;
+  box-shadow: inset 2px 2px 0 #2ce8a2, 0 2px 0 var(--px-outline) !important;
+}
+
 /* Primary action buttons inside Pressure Purge, Rotor Lock, Reactor Balance */
 body.theme-pixel16 .crt-shell .ovr-pp-btn,
 body.theme-pixel16 .crt-shell .ovr-rl-btn,
