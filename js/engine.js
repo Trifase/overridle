@@ -265,7 +265,7 @@ function getModuleInstructions(entry) {
 
 const STORAGE_PREFIX = 'override30_';
 const AUTOPAUSE_STORAGE_KEY = 'overridle_autopause';
-const SHARE_URL = 'https://overridle.trifase.online';
+const SHARE_URL = 'https://overridle.com';
 
 const testFlags = getTestModeFlags();
 const isTestMode = testFlags.bypassStorage;
